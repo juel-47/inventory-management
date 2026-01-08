@@ -1521,7 +1521,7 @@ h6 .badge {
   left: 0;
   width: 100%;
   height: 115px;
-  background-color: #6777ef;
+  background-color: #033550;
   z-index: -1; }
 
 .navbar {
@@ -1752,7 +1752,7 @@ h6 .badge {
     font-size: 10px;
     letter-spacing: 1.5px;
     font-weight: 700;
-    color: #191d21 !important;
+    color: #fff !important;
     padding: 10px 20px;
     line-height: 20px;
     color: #98a6ad; }
@@ -2325,7 +2325,7 @@ pre {
   top: 0;
   height: 100%;
   width: 250px;
-  background-color: #fff;
+  background-color: #003049;
   z-index: 880;
   left: 0; }
 
@@ -2349,7 +2349,7 @@ body.sidebar-mini .main-sidebar {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.03);
     content: ' ';
     position: fixed;
-    background-color: #fff;
+    background-color: #003049;
     width: 65px;
     height: 100%;
     left: 0;
@@ -2378,7 +2378,9 @@ body.sidebar-mini .main-sidebar {
       border-radius: 3px;
       height: 45px;
       padding: 0;
-      justify-content: center; }
+      justify-content: center; 
+      
+    }
       body.sidebar-mini .main-sidebar .sidebar-menu > li > a .ion, body.sidebar-mini .main-sidebar .sidebar-menu > li > a .fas, body.sidebar-mini .main-sidebar .sidebar-menu > li > a .far, body.sidebar-mini .main-sidebar .sidebar-menu > li > a .fab, body.sidebar-mini .main-sidebar .sidebar-menu > li > a .fal {
         margin: 0;
         font-size: 20px; }
@@ -2424,9 +2426,13 @@ body.sidebar-mini .main-sidebar {
           transform: translate(0, -50%);
           font-size: 12px; }
   body.sidebar-mini .main-sidebar .sidebar-menu li:hover > ul.dropdown-menu {
-    display: block !important; }
+    display: block !important;
+    background-color: #003049;
+  }
     body.sidebar-mini .main-sidebar .sidebar-menu li:hover > ul.dropdown-menu li:hover > a {
-      background-color: #fcfcfd; }
+      background-color: #fcfcfd; 
+      
+    }
     body.sidebar-mini .main-sidebar .sidebar-menu li:hover > ul.dropdown-menu li .dropdown-menu {
       left: 200px;
       padding: 0; }
@@ -2590,7 +2596,7 @@ body.layout-3 .main-footer {
     text-transform: uppercase;
     letter-spacing: 1.5px;
     font-weight: 700;
-    color: #000; }
+    color: #fff; }
 .main-sidebar .sidebar-user {
   display: inline-block;
   width: 100%;
@@ -2624,7 +2630,7 @@ body.layout-3 .main-footer {
       padding: 0 20px;
       width: 100%;
       letter-spacing: .3px;
-      color: #868e96;
+      color: #fff;
       text-decoration: none; }
       .main-sidebar .sidebar-menu li a .badge {
         float: right;
@@ -2638,7 +2644,9 @@ body.layout-3 .main-footer {
         margin-top: 3px;
         width: 100%; }
       .main-sidebar .sidebar-menu li a:hover {
-        background-color: #fcfcfd; }
+        background-color: #fcfcfd; 
+        color:black
+      }
     .main-sidebar .sidebar-menu li.active a {
       color: #6777ef;
       font-weight: 600;
@@ -2669,13 +2677,17 @@ body.layout-3 .main-footer {
       box-shadow: none;
       background-color: transparent; }
       .main-sidebar .sidebar-menu li ul.dropdown-menu li a {
-        color: #868e96;
+        color: #fff;
         height: 35px;
         padding-left: 65px;
-        font-weight: 400; }
+        font-weight: 400;
+        transition: all 0.7s;
+      }
         .main-sidebar .sidebar-menu li ul.dropdown-menu li a:hover {
-          color: #6777ef;
-          background-color: inherit; }
+          color: #ade8f4;
+          background-color: inherit; 
+          /* margin-left: 5px; */
+        }
       .main-sidebar .sidebar-menu li ul.dropdown-menu li.active > a {
         color: #6777ef;
         font-weight: 600; }
@@ -2735,7 +2747,7 @@ body:not(.sidebar-mini) .sidebar-style-2 .sidebar-menu > li.active > a {
     background-color: #6777ef; }
 body:not(.sidebar-mini) .sidebar-style-2 .sidebar-menu li.active ul.dropdown-menu li a {
   padding-left: 61px;
-  background-color: #fff; }
+  background-color: #033c5a; }
 
 @media (max-width: 1024px) {
   .sidebar-gone-hide {

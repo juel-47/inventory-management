@@ -42,6 +42,15 @@ class ChildCategoryController extends Controller
     }
 
     /**
+     * Get child categories based on sub category.
+     */
+    public function getChildCategories(Request $request)
+    {
+        $childCategories = ChildCategory::where('sub_category_id', $request->id)->where('status', 1)->get();
+        return $childCategories;
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(ChildCategoryCreateRequest $request)

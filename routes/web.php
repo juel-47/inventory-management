@@ -15,9 +15,9 @@ Route::get('/', function () {
     return view('auth/login');
 });
 
-Route::get('/dashboard', function () {
-    return view('backend.dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+// Route::get('/dashboard', function () {
+//     return view('backend.dashboard');
+// })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -27,6 +27,7 @@ Route::middleware('auth')->group(function () {
 
 
 Route::group(['middleware' => ['auth', 'verified', 'check.permission'], 'prefix' => 'admin', 'as' => 'admin.'], function () {
+    Route::get('/dashboard', [\App\Http\Controllers\Backend\DashboardController::class, 'index'])->name('dashboard');
     Route::resource('users', UserController::class);
     Route::put('users/change-status', [UserController::class, 'changeStatus'])->name('users.change-status');
     Route::resource('role', RolesController::class);
@@ -44,16 +45,59 @@ Route::group(['middleware' => ['auth', 'verified', 'check.permission'], 'prefix'
     Route::controller(ChildCategoryController::class)->group(function () {
         Route::put('child-category/change-status', 'changeStatus')->name('child-category.change-status');
         Route::get('get-subcategories', 'getSubCategories')->name('get-subCategories');
+        Route::get('get-child-categories', 'getChildCategories')->name('get-child-categories');
     });
     Route::resource('child-category', ChildCategoryController::class);
     /* brand controller */
     Route::put('brand/change-status', [BrandController::class, 'changeStatus'])->name('brand.change-status');
     Route::resource('brand', BrandController::class);
 
+
     /** vendor */
     Route::put('vendor/change-status', [VendorController::class, 'changeStatus'])->name('vendor.change-status');
     Route::resource('vendor', VendorController::class);
+
+    /** Unit Routes */
+     Route::put('units/change-status', [\App\Http\Controllers\Backend\UnitController::class, 'changeStatus'])->name('units.change-status');
+     Route::resource('units', \App\Http\Controllers\Backend\UnitController::class);
+
+    /** Product Routes */
+    Route::put('products/change-status', [\App\Http\Controllers\Backend\ProductController::class, 'changeStatus'])->name('products.change-status');
+    Route::resource('products', \App\Http\Controllers\Backend\ProductController::class);
+
+    /** Booking Routes */
+    Route::controller(\App\Http\Controllers\Backend\BookingController::class)->group(function () {
+        Route::get('bookings/get-subcategories', 'getSubCategories')->name('bookings.get-subcategories');
+        Route::get('bookings/get-childcategories', 'getChildCategories')->name('bookings.get-childcategories');
+    });
+    Route::put('bookings/change-status', [\App\Http\Controllers\Backend\BookingController::class, 'changeStatus'])->name('bookings.change-status');
+    Route::resource('bookings', \App\Http\Controllers\Backend\BookingController::class);
+
+    /** Purchase Routes */
+    Route::resource('purchases', \App\Http\Controllers\Backend\PurchaseController::class);
+
+    /** Report Routes */
+    Route::controller(\App\Http\Controllers\Backend\ReportController::class)->group(function () {
+        Route::get('reports', 'index')->name('reports.index');
+        Route::get('reports/stock', 'stockReport')->name('reports.stock');
+        Route::get('reports/purchase', 'purchaseReport')->name('reports.purchase');
+        Route::get('reports/product-purchase-history', 'productPurchaseHistory')->name('reports.product-purchase-history');
+        Route::get('reports/low-stock', 'lowStockReport')->name('reports.low-stock');
+        Route::get('reports/profit-loss', 'profitLossReport')->name('reports.profit-loss');
+        Route::get('low-stock-check', 'lowStockCheck')->name('low-stock-check'); // AJAX endpoint
+    });
+
+    /** Sales Routes */
+    Route::resource('sales', \App\Http\Controllers\Backend\SaleController::class);
+
+    /** Product Request Routes */
+    Route::put('product-requests/update-status/{id}', [\App\Http\Controllers\Backend\ProductRequestController::class, 'updateStatus'])->name('product-requests.update-status');
+    Route::resource('product-requests', \App\Http\Controllers\Backend\ProductRequestController::class);
     
+    // Settings
+    Route::get('settings', [\App\Http\Controllers\Backend\SettingController::class, 'index'])->name('settings.index');
+    Route::put('settings', [\App\Http\Controllers\Backend\SettingController::class, 'update'])->name('settings.update');
+
 });
 
 require __DIR__ . '/auth.php';

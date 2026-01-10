@@ -31,6 +31,12 @@ class CheckPermission
     private function getPermission(Request $request)
     {
         $action = $request->route()->getActionName();
+        
+        // Specific case for Product list view (allows View Product Stock)
+        if (str_contains($action, 'ProductController@index') && !$request->user()->can('Manage Products')) {
+            return 'View Product Stock';
+        }
+
         $map = [
             'Manage Categories' => ['CategoryController', 'SubCategoryController', 'ChildCategoryController'],
             'Manage Products' => ['ProductController', 'BrandController', 'SizeController', 'ColorController', 'ReviewController'],

@@ -177,17 +177,19 @@ trait ImageUploadTrait
 
 
     
-    //normal way handle image 
+    // normal way handle image 
     public function upload_image(Request $request, $inputName, $path)
-
     {
         if ($request->hasFile($inputName)) {
-            $image = $request->{$inputName};
+            $image = $request->file($inputName);
             $ext = $image->getClientOriginalExtension();
             $imageName = 'media_' . uniqid() . '.' . $ext;
-            $image->move(public_path($path), $imageName);
+            
+            $image->storeAs($path, $imageName, 'public');
+            
             return $path . '/' . $imageName;
         }
+        return null;
     }
 
     /** handle multi image file */
@@ -199,31 +201,40 @@ trait ImageUploadTrait
             foreach ($images as $image) {
                 $ext = $image->getClientOriginalExtension();
                 $imageName = 'media_' . uniqid() . '.' . $ext;
-                $image->move(public_path($path), $imageName);
+                
+                $image->storeAs($path, $imageName, 'public');
+                
                 $imagepaths[] = $path . '/' . $imageName;
             }
             return $imagepaths;
         }
+        return null;
     }
+
     /** handle single image update file  */
     public function update_image(Request $request, $inputName, $path, $oldPath = null)
     {
         if ($request->hasFile($inputName)) {
-            if (File::exists(public_path($oldPath))) {
-                File::delete(public_path($oldPath));
+            if ($oldPath && Storage::disk('public')->exists($oldPath)) {
+                Storage::disk('public')->delete($oldPath);
             }
-            $image = $request->{$inputName};
+            
+            $image = $request->file($inputName);
             $ext = $image->getClientOriginalExtension();
             $imageName = 'media_' . uniqid() . '.' . $ext;
-            $image->move(public_path($path), $imageName);
+            
+            $image->storeAs($path, $imageName, 'public');
+            
             return $path . '/' . $imageName;
         }
+        return null;
     }
+
     /** handle delete file */
     public function delete_image(string $path)
     {
-        if (File::exists(public_path($path))) {
-            File::delete(public_path($path));
+        if ($path && Storage::disk('public')->exists($path)) {
+            Storage::disk('public')->delete($path);
         }
     }
 }

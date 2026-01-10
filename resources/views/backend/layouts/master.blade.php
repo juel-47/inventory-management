@@ -57,6 +57,16 @@
 
             <!-- Main Content -->
             <div class="main-content">
+                {{-- Global Low Stock Notification Banner --}}
+                <div id="low-stock-banner" style="display: none;" class="alert alert-warning alert-dismissible fade show m-3" role="alert">
+                    <strong><i class="fas fa-exclamation-triangle"></i> Stock Alert!</strong>
+                    <span id="low-stock-message"></span>
+                    <a href="{{ route('admin.reports.low-stock') }}" class="alert-link">View Details</a>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                
                 @yield('content')
             </div>
             <footer class="main-footer">
@@ -87,6 +97,7 @@
     <script src="{{ asset('backend/assets/modules/jqvmap/dist/maps/jquery.vmap.world.js') }}"></script>
     <script src="{{ asset('backend/assets/modules/summernote/summernote-bs4.js') }}"></script>
     <script src="{{ asset('backend/assets/modules/chocolat/dist/js/jquery.chocolat.min.js') }}"></script>
+    <script src="{{ asset('backend/assets/modules/upload-preview/assets/js/jquery.uploadPreview.min.js') }}"></script>
 
     <!-- jq js bootstrap 5 -->
     {{-- <script src="https://cdn.datatables.net/2.0.7/js/dataTables.bootstrap5.js"></script> --}}
@@ -187,6 +198,48 @@
                     }
                 });
             });
+        });
+    </script>
+
+    {{-- Low Stock Notification System --}}
+    <script>
+        let notificationTimeout;
+        
+        function checkLowStock() {
+            $.ajax({
+                url: '{{ route("admin.low-stock-check") }}',
+                method: 'GET',
+                success: function(data) {
+                    if (data.count > 0) {
+                        $('#low-stock-message').html(` ${data.count} product(s) are running low or out of stock. `);
+                        $('#low-stock-banner').slideDown();
+                        
+                        // Auto-dismiss after 5 seconds
+                        clearTimeout(notificationTimeout);
+                        notificationTimeout = setTimeout(function() {
+                            $('#low-stock-banner').slideUp();
+                        }, 5000); // 5 seconds
+                    } else {
+                        $('#low-stock-banner').slideUp();
+                    }
+                },
+                error: function() {
+                    console.log('Failed to check stock levels');
+                }
+            });
+        }
+
+        // Check immediately on page load
+        $(document).ready(function() {
+            checkLowStock();
+            
+            // Auto-refresh every 10 minutes (600000 milliseconds)
+            setInterval(checkLowStock, 600000);
+        });
+
+        // If user manually closes, don't auto-dismiss for that session
+        $('#low-stock-banner').on('closed.bs.alert', function () {
+            clearTimeout(notificationTimeout);
         });
     </script>
 

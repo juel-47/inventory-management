@@ -15,6 +15,9 @@ class Vendor extends Model
         'email',
         'address',
         'country',
+        'currency_name',
+        'currency_icon',
+        'currency_rate',
         'description',
         'status'
     ];

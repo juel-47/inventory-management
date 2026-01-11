@@ -61,16 +61,20 @@
                                         <th data-width="40">#</th>
                                         <th>Item</th>
                                         <th class="text-center">Price</th>
-                                        <th class="text-center">Quantity</th>
-                                        <th class="text-right">Totals</th>
+                                        <th class="text-center">Vendor Price</th>
+                                        <th class="text-center">Qty</th>
+                                        <th class="text-right">Total</th>
+                                        <th class="text-right">Vendor Total</th>
                                     </tr>
                                     @foreach ($purchase->details as $index => $detail)
                                     <tr>
                                         <td>{{ $index + 1 }}</td>
                                         <td>{{ $detail->product->name }} (SKU: {{ $detail->product->sku }})</td>
-                                        <td class="text-center">${{ number_format($detail->unit_cost, 2) }}</td>
+                                        <td class="text-center">{{ formatConverted($detail->unit_cost) }}</td>
+                                        <td class="text-center">{{ formatWithVendor($detail->unit_cost, $purchase->vendor->currency_icon, $purchase->vendor->currency_rate) }}</td>
                                         <td class="text-center">{{ $detail->qty }}</td>
-                                        <td class="text-right">${{ number_format($detail->total, 2) }}</td>
+                                        <td class="text-right">{{ formatConverted($detail->total) }}</td>
+                                        <td class="text-right">{{ formatWithVendor($detail->total, $purchase->vendor->currency_icon, $purchase->vendor->currency_rate) }}</td>
                                     </tr>
                                     @endforeach
                                 </table>
@@ -86,7 +90,11 @@
                                     <hr class="mt-2 mb-2">
                                     <div class="invoice-detail-item">
                                         <div class="invoice-detail-name">Total</div>
-                                        <div class="invoice-detail-value invoice-detail-value-lg">${{ number_format($purchase->total_amount, 2) }}</div>
+                                        <div class="invoice-detail-value invoice-detail-value-lg">{{ formatConverted($purchase->total_amount) }}</div>
+                                    </div>
+                                    <div class="invoice-detail-item">
+                                        <div class="invoice-detail-name">Vendor Total ({{ $purchase->vendor->currency_name }})</div>
+                                        <div class="invoice-detail-value">{{ formatWithVendor($purchase->total_amount, $purchase->vendor->currency_icon, $purchase->vendor->currency_rate) }}</div>
                                     </div>
                                 </div>
                             </div>

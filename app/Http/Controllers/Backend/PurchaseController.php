@@ -60,10 +60,17 @@ class PurchaseController extends Controller
             $purchase->status = 1;
             $purchase->save();
 
+            // Calculate costs in System Currency (Input is Vendor Currency)
+            $vendor = Vendor::findOrFail($request->vendor_id);
+            $rate = $vendor->currency_rate > 0 ? $vendor->currency_rate : 1;
+
             $totalAmount = 0;
 
             foreach ($request->items as $item) {
-                $subTotal = $item['qty'] * $item['unit_cost'];
+                // Convert Vendor Currency (Input) to System Currency (Storage)
+                $itemUnitCost = $item['unit_cost'] * $rate;
+                
+                $subTotal = $item['qty'] * $itemUnitCost;
                 $totalAmount += $subTotal;
 
                 // Create Detail
@@ -71,7 +78,7 @@ class PurchaseController extends Controller
                 $detail->purchase_id = $purchase->id;
                 $detail->product_id = $item['product_id'];
                 $detail->qty = $item['qty'];
-                $detail->unit_cost = $item['unit_cost'];
+                $detail->unit_cost = $itemUnitCost;
                 $detail->total = $subTotal;
                 $detail->save();
 

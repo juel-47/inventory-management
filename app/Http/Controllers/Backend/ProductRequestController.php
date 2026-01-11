@@ -38,8 +38,8 @@ class ProductRequestController extends Controller implements HasMiddleware
             $query->where('user_id', Auth::id());
         }
 
-        $requests = $query->get();
-        return view('backend.product-request.index', compact('requests'));
+        $productRequests = $query->get();
+        return view('backend.product-request.index', compact('productRequests'));
     }
 
     /**

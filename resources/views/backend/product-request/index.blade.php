@@ -25,20 +25,20 @@
                                             <th>Request No</th>
                                             <th>Requester</th>
                                             <th>Total Qty</th>
-                                            <th>Total Amount</th>
+                                             <th>Base Total</th>
                                             <th>Status</th>
                                             <th>Date</th>
                                             <th>Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach ($requests as $request)
+                                        @foreach ($productRequests as $request)
                                             <tr>
-                                                <td>{{ $loop->iteration }}</td>
+                                                <td>{{ $request->id }}</td>
                                                 <td>{{ $request->request_no }}</td>
                                                 <td>{{ $request->user->name }}</td>
                                                 <td>{{ $request->total_qty }}</td>
-                                                <td>{!! formatWithCurrency($request->total_amount) !!}</td>
+                                                <td>{!! formatConverted($request->total_amount) !!}</td>
                                                 <td>
                                                     @if($request->status == 'pending')
                                                         <span class="badge badge-warning">Pending</span>

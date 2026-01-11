@@ -72,8 +72,12 @@ class BookingController extends Controller
         $booking->child_category_id = $request->child_category_id;
         $booking->unit_id = $request->unit_id;
         $booking->qty = $request->qty;
-        $booking->unit_price = $request->unit_price ?? 0;
-        $booking->extra_cost = $request->extra_cost ?? 0;
+        // Calculate costs in System Currency (Input is Vendor Currency)
+        $vendor = Vendor::findOrFail($request->vendor_id);
+        $rate = $vendor->currency_rate > 0 ? $vendor->currency_rate : 1;
+
+        $booking->unit_price = ($request->unit_price ?? 0) * $rate;
+        $booking->extra_cost = ($request->extra_cost ?? 0) * $rate;
         
         $total_cost = ($booking->qty * $booking->unit_price) + $booking->extra_cost;
         $booking->total_cost = $total_cost;
@@ -145,8 +149,12 @@ class BookingController extends Controller
         $booking->child_category_id = $request->child_category_id;
         $booking->unit_id = $request->unit_id;
         $booking->qty = $request->qty;
-        $booking->unit_price = $request->unit_price ?? 0;
-        $booking->extra_cost = $request->extra_cost ?? 0;
+        // Calculate costs in System Currency (Input is Vendor Currency)
+        $vendor = Vendor::findOrFail($request->vendor_id);
+        $rate = $vendor->currency_rate > 0 ? $vendor->currency_rate : 1;
+
+        $booking->unit_price = ($request->unit_price ?? 0) * $rate;
+        $booking->extra_cost = ($request->extra_cost ?? 0) * $rate;
         
         $total_cost = ($booking->qty * $booking->unit_price) + $booking->extra_cost;
         $booking->total_cost = $total_cost;
@@ -195,7 +203,7 @@ class BookingController extends Controller
     public function changeStatus(Request $request)
     {
         $booking = Booking::findOrFail($request->id);
-        $booking->status = $request->status == 'true' ? 1 : 0;
+        $booking->status = $request->status;
         $booking->save();
 
         return response(['status' => 'success', 'message' => 'Status Updated Successfully!']);

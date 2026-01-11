@@ -46,10 +46,12 @@
                                             <th>Invoice No</th>
                                             <th>Product</th>
                                             <th>Vendor</th>
-                                            <th>Created By</th>
-                                            <th>Qty</th>
-                                            <th>Unit Cost</th>
-                                            <th>Total</th>
+                                             <th>Created By</th>
+                                             <th>Qty</th>
+                                             <th>Base Unit Cost</th>
+                                             <th>Vendor Unit Cost</th>
+                                             <th>Base Total</th>
+                                             <th>Vendor Total</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -61,8 +63,22 @@
                                                 <td>{{ $detail->purchase->vendor->shop_name ?? 'N/A' }}</td>
                                                 <td>{{ $detail->purchase->user->name ?? 'System' }}</td>
                                                 <td>{{ $detail->qty }}</td>
-                                                <td>${{ number_format($detail->unit_cost, 2) }}</td>
-                                                <td>${{ number_format($detail->total, 2) }}</td>
+                                                <td>{!! formatConverted($detail->unit_cost) !!}</td>
+                                                <td>
+                                                    @if($detail->purchase->vendor)
+                                                        {!! formatWithVendor($detail->unit_cost, $detail->purchase->vendor->currency_icon, $detail->purchase->vendor->currency_rate) !!}
+                                                    @else
+                                                        {!! formatConverted($detail->unit_cost) !!}
+                                                    @endif
+                                                </td>
+                                                <td>{!! formatConverted($detail->total) !!}</td>
+                                                <td>
+                                                    @if($detail->purchase->vendor)
+                                                        {!! formatWithVendor($detail->total, $detail->purchase->vendor->currency_icon, $detail->purchase->vendor->currency_rate) !!}
+                                                    @else
+                                                        {!! formatConverted($detail->total) !!}
+                                                    @endif
+                                                </td>
                                             </tr>
                                         @endforeach
                                     </tbody>

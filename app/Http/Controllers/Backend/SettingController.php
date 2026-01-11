@@ -23,7 +23,6 @@ class SettingController extends Controller
             'address' => ['nullable', 'string'],
             'currency_name' => ['required', 'string', 'max:20'],
             'currency_icon' => ['required', 'string', 'max:10'],
-            'currency_rate' => ['required', 'numeric', 'min:0'],
         ]);
 
         GeneralSetting::updateOrCreate(
@@ -32,13 +31,15 @@ class SettingController extends Controller
                 'site_name' => $request->site_name,
                 'contact_email' => $request->contact_email,
                 'address' => $request->address,
+                'base_currency_name' => $request->currency_name,
+                'base_currency_icon' => $request->currency_icon,
                 'currency_name' => $request->currency_name,
                 'currency_icon' => $request->currency_icon,
-                'currency_rate' => $request->currency_rate,
+                'currency_rate' => 1.0, // Internal rate is always 1 for the System/Base currency
             ]
         );
 
-        Toastr::success('Settings updated successfully!');
+        app('toastr')->success('Settings updated successfully!');
         return redirect()->back();
     }
 }

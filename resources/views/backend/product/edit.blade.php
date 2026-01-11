@@ -94,14 +94,14 @@
                                 </div>
 
                                 <div class="row">
-                                    <div class="form-group col-md-4">
-                                        <label>Purchase Price</label>
-                                        <input type="number" class="form-control" name="purchase_price" step="0.01" value="{{ $product->purchase_price }}">
-                                    </div>
-                                    <div class="form-group col-md-4">
-                                        <label>Sale Price</label>
-                                        <input type="number" class="form-control" name="price" step="0.01" value="{{ $product->price }}">
-                                    </div>
+                                     <div class="form-group col-md-4">
+                                         <label>Base Purchase Price</label>
+                                         <input type="number" class="form-control" name="purchase_price" step="0.01" value="{{ $product->purchase_price }}">
+                                     </div>
+                                     <div class="form-group col-md-4">
+                                         <label>Base Sale Price</label>
+                                         <input type="number" class="form-control" name="price" step="0.01" value="{{ $product->price }}">
+                                     </div>
                                     <div class="form-group col-md-4">
                                         <label>Quantity</label>
                                         <input type="number" class="form-control" name="qty" value="{{ $product->qty }}">

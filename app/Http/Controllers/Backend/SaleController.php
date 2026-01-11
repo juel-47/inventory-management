@@ -62,6 +62,11 @@ class SaleController extends Controller
             $sale->status = 1;
             $sale->save();
 
+            // Currency Logic (Reverse Calculation)
+            // Input is in Local/Display Currency. Storage is in Base System Currency.
+            $settings = \App\Models\GeneralSetting::first();
+            $rate = $settings->currency_rate > 0 ? $settings->currency_rate : 1;
+
             $totalAmount = 0;
 
             foreach ($request->items as $item) {
@@ -71,7 +76,9 @@ class SaleController extends Controller
                     throw new \Exception("Insufficient stock for {$product->name}. Available: {$product->qty}");
                 }
 
-                $subTotal = $item['qty'] * $item['unit_price'];
+                // Convert Input (Local) to Storage (Base)
+                $itemUnitPrice = $item['unit_price'] / $rate;
+                $subTotal = $item['qty'] * $itemUnitPrice;
                 $totalAmount += $subTotal;
 
                 // Create Detail
@@ -79,7 +86,7 @@ class SaleController extends Controller
                 $detail->sale_id = $sale->id;
                 $detail->product_id = $item['product_id'];
                 $detail->qty = $item['qty'];
-                $detail->unit_price = $item['unit_price'];
+                $detail->unit_price = $itemUnitPrice;
                 $detail->total = $subTotal;
                 $detail->save();
 

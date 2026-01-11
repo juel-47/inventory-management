@@ -39,26 +39,27 @@
                                 </div>
 
                                 <hr>
-                                <h5 class="mb-3 text-primary">Currency Settings</h5>
-
+                                <h5 class="mb-3 text-primary">System Default Currency</h5>
                                 <div class="row">
-                                    <div class="col-md-4">
+                                    <div class="col-md-6">
                                         <div class="form-group">
-                                            <label>Local Currency Name (e.g., BDT)</label>
-                                            <input type="text" name="currency_name" class="form-control" value="{{ $setting->currency_name ?? 'USD' }}" required>
+                                            <label>Select Your System Currency</label>
+                                            <select name="system_currency_select" id="system_currency_select" class="form-control select2">
+                                                @foreach(config('settings.currency_list') as $currency)
+                                                     <option value="{{ $currency['code'] }}" data-icon="{{ $currency['symbol'] }}" 
+                                                         {{ ($setting->currency_name ?? 'USD') == $currency['code'] ? 'selected' : '' }}>
+                                                         {{ $currency['name'] }} ({{ $currency['code'] }})
+                                                     </option>
+                                                @endforeach
+                                            </select>
+                                             <input type="hidden" name="currency_name" id="currency_name" value="{{ $setting->currency_name ?? 'USD' }}">
+                                             <input type="hidden" name="currency_icon" id="currency_icon" value="{{ $setting->currency_icon ?? '$' }}">
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-6 text-center">
                                         <div class="form-group">
-                                            <label>Currency Icon (e.g., ৳)</label>
-                                            <input type="text" name="currency_icon" class="form-control" value="{{ $setting->currency_icon ?? '$' }}" required>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="form-group">
-                                            <label>Exchange Rate (1 USD = ?)</label>
-                                            <input type="number" step="0.0001" name="currency_rate" class="form-control" value="{{ $setting->currency_rate ?? 1.0000 }}" required>
-                                            <small class="text-muted">Enter how much of your local currency equals 1 USD.</small>
+                                            <label>Currency Icon</label>
+                                             <div class="h3" id="system_icon_display">{{ $setting->currency_icon ?? '$' }}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -78,11 +79,11 @@
                         </div>
                         <div class="card-body">
                             <h6>How it works:</h6>
-                            <p class="text-muted">The system uses **USD** as the base currency for all database entries. The **Exchange Rate** you set here is used to calculate and display the **Local Price** across all modules (Bookings, Purchases, Sales, and Reports).</p>
-                            <div class="alert alert-light border">
-                                <strong>Formula:</strong><br>
-                                Local Price = Original (USD) * Rate
-                            </div>
+                            <p class="text-muted">The system uses the **System Default Currency** for all internal entries and default displays. When dealing with **Vendors**, you can define their specific currency rate relative to this System Currency.</p>
+                            <div class="alert alert-light border text-center">
+                                <strong>System Currency:</strong><br>
+                                 <span class="h4 font-weight-bold system_code_label">{{ $setting->currency_name ?? 'USD' }}</span> (<span class="system_icon_label">{{ $setting->currency_icon ?? '$' }}</span>)
+                             </div>
                         </div>
                     </div>
                 </div>
@@ -90,3 +91,21 @@
         </div>
     </section>
 @endsection
+
+@push('scripts')
+    <script>
+        $(document).ready(function() {
+            // System Currency Selection
+            $('#system_currency_select').on('change', function() {
+                let code = $(this).val();
+                let icon = $(this).find(':selected').data('icon');
+                
+                $('#currency_name').val(code);
+                $('#currency_icon').val(icon);
+                $('#system_icon_display').text(icon);
+                $('.system_code_label').text(code);
+                $('.system_icon_label').text(icon);
+            });
+        });
+    </script>
+@endpush

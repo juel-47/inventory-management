@@ -27,8 +27,8 @@
                                         <tr>
                                             <th>Date</th>
                                             <th>Invoice No</th>
-                                            <th>Outlet</th>
-                                            <th>Total Amount</th>
+                                            <th>Outlet User</th>
+                                             <th>Base Total</th>
                                             <th>Status</th>
                                             <th>Action</th>
                                         </tr>
@@ -39,7 +39,7 @@
                                                 <td>{{ $sale->date }}</td>
                                                 <td>{{ $sale->invoice_no }}</td>
                                                 <td>{{ $sale->outletUser->name ?? 'N/A' }}</td>
-                                                <td>{!! formatWithCurrency($sale->total_amount) !!}</td>
+                                                <td>{!! formatConverted($sale->total_amount) !!}</td>
                                                 <td>
                                                     @if($sale->status == 1)
                                                         <div class="badge badge-success">Completed</div>

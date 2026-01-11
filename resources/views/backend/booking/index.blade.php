@@ -36,15 +36,15 @@
 
     <script>
         $(document).ready(function() {
-            $('body').on('click', '.change-status', function() {
-                let isChecked = $(this).is(':checked');
+            $('body').on('change', '.change-status', function() {
+                let status = $(this).val();
                 let id = $(this).data('id');
 
                 $.ajax({
                     url: "{{ route('admin.bookings.change-status') }}",
                     method: 'PUT',
                     data: {
-                        status: isChecked,
+                        status: status,
                         id: id
                     },
                     success: function(data) {

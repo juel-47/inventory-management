@@ -55,7 +55,7 @@
                                             <th>Vendor</th>
                                             <th>Created By</th>
                                             <th>Items Count</th>
-                                            <th>Total Amount</th>
+                                             <th>Base Total</th>
                                             <th>Action</th>
                                         </tr>
                                     </thead>
@@ -67,7 +67,7 @@
                                                 <td>{{ $purchase->vendor->shop_name ?? 'N/A' }}</td>
                                                 <td>{{ $purchase->user->name ?? 'System' }}</td>
                                                 <td>{{ $purchase->details->count() }}</td>
-                                                <td>{!! formatWithCurrency($purchase->total_amount) !!}</td>
+                                                <td>{!! formatConverted($purchase->total_amount) !!}</td>
                                                 <td>
                                                     <a href="{{ route('admin.purchases.show', $purchase->id) }}" class="btn btn-info btn-sm">
                                                         <i class="fas fa-eye"></i> View

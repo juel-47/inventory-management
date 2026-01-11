@@ -53,6 +53,32 @@ Vendor
                                 @endforeach
                             </select>
                             </div>
+                             <div class="form-group col-md-6">
+                                 <label>Currency</label>
+                                 <select name="currency_select" id="currency_select" class="form-control select2">
+                                     <option value="">Select Currency</option>
+                                     <option value="">Select Currency</option>
+                                     @foreach (config('settings.currency_list') as $currency)
+                                         <option value="{{ $currency['code'] }}" data-icon="{{ $currency['symbol'] }}" 
+                                             {{ old('currency_name') == $currency['code'] ? 'selected' : '' }}>
+                                             {{ $currency['name'] }} ({{ $currency['code'] }})
+                                         </option>
+                                     @endforeach
+                                 </select>
+                                 <input type="hidden" name="currency_name" id="currency_name" value="{{ old('currency_name') }}">
+                                 <input type="hidden" name="currency_icon" id="currency_icon" value="{{ old('currency_icon') }}">
+                             </div>
+ 
+                             <div class="form-group col-md-3">
+                                 <label>Currency Icon</label>
+                                 <div class="h4" id="currency_icon_display">{{ old('currency_icon', '-') }}</div>
+                             </div>
+ 
+                             <div class="form-group col-md-3">
+                                 <label>Currency Rate (1 {{ $settings->base_currency_name }} = ?)</label>
+                                 <input type="number" step="0.0001" class="form-control" name="currency_rate" value="{{ old('currency_rate', 1.0000) }}">
+                             </div>
+
                             <div class="form-group col-md-6">
                                 <label>Status</label>
                                 <select name="status" class="form-control">
@@ -78,3 +104,18 @@ Vendor
     </div>
 </section>
 @endsection
+
+@push('scripts')
+    <script>
+        $(document).ready(function() {
+            $('#currency_select').on('change', function() {
+                let code = $(this).val();
+                let icon = $(this).find(':selected').data('icon');
+                
+                $('#currency_name').val(code);
+                $('#currency_icon').val(icon);
+                $('#currency_icon_display').text(icon || '-');
+            });
+        });
+    </script>
+@endpush

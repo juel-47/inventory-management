@@ -18,8 +18,9 @@
                             <div class="card-header">
                                 <h4>Total Sales</h4>
                             </div>
-                            <div class="card-body">
-                                {!! formatWithCurrency($totalSales) !!}
+                             <div class="card-body">
+                                <div>{{ $settings->base_currency_icon . number_format($totalSales, 2) }}</div>
+                                <div class="text-small text-muted">({{ $settings->currency_name }}: {!! formatConverted($totalSales) !!})</div>
                             </div>
                         </div>
                     </div>
@@ -135,8 +136,9 @@
                                         @if(Auth::user()->hasRole('Admin'))
                                         <th>Requester</th>
                                         @endif
-                                        <th>Date</th>
-                                        <th class="text-right">Amount</th>
+                                         <th>Date</th>
+                                         <th class="text-right">Total ({{ $settings->base_currency_name }})</th>
+                                         <th class="text-right">Total ({{ $settings->currency_name }})</th>
                                         <th class="text-center">Status</th>
                                         <th class="text-right pr-4">Action</th>
                                     </tr>
@@ -148,8 +150,9 @@
                                             @if(Auth::user()->hasRole('Admin'))
                                             <td>{{ $request->user->name }}</td>
                                             @endif
-                                            <td>{{ $request->created_at->format('d M, Y') }}</td>
-                                            <td class="text-right font-weight-bold text-dark">{!! formatWithCurrency($request->total_amount) !!}</td>
+                                             <td>{{ $request->created_at->format('d M, Y') }}</td>
+                                             <td class="text-right font-weight-bold text-dark">{{ $settings->base_currency_icon . number_format($request->total_amount, 2) }}</td>
+                                             <td class="text-right font-weight-bold text-dark">{!! formatConverted($request->total_amount) !!}</td>
                                             <td class="text-center">
                                                 @php
                                                     $statusClasses = [

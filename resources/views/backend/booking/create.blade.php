@@ -19,7 +19,10 @@
                         <div class="card-body">
                             <form action="{{ route('admin.bookings.store') }}" method="POST">
                                 @csrf
-                                <div class="row">
+                                <div class="row mb-4">
+                                    <div class="col-12">
+                                        <div class="section-title mt-0">General Information</div>
+                                    </div>
                                     <div class="form-group col-md-6">
                                         <label>Vendor</label>
                                         <select class="form-control select2" name="vendor_id">
@@ -40,7 +43,10 @@
                                     </div>
                                 </div>
 
-                                <div class="row">
+                                <div class="row mb-4">
+                                    <div class="col-12">
+                                        <div class="section-title mt-0">Categorization (Optional Override)</div>
+                                    </div>
                                     <div class="form-group col-md-4">
                                         <label>Category</label>
                                         <select class="form-control select2" name="category_id" id="category_id">
@@ -64,18 +70,21 @@
                                     </div>
                                 </div>
 
-                                <div class="row">
-                                    <div class="form-group col-md-4">
-                                        <label>Product Name (Read Only)</label>
-                                        <input type="text" class="form-control" id="product_name" readonly>
+                                <div class="row mb-4">
+                                    <div class="col-12">
+                                        <div class="section-title mt-0">Product Details (Read Only)</div>
                                     </div>
                                     <div class="form-group col-md-4">
-                                        <label>Product Number (Read Only)</label>
-                                        <input type="text" class="form-control" id="product_number" readonly>
+                                        <label>Product Name</label>
+                                        <input type="text" class="form-control bg-light" id="product_name" readonly>
                                     </div>
                                     <div class="form-group col-md-4">
-                                        <label>Product Category (Read Only)</label>
-                                        <input type="text" class="form-control" id="product_category" readonly>
+                                        <label>Product Number</label>
+                                        <input type="text" class="form-control bg-light" id="product_number" readonly>
+                                    </div>
+                                    <div class="form-group col-md-4">
+                                        <label>Product Category</label>
+                                        <input type="text" class="form-control bg-light" id="product_category" readonly>
                                     </div>
                                     <div class="form-group col-md-4">
                                         <label>Product Image</label>
@@ -84,7 +93,10 @@
                                     </div>
                                 </div>
 
-                                <div class="row">
+                                <div class="row mb-4">
+                                    <div class="col-12">
+                                        <div class="section-title mt-0">Variant & Unit</div>
+                                    </div>
                                     <div class="form-group col-md-4">
                                         <label>Variant</label>
                                         <select class="form-control" name="variant_info" id="variant_select">
@@ -106,67 +118,109 @@
                                     </div>
                                 </div>
 
-                                <div class="row">
-                                     <div class="form-group col-md-3">
-                                        <label>Quantity</label>
-                                        <input type="number" class="form-control" name="qty" required>
+                                <div class="row mb-4">
+                                    <div class="col-12">
+                                        <div class="section-title mt-0 text-primary">Pricing & Costing</div>
+                                        <hr>
                                     </div>
-                                    <div class="form-group col-md-3">
-                                        <label>Unit Cost Price</label>
-                                        <input type="number" class="form-control" name="unit_price" step="0.01">
-                                    </div>
-                                    <div class="form-group col-md-3">
-                                        <label>Extra Cost</label>
-                                        <input type="number" class="form-control" name="extra_cost" step="0.01">
-                                    </div>
-                                    <div class="form-group col-md-3">
-                                        <label>Sale Price</label>
-                                        <input type="number" class="form-control" name="sale_price" id="sale_price" step="0.01">
+                                      <div class="form-group col-md-3">
+                                         <label class="font-weight-bold">Quantity</label>
+                                         <input type="number" class="form-control form-control-lg" name="qty" required>
+                                     </div>
+                                       <div class="form-group col-md-3">
+                                          <label>Price (Vendor Currency)</label>
+                                          <input type="number" class="form-control" name="unit_price" id="unit_price" step="0.01">
+                                          <small class="form-text text-muted">Enter price in Vendor's currency</small>
+                                      </div>
+                                       <div class="form-group col-md-3">
+                                          <label>Extra Cost (Vendor)</label>
+                                          <input type="number" class="form-control" name="extra_cost" id="extra_cost" step="0.01">
+                                      </div>
+                                       <div class="form-group col-md-3">
+                                           <label>Selling Price</label>
+                                           <input type="number" class="form-control" name="sale_price" id="sale_price" step="0.01">
+                                       </div>
+                                </div>
+
+                                <div class="row mb-4">
+                                    <div class="col-md-12">
+                                        <div class="row p-3 bg-light rounded">
+                                            <div class="form-group col-md-3 mb-0">
+                                                <label>System Unit Price</label>
+                                                <input type="text" class="form-control border-0 bg-transparent font-weight-bold p-0" id="unit_price_vendor" readonly>
+                                            </div>
+                                            <div class="form-group col-md-3 mb-0">
+                                                <label>Vendor Total</label>
+                                                <input type="text" class="form-control border-0 bg-transparent font-weight-bold p-0 text-primary" id="total_cost_vendor" style="font-size: 1.2em;" readonly>
+                                            </div>
+                                            <div class="form-group col-md-3 mb-0">
+                                                <label>System Total</label>
+                                                <input type="number" class="form-control border-0 bg-transparent font-weight-bold p-0" name="total_cost" id="total_cost" step="0.01" readonly>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 
                                 <div class="row">
-                                     <div class="form-group col-md-6">
+                                     <div class="form-group col-md-4">
                                         <label>Min Inventory Qty</label>
                                         <input type="number" class="form-control" name="min_inventory_qty">
                                     </div>
-                                    <div class="form-group col-md-6">
+                                     <div class="form-group col-md-4">
                                         <label>Min Sale Qty</label>
                                         <input type="number" class="form-control" name="min_sale_qty">
                                     </div>
-                                        <div class="form-group col-md-6">
-                                            <label>Min Purchase Price</label>
-                                            <input type="number" class="form-control" name="min_purchase_price" step="0.01">
+                                     <div class="form-group col-md-4">
+                                        <label>Min Purchase Price</label>
+                                        <input type="number" class="form-control" name="min_purchase_price" step="0.01">
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <label>Description</label>
+                                            <textarea name="description" class="form-control" rows="4"></textarea>
                                         </div>
-                                        <div class="form-group col-md-6">
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="card border">
+                                            <div class="card-header bg-whitesmoke">
+                                                <h4>Custom Fields</h4>
+                                                <div class="card-header-action">
+                                                    <button type="button" class="btn btn-sm btn-success" id="add-custom-field"><i class="fas fa-plus"></i> Add Field</button>
+                                                </div>
+                                            </div>
+                                            <div class="card-body" id="custom-fields-container">
+                                                <!-- Custom fields will participate here -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="form-group">
                                             <label>Status</label>
-                                            <select name="status" class="form-control">
+                                            <select class="form-control" name="status">
                                                 <option value="pending">Pending</option>
-                                                <option value="completed">Completed</option>
+                                                <option value="complete">Complete</option>
                                                 <option value="cancelled">Cancelled</option>
+                                                <option value="missing">Missing</option>
                                             </select>
                                         </div>
-                                    
-                                </div>
-
-                                <div class="form-group">
-                                    <label>Description</label>
-                                    <textarea name="description" class="form-control"></textarea>
-                                </div>
-
-                                <div class="card border">
-                                    <div class="card-header">
-                                        <h4>Custom Fields</h4>
-                                        <div class="card-header-action">
-                                            <button type="button" class="btn btn-sm btn-success" id="add-custom-field">Add Field</button>
-                                        </div>
-                                    </div>
-                                    <div class="card-body" id="custom-fields-container">
-                                        <!-- Dynamic Fields -->
                                     </div>
                                 </div>
 
-                                <button type="submit" class="btn btn-primary">Create Booking</button>
+                                <div class="row mt-4">
+                                    <div class="col-12 text-right">
+                                        <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-save"></i> Save Booking</button>
+                                    </div>
+                                </div>
+
                             </form>
                         </div>
                     </div>
@@ -179,89 +233,107 @@
 @push('scripts')
     <script>
         const products = @json($products);
+        let currentVendorRate = 1;
+        let currentVendorIcon = "{{ $settings->currency_icon }}";
+        let currentVendorName = "{{ $settings->currency_name }}";
 
         $(document).ready(function() {
+            
+            // Product Selection Logic
             $('#product_id').on('change', function() {
-                let id = $(this).val();
-                let product = products.find(p => p.id == id);
+                let productId = $(this).val();
+                let product = products.find(p => p.id == productId);
                 
-                if(product) {
+                if (product) {
                     $('#product_name').val(product.name);
-                    $('#product_number').val(product.product_number);
+                    $('#product_number').val(product.sku); // Assuming SKU as number
                     $('#product_category').val(product.category ? product.category.name : '');
                     
-                    // Auto-select Vendor
-                    if(product.vendor_id) {
-                         $('select[name="vendor_id"]').val(product.vendor_id).trigger('change');
-                    }
-                    
-                    // Auto-select Unit
-                     if(product.unit_id) {
-                         $('select[name="unit_id"]').val(product.unit_id).trigger('change');
-                    }
-
-                    // Show Image
-                    if(product.thumb_image) {
-                        $('#product_image').attr('src', "{{ asset('storage/') }}" + "/" + product.thumb_image).show();
+                    if (product.thumb_image) {
+                        $('#product_image').attr('src', "{{ asset('storage') }}/" + product.thumb_image).show();
                     } else {
                         $('#product_image').hide();
                     }
+
+                    // Auto-select Category/Sub/Child if not manually set (Optional Override logic)
+                    // If user hasn't touched the selects? 
+                    // Let's just set the selects to the product's defaults if they are empty
+                    if(!$('#category_id').val()) {
+                        $('#category_id').val(product.category_id).trigger('change');
+                        // Wait for ajax or just set if we had the data? 
+                        // Since subcategories are loaded via ajax, we might need a timeout or chain
+                    }
                     
-                    $('#sale_price').val(product.price);
-                    $('#barcode').val(product.barcode);
+                    if(product.unit_id) {
+                         $('#unit_select').val(product.unit_id);
+                    }
                     
                     // Variants
                     let variantHtml = '<option value="">Select Variant (Optional)</option>';
+                    // Assuming product.variants is array/json?
+                    // Controller passes: with(['variants'...])
                     if(product.variants && product.variants.length > 0) {
-                        product.variants.forEach(v => {
-                            variantHtml += `<option value='${JSON.stringify({name: v.name, id: v.id})}'>${v.name}</option>`;
-                        });
+                         product.variants.forEach(v => {
+                             variantHtml += `<option value="${v.id}">${v.name}</option>`;
+                         });
                     }
                     $('#variant_select').html(variantHtml);
-                    
-                    // Auto-populate Category, SubCategory, ChildCategory
-                    if(product.category_id) {
-                        $('#category_id').val(product.category_id).trigger('change');
-                        
-                        // Load subcategories for this category
-                        $.ajax({
-                            url: "{{ route('admin.bookings.get-subcategories') }}",
-                            method: 'GET',
-                            data: { id: product.category_id },
-                            success: function(data) {
-                                let html = '<option value="">Select Sub Category (Optional)</option>';
-                                data.forEach(function(subCategory) {
-                                    let selected = product.sub_category_id == subCategory.id ? 'selected' : '';
-                                    html += `<option value="${subCategory.id}" ${selected}>${subCategory.name}</option>`;
-                                });
-                                $('#sub_category_id').html(html);
-                                
-                                // If product has subcategory, load child categories
-                                if(product.sub_category_id) {
-                                    $.ajax({
-                                        url: "{{ route('admin.bookings.get-childcategories') }}",
-                                        method: 'GET',
-                                        data: { id: product.sub_category_id },
-                                        success: function(childData) {
-                                            let childHtml = '<option value="">Select Child Category (Optional)</option>';
-                                            childData.forEach(function(childCategory) {
-                                                let selected = product.child_category_id == childCategory.id ? 'selected' : '';
-                                                childHtml += `<option value="${childCategory.id}" ${selected}>${childCategory.name}</option>`;
-                                            });
-                                            $('#child_category_id').html(childHtml);
-                                        }
-                                    });
-                                }
-                            }
-                        });
-                    } else {
-                        // Clear category dropdowns if product has no category
-                        $('#category_id').val('').trigger('change');
-                        $('#sub_category_id').html('<option value="">Select Sub Category (Optional)</option>');
-                        $('#child_category_id').html('<option value="">Select Child Category (Optional)</option>');
-                    }
+                } else {
+                     $('#product_name').val('');
+                     $('#product_number').val('');
+                     $('#product_category').val('');
+                     $('#product_image').hide();
+                     $('#variant_select').html('<option value="">Select Variant (Optional)</option>');
                 }
             });
+
+            // Vendor Currency Logic
+            $('select[name="vendor_id"]').on('change', function() {
+                let vendorId = $(this).val();
+                if (vendorId) {
+                    $.ajax({
+                        url: "{{ route('admin.vendor.get-details') }}",
+                        method: 'GET',
+                        data: { id: vendorId },
+                        success: function(data) {
+                            currentVendorRate = data.currency_rate;
+                            currentVendorIcon = data.currency_icon;
+                            currentVendorName = data.currency_name;
+                            recalculateAllPrices();
+                        }
+                    });
+                } else {
+                    currentVendorRate = 1;
+                    currentVendorIcon = '{{ $settings->currency_icon }}';
+                    currentVendorName = '{{ $settings->currency_name }}';
+                    recalculateAllPrices();
+                }
+            });
+
+            $('input[name="qty"], #unit_price, #extra_cost').on('keyup change', function() {
+                recalculateAllPrices();
+            });
+
+            function recalculateAllPrices() {
+                let vendorPrice = parseFloat($('#unit_price').val()) || 0;
+                let vendorExtra = parseFloat($('#extra_cost').val()) || 0;
+                let qty = parseFloat($('input[name="qty"]').val()) || 0;
+                
+                // Calculate System Prices (Display is Vendor, Storage is System)
+                // Logic: System = Vendor * Rate
+                let rate = currentVendorRate > 0 ? currentVendorRate : 1;
+                let systemPrice = vendorPrice * rate;
+                let systemExtra = vendorExtra * rate;
+                
+                let systemTotal = (systemPrice * qty) + systemExtra;
+                let vendorTotal = (vendorPrice * qty) + vendorExtra;
+
+                $('#total_cost').val(systemTotal.toFixed(2)); // System Total
+                $('#unit_price_vendor').val('{{ $settings->currency_icon }}' + systemPrice.toFixed(2)); // System Unit Price
+                
+                // Vendor Display
+                $('#total_cost_vendor').val(currentVendorIcon + vendorTotal.toFixed(2));
+            }
             
             // Category Change - Load Subcategories
             $('#category_id').on('change', function() {
@@ -312,21 +384,19 @@
                 }
             });
             
-            // Note: Category and Unit name might be missing if not eager loaded.
-            
             // Custom Fields
             let fieldCount = 0;
             $('#add-custom-field').on('click', function(){
                 let html = `
                     <div class="row mb-2" id="custom-field-${fieldCount}">
-                        <div class="col-5">
+                        <div class="col-md-5">
                             <input type="text" name="custom_fields[${fieldCount}][key]" class="form-control" placeholder="Field Name">
                         </div>
-                        <div class="col-5">
+                        <div class="col-md-5">
                             <input type="text" name="custom_fields[${fieldCount}][value]" class="form-control" placeholder="Value">
                         </div>
-                        <div class="col-2">
-                            <button type="button" class="btn btn-danger" onclick="$('#custom-field-${fieldCount}').remove()">X</button>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-danger btn-icon" onclick="$('#custom-field-${fieldCount}').remove()"><i class="fas fa-trash"></i></button>
                         </div>
                     </div>
                 `;

@@ -55,10 +55,10 @@
                                             <th>Product</th>
                                             <th>SKU</th>
                                             <th>Category</th>
-                                            <th>Stock Qty</th>
+                                            <th>Qty</th>
                                             <th>Unit</th>
-                                            <th>Unit Price</th>
-                                            <th>Total Value</th>
+                                            <th>Base Unit Price</th>
+                                            <th>Base Total Value</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -81,15 +81,15 @@
                                                 <td>{{ $product->category->name ?? 'N/A' }}</td>
                                                 <td>{{ $product->qty }}</td>
                                                 <td>{{ $product->unit->name ?? 'N/A' }}</td>
-                                                <td>{!! formatWithCurrency($product->purchase_price) !!}</td>
-                                                <td>{!! formatWithCurrency($value) !!}</td>
+                                                <td>{!! formatConverted($product->purchase_price) !!}</td>
+                                                <td>{!! formatConverted($value) !!}</td>
                                             </tr>
                                         @endforeach
                                     </tbody>
                                     <tfoot>
                                         <tr>
                                             <th colspan="7" class="text-right">Total Inventory Value:</th>
-                                            <th>{!! formatWithCurrency($totalValue) !!}</th>
+                                            <th>{!! formatConverted($totalValue) !!}</th>
                                         </tr>
                                     </tfoot>
                                 </table>

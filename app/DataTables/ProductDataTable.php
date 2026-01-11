@@ -7,6 +7,7 @@ use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
 use Yajra\DataTables\Html\Button;
 use Yajra\DataTables\Html\Column;
+use Illuminate\Support\Facades\Auth;
 use Yajra\DataTables\Services\DataTable;
 
 class ProductDataTable extends DataTable
@@ -15,7 +16,7 @@ class ProductDataTable extends DataTable
     {
         return (new EloquentDataTable($query))
             ->addColumn('action', function ($query) {
-                if (!auth()->user()->hasRole('Admin')) {
+                if (!Auth::user()->hasRole('Admin')) {
                     return '';
                 }
                  $edit = '<a href="' . route('admin.products.edit', $query->id) . '" class="btn btn-primary"><i class="fas fa-edit"></i></a>';
@@ -26,7 +27,7 @@ class ProductDataTable extends DataTable
                  return $query->thumb_image ? '<img src="' . asset('storage/' . $query->thumb_image) . '" width="80px" class="img-thumbnail">' : '';
             })
             ->addColumn('status', function ($query) {
-                if (!auth()->user()->hasRole('Admin')) {
+                if (!Auth::user()->hasRole('Admin')) {
                     return $query->status ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-danger">Inactive</span>';
                 }
                 $checked = $query->status ? 'checked' : '';
@@ -39,9 +40,9 @@ class ProductDataTable extends DataTable
                 return $query->category->name ?? '';
              })
              ->addColumn('price', function($query){
-                return formatWithCurrency($query->price);
+                return formatConverted($query->price);
              })
-            ->rawColumns(['action', 'status', 'thumb_image'])
+            ->rawColumns(['action', 'status', 'thumb_image', 'price'])
             ->setRowId('id');
     }
 
@@ -68,16 +69,17 @@ class ProductDataTable extends DataTable
 
     public function getColumns(): array
     {
+        $settings = getSettings();
         $columns = [
             Column::make('id'),
             Column::make('thumb_image')->title('Image'),
             Column::make('name'),
             Column::make('category')->title('Category'),
-            Column::make('price')->title('Selling Price'),
+            Column::make('price')->title('Price'),
             Column::make('qty')->title('Qty'),
         ];
 
-        if (auth()->user()->hasRole('Admin')) {
+        if (Auth::user()->hasRole('Admin')) {
             $columns[] = Column::make('status');
             $columns[] = Column::computed('action')
                 ->exportable(false)

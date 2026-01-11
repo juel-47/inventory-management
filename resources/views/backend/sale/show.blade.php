@@ -60,9 +60,9 @@
                                     <tr>
                                         <td>{{ $index + 1 }}</td>
                                         <td>{{ $detail->product->name }} (SKU: {{ $detail->product->sku }})</td>
-                                        <td class="text-center">${{ number_format($detail->unit_price, 2) }}</td>
+                                        <td class="text-center">{!! formatConverted($detail->unit_price) !!}</td>
                                         <td class="text-center">{{ $detail->qty }}</td>
-                                        <td class="text-right">${{ number_format($detail->total, 2) }}</td>
+                                        <td class="text-right">{!! formatConverted($detail->total) !!}</td>
                                     </tr>
                                     @endforeach
                                 </table>
@@ -78,7 +78,7 @@
                                     <hr class="mt-2 mb-2">
                                     <div class="invoice-detail-item">
                                         <div class="invoice-detail-name">Total</div>
-                                        <div class="invoice-detail-value invoice-detail-value-lg">${{ number_format($sale->total_amount, 2) }}</div>
+                                        <div class="invoice-detail-value invoice-detail-value-lg">{!! formatConverted($sale->total_amount) !!}</div>
                                     </div>
                                 </div>
                             </div>

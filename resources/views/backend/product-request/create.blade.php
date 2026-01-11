@@ -32,9 +32,9 @@
                                                             <tr>
                                                                 <th width="40%">Product Description</th>
                                                                 <th width="15%" class="text-center">Stock</th>
-                                                                <th width="15%" class="text-right">Unit Price</th>
-                                                                <th width="15%" class="text-center">Quantity</th>
-                                                                <th width="15%" class="text-right">Total</th>
+                                                                 <th width="15%" class="text-right">Base Unit Price</th>
+                                                                 <th width="15%" class="text-center">Quantity</th>
+                                                                 <th width="15%" class="text-right">Base Total</th>
                                                                 <th width="5%"></th>
                                                             </tr>
                                                         </thead>
@@ -68,7 +68,7 @@
                                                 </div>
                                                 <div class="d-flex justify-content-between align-items-center">
                                                     <h5 class="mb-0 text-dark">Grand Total:</h5>
-                                                    <h4 class="mb-0 text-primary">$<span id="grand-total-display">0.00</span></h4>
+                                                     <h4 class="mb-0 text-primary">{{ $settings->base_currency_icon }}<span id="grand-total-display">0.00</span></h4>
                                                 </div>
                                                 <hr>
                                                 <p class="small text-muted mb-4">

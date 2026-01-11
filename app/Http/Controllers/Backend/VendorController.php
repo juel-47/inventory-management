@@ -84,4 +84,10 @@ class VendorController extends Controller
         $vendor->save();
         return response(['message' => 'Status has been updated!']);
     }
+
+    public function getVendorDetails(Request $request)
+    {
+        $vendor = Vendor::findOrFail($request->id);
+        return response()->json($vendor);
+    }
 }

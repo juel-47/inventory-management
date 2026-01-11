@@ -25,9 +25,9 @@
                                         <tr>
                                             <th class="pl-4">#</th>
                                             <th>Product Name</th>
-                                            <th class="text-right">Unit Price</th>
-                                            <th class="text-center">Quantity</th>
-                                            <th class="text-right pr-4">Subtotal</th>
+                                             <th class="text-right">Base Unit Price</th>
+                                             <th class="text-center">Quantity</th>
+                                             <th class="text-right pr-4">Base Total</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -38,11 +38,11 @@
                                                     <span class="font-weight-600">{{ $item->product->name }}</span><br>
                                                     <small class="text-muted">{{ $item->product->sku }}</small>
                                                 </td>
-                                                <td class="text-right">${{ number_format($item->unit_price, 2) }}</td>
+                                                <td class="text-right">{!! formatConverted($item->unit_price) !!}</td>
                                                 <td class="text-center">
                                                     <span class="badge badge-light px-3">{{ $item->qty }}</span>
                                                 </td>
-                                                <td class="text-right pr-4 font-weight-bold text-dark">${{ number_format($item->subtotal, 2) }}</td>
+                                                <td class="text-right pr-4 font-weight-bold text-dark">{!! formatConverted($item->subtotal) !!}</td>
                                             </tr>
                                         @endforeach
                                     </tbody>
@@ -58,7 +58,7 @@
                                 <div class="col-md-6 text-right">
                                     <div class="mb-2">
                                         <span class="text-muted mr-2">Total Amount:</span>
-                                        <h3 class="d-inline text-primary">${{ number_format($productRequest->total_amount, 2) }}</h3>
+                                         <h3 class="d-inline text-primary">{!! formatConverted($productRequest->total_amount) !!}</h3>
                                     </div>
                                 </div>
                             </div>

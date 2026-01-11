@@ -25,6 +25,8 @@ if (!function_exists('getSettings')) {
     {
         return \App\Models\GeneralSetting::first() ?? (object)[
             'site_name' => config('app.name'),
+            'base_currency_name' => 'USD',
+            'base_currency_icon' => '$',
             'currency_name' => 'USD',
             'currency_icon' => '$',
             'currency_rate' => 1.0000,
@@ -32,24 +34,49 @@ if (!function_exists('getSettings')) {
     }
 }
 
+if (!function_exists('getConvertedAmount')) {
+    /**
+     * Internal helper to get amount in System currency.
+     * Since System is Base, this usually returns the amount as-is.
+     */
+    function getConvertedAmount($amount)
+    {
+        return $amount;
+    }
+}
+
+if (!function_exists('formatConverted')) {
+    /**
+     * Format amount using System Default settings.
+     */
+    function formatConverted($amount)
+    {
+        $settings = getSettings();
+        return $settings->currency_icon . number_format($amount, 2);
+    }
+}
+
+if (!function_exists('formatWithVendor')) {
+    /**
+     * Format amount using Vendor's specific currency.
+     * System (Stored) -> Vendor (Display)
+     * Conversion: Vendor = System / Rate
+     */
+    function formatWithVendor($amount, $icon, $rate)
+    {
+        // Prevent division by zero
+        $rate = $rate > 0 ? $rate : 1;
+        $converted = $amount / $rate;
+        return $icon . number_format($converted, 2);
+    }
+}
+
 if (!function_exists('formatWithCurrency')) {
     /**
-     * Format amount with base currency (USD) and local currency.
-     *
-     * @param float|int $amount
-     * @return string
+     * Format amount with System currency.
      */
     function formatWithCurrency($amount)
     {
-        $settings = getSettings();
-        $basePrice = '$' . number_format($amount, 2);
-        
-        if ($settings->currency_name != 'USD' && $settings->currency_rate != 1) {
-            $localAmount = $amount * $settings->currency_rate;
-            $localPrice = $settings->currency_icon . number_format($localAmount, 2);
-            return $basePrice . ' (' . $localPrice . ')';
-        }
-
-        return $basePrice;
+        return formatConverted($amount);
     }
 }

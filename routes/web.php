@@ -54,6 +54,7 @@ Route::group(['middleware' => ['auth', 'verified', 'check.permission'], 'prefix'
 
 
     /** vendor */
+    Route::get('vendor/get-details', [VendorController::class, 'getVendorDetails'])->name('vendor.get-details');
     Route::put('vendor/change-status', [VendorController::class, 'changeStatus'])->name('vendor.change-status');
     Route::resource('vendor', VendorController::class);
 

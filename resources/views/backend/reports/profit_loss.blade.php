@@ -38,18 +38,18 @@
                             </div>
 
                             <div class="row">
-                                <div class="col-lg-4 col-md-6 col-sm-6 col-12">
+                                    <div class="col-lg-4 col-md-6 col-sm-6 col-12">
                                     <div class="card card-statistic-1">
                                         <div class="card-icon bg-success">
                                             <i class="fas fa-dollar-sign"></i>
                                         </div>
                                         <div class="card-wrap">
                                             <div class="card-header">
-                                                <h4>Total Revenue</h4>
+                                                <h4>Base Total Revenue</h4>
                                             </div>
-                                            <div class="card-body">
-                                                ${{ number_format($totalRevenue, 2) }}
-                                            </div>
+                                             <div class="card-body">
+                                                 {!! formatConverted($totalRevenue) !!}
+                                             </div>
                                         </div>
                                     </div>
                                 </div>
@@ -63,7 +63,7 @@
                                                 <h4>Total Cost</h4>
                                             </div>
                                             <div class="card-body">
-                                                {!! formatWithCurrency($totalCost) !!}
+                                                {!! formatConverted($totalCost) !!}
                                             </div>
                                         </div>
                                     </div>
@@ -78,7 +78,7 @@
                                                 <h4>Gross Profit</h4>
                                             </div>
                                             <div class="card-body">
-                                                {!! formatWithCurrency($grossProfit) !!}
+                                                {!! formatConverted($grossProfit) !!}
                                             </div>
                                         </div>
                                     </div>
@@ -94,20 +94,20 @@
                                         <div class="card-body">
                                             <table class="table table-bordered">
                                                 <tbody>
-                                                    <tr>
-                                                        <td class="font-weight-bold">Revenue (Sales)</td>
-                                                        <td class="text-right text-success">${{ number_format($totalRevenue, 2) }}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td class="font-weight-bold">Cost of Goods Sold (Purchases)</td>
-                                                        <td class="text-right text-danger">-${{ number_format($totalCost, 2) }}</td>
-                                                    </tr>
-                                                    <tr class="table-active">
-                                                        <td class="font-weight-bold">Gross Profit</td>
-                                                        <td class="text-right font-weight-bold {{ $grossProfit >= 0 ? 'text-success' : 'text-danger' }}">
-                                                            ${{ number_format($grossProfit, 2) }}
-                                                        </td>
-                                                    </tr>
+                                                     <tr>
+                                                         <td class="font-weight-bold">Revenue (Sales)</td>
+                                                         <td class="text-right text-success">{!! formatConverted($totalRevenue) !!}</td>
+                                                     </tr>
+                                                     <tr>
+                                                         <td class="font-weight-bold">Cost of Goods Sold (Purchases)</td>
+                                                         <td class="text-right text-danger">-{!! formatConverted($totalCost) !!}</td>
+                                                     </tr>
+                                                     <tr class="table-active">
+                                                         <td class="font-weight-bold">Gross Profit</td>
+                                                         <td class="text-right font-weight-bold {{ $grossProfit >= 0 ? 'text-success' : 'text-danger' }}">
+                                                             {!! formatConverted($grossProfit) !!}
+                                                         </td>
+                                                     </tr>
                                                     <tr>
                                                         <td class="font-weight-bold">Profit Margin</td>
                                                         <td class="text-right">{{ number_format($profitMargin, 2) }}%</td>

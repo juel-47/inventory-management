@@ -29,7 +29,8 @@
                                             <th>Invoice No</th>
                                             <th>Vendor</th>
                                             <th>Created By</th>
-                                            <th>Total Amount</th>
+                                            <th>Total</th>
+                                            <th>Vendor Total</th>
                                             <th>Status</th>
                                             <th>Action</th>
                                         </tr>
@@ -41,7 +42,14 @@
                                                 <td>{{ $purchase->invoice_no }}</td>
                                                 <td>{{ $purchase->vendor->shop_name ?? 'N/A' }}</td>
                                                 <td>{{ $purchase->user->name ?? 'System' }}</td>
-                                                <td>{!! formatWithCurrency($purchase->total_amount) !!}</td>
+                                                <td>{{ formatConverted($purchase->total_amount) }}</td>
+                                                <td>
+                                                    @if($purchase->vendor)
+                                                        {!! formatWithVendor($purchase->total_amount, $purchase->vendor->currency_icon, $purchase->vendor->currency_rate) !!}
+                                                    @else
+                                                        {!! formatConverted($purchase->total_amount) !!}
+                                                    @endif
+                                                </td>
                                                 <td>
                                                     @if($purchase->status == 1)
                                                         <div class="badge badge-success">Completed</div>

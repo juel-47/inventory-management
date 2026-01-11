@@ -55,7 +55,7 @@
                 </div>
                 <div class="col-lg-3 col-md-6 col-sm-6 col-12">
                     <div class="card card-statistic-1">
-                        <div class="card-icon bg-info">
+                        <div class="card-icon bg-danger">
                             <i class="fas fa-shopping-cart"></i>
                         </div>
                         <div class="card-wrap">
@@ -63,11 +63,14 @@
                                 <h4>Monthly Purchases</h4>
                             </div>
                             <div class="card-body">
-                                {!! formatWithCurrency($monthlyPurchases) !!}
+                                {!! formatConverted($monthlyPurchases) !!}
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <div class="row">
                 <div class="col-lg-6 col-md-12 col-sm-12 col-12">
                     <div class="card card-statistic-1">
                         <div class="card-icon bg-primary">
@@ -78,22 +81,22 @@
                                 <h4>Total Sale Revenue</h4>
                             </div>
                             <div class="card-body">
-                                {!! formatWithCurrency($totalRevenue) !!}
+                                {!! formatConverted($totalRevenue) !!}
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="col-lg-6 col-md-12 col-sm-12 col-12">
                     <div class="card card-statistic-1">
-                        <div class="card-icon bg-success">
+                        <div class="card-icon bg-warning">
                             <i class="fas fa-chart-line"></i>
                         </div>
                         <div class="card-wrap">
                             <div class="card-header">
-                                <h4>Gross Profit (Revenue - Cost)</h4>
+                                <h4>Gross Profit</h4>
                             </div>
                             <div class="card-body">
-                                {!! formatWithCurrency($grossProfit) !!}
+                                {!! formatConverted($grossProfit) !!}
                             </div>
                         </div>
                     </div>

@@ -26,14 +26,32 @@ class BookingDataTable extends DataTable
                 return $query->vendor->name ?? 'N/A'; // Assuming Vendor has 'name' or similar, strict user said 'Vendor Management Module' ... 'Vendor name'.
             })
             ->addColumn('total_cost', function ($query) {
-                return formatWithCurrency($query->total_cost);
+                return formatConverted($query->total_cost);
+            })
+            ->addColumn('total_cost_vendor', function ($query) {
+                if ($query->vendor) {
+                    return formatWithVendor($query->total_cost, $query->vendor->currency_icon, $query->vendor->currency_rate);
+                }
+                return formatConverted($query->total_cost);
             })
             ->addColumn('status', function ($query) {
-                $checked = $query->status ? 'checked' : '';
-                return '<label class="custom-switch mt-2">
-                            <input type="checkbox" name="custom-switch-checkbox" data-id="' . $query->id . '" class="custom-switch-input change-status" ' . $checked . '>
-                            <span class="custom-switch-indicator"></span>
-                        </label>';
+                // Determine current status. Default strict check.
+                $status = strtolower($query->status);
+                $options = [
+                    'pending' => 'Pending',
+                    'complete' => 'Complete',
+                    'cancelled' => 'Cancelled',
+                    'missing' => 'Missing'
+                ];
+                
+                $html = '<select class="form-control change-status" data-id="' . $query->id . '" style="min-width: 100px;">';
+                foreach($options as $key => $label) {
+                    $selected = $status === $key ? 'selected' : '';
+                    $html .= '<option value="'.$key.'" '.$selected.'>'.$label.'</option>';
+                }
+                $html .= '</select>';
+                
+                return $html;
             })
             ->rawColumns(['action', 'status'])
             ->setRowId('id');
@@ -62,13 +80,15 @@ class BookingDataTable extends DataTable
 
     public function getColumns(): array
     {
+        $settings = getSettings();
         return [
             Column::make('id'),
             Column::make('booking_no')->title('Booking No'),
             Column::make('vendor')->title('Vendor'),
             Column::make('product')->title('Product'),
             Column::make('qty')->title('Qty'),
-            Column::make('total_cost')->title('Total Cost'),
+            Column::make('total_cost')->title('Total'),
+            Column::make('total_cost_vendor')->title('Vendor Total'),
             Column::make('status'),
             Column::computed('action')
                 ->exportable(false)

@@ -42,7 +42,10 @@ class ProductDataTable extends DataTable
              ->addColumn('price', function($query){
                 return formatConverted($query->price);
              })
-            ->rawColumns(['action', 'status', 'thumb_image', 'price'])
+             ->addColumn('purchase_price', function($query){
+                return formatConverted($query->purchase_price);
+             })
+            ->rawColumns(['action', 'status', 'thumb_image', 'price', 'purchase_price'])
             ->setRowId('id');
     }
 
@@ -75,7 +78,8 @@ class ProductDataTable extends DataTable
             Column::make('thumb_image')->title('Image'),
             Column::make('name'),
             Column::make('category')->title('Category'),
-            Column::make('price')->title('Price'),
+            Column::make('purchase_price')->title('Purchase Price'),
+            Column::make('price')->title('Selling Price'),
             Column::make('qty')->title('Qty'),
         ];
 

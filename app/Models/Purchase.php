@@ -15,7 +15,11 @@ class Purchase extends Model
         'date',
         'total_amount',
         'note',
-        'status'
+        'status',
+        'booking_id',
+        'material_cost',
+        'transport_cost',
+        'tax'
     ];
 
     public function vendor()

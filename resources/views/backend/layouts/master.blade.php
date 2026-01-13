@@ -46,14 +46,17 @@
 <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap4.min.css">
 </head>
 
-<body>
+<body class="layout-3">
     <div id="app">
-        <div class="main-wrapper main-wrapper-1">
+        <div class="main-wrapper container">
             <div class="navbar-bg"></div>
             <!-- navbar Content -->
             @include('backend.layouts.navbar')
-            <!-- sidebar Content -->
-            @include('backend.layouts.sidebar')
+            <!-- sidebar Content (Mobile Only) -->
+            <div class="d-lg-none">
+                @include('backend.layouts.sidebar')
+            </div>
+
 
             <!-- Main Content -->
             <div class="main-content">

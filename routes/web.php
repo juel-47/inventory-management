@@ -62,6 +62,14 @@ Route::group(['middleware' => ['auth', 'verified', 'check.permission'], 'prefix'
      Route::put('units/change-status', [\App\Http\Controllers\Backend\UnitController::class, 'changeStatus'])->name('units.change-status');
      Route::resource('units', \App\Http\Controllers\Backend\UnitController::class);
 
+    /** Color Routes */
+    Route::put('colors/change-status', [\App\Http\Controllers\Backend\ColorController::class, 'changeStatus'])->name('colors.change-status');
+    Route::resource('colors', \App\Http\Controllers\Backend\ColorController::class);
+
+    /** Size Routes */
+    Route::put('sizes/change-status', [\App\Http\Controllers\Backend\SizeController::class, 'changeStatus'])->name('sizes.change-status');
+    Route::resource('sizes', \App\Http\Controllers\Backend\SizeController::class);
+
     /** Product Routes */
     Route::put('products/change-status', [\App\Http\Controllers\Backend\ProductController::class, 'changeStatus'])->name('products.change-status');
     Route::resource('products', \App\Http\Controllers\Backend\ProductController::class);
@@ -75,6 +83,7 @@ Route::group(['middleware' => ['auth', 'verified', 'check.permission'], 'prefix'
     Route::resource('bookings', \App\Http\Controllers\Backend\BookingController::class);
 
     /** Purchase Routes */
+    Route::get('purchases/get-booking-details', [\App\Http\Controllers\Backend\PurchaseController::class, 'getBookingDetails'])->name('purchases.get-booking-details');
     Route::resource('purchases', \App\Http\Controllers\Backend\PurchaseController::class);
 
     /** Report Routes */

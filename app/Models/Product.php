@@ -17,7 +17,6 @@ class Product extends Model
         'sub_category_id',
         'child_category_id',
         'brand_id',
-        'vendor_id',
         'unit_id',
         'product_number',
         'sku',
@@ -47,11 +46,6 @@ class Product extends Model
     public function brand()
     {
         return $this->belongsTo(Brand::class);
-    }
-
-    public function vendor()
-    {
-        return $this->belongsTo(Vendor::class);
     }
 
     public function unit()

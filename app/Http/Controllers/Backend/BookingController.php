@@ -32,11 +32,11 @@ class BookingController extends Controller
      */
     public function create()
     {
-        $vendors = Vendor::where('status', 1)->get();
+        $vendors = Vendor::where('status', 1)->latest()->get();
         $units = Unit::where('status', 1)->get();
         $categories = Category::where('status', 1)->get();
         // Pass products with details for JS population
-        $products = Product::where('status', 1)->with(['variants', 'category', 'subCategory', 'childCategory', 'unit', 'vendor'])->get(); 
+        $products = Product::where('status', 1)->with(['variants.color', 'variants.size', 'category', 'subCategory', 'childCategory', 'unit'])->latest()->get(); 
         return view('backend.booking.create', compact('vendors', 'products', 'units', 'categories'));
     }
 
@@ -63,49 +63,70 @@ class BookingController extends Controller
      */
     public function store(BookingStoreRequest $request)
     {
-        $booking = new Booking();
-        $booking->booking_no = 'BK-' . strtoupper(Str::random(10));
-        $booking->vendor_id = $request->vendor_id;
-        $booking->product_id = $request->product_id;
-        $booking->category_id = $request->category_id;
-        $booking->sub_category_id = $request->sub_category_id;
-        $booking->child_category_id = $request->child_category_id;
-        $booking->unit_id = $request->unit_id;
-        $booking->qty = $request->qty;
-        // Calculate costs in System Currency (Input is Vendor Currency)
-        $vendor = Vendor::findOrFail($request->vendor_id);
-        $rate = $vendor->currency_rate > 0 ? $vendor->currency_rate : 1;
+        // Common Data
+        $commonData = [
+            'booking_no' => 'BK-' . strtoupper(Str::random(10)), // Generate one number for the batch? Or separate? Let's use same if batch, or unique? Typically unique is safer for PKs, but for grouping same is nice. But schema has id PK. booking_no is string. Let's make them unique for now to avoid confusion, or same to imply grouping. Let's use unique to be safe.
+            'vendor_id' => $request->vendor_id,
+            'product_id' => $request->product_id,
+            'category_id' => $request->category_id,
+            'sub_category_id' => $request->sub_category_id,
+            'child_category_id' => $request->child_category_id,
+            'unit_id' => $request->unit_id,
+            'description' => $request->description,
+            'barcode' => $request->barcode,
+            'custom_fields' => $request->custom_fields,
+            'status' => $request->status ?? 'pending',
+            'unit_price' => 0,
+            'extra_cost' => 0,
+            'total_cost' => 0,
+            'sale_price' => 0,
+        ];
 
-        $booking->unit_price = ($request->unit_price ?? 0) * $rate;
-        $booking->extra_cost = ($request->extra_cost ?? 0) * $rate;
-        
-        $total_cost = ($booking->qty * $booking->unit_price) + $booking->extra_cost;
-        $booking->total_cost = $total_cost;
-        
-        $booking->sale_price = $request->sale_price;
-        $booking->description = $request->description;
-        
-        $booking->min_inventory_qty = $request->min_inventory_qty;
-        $booking->min_sale_qty = $request->min_sale_qty;
-        $booking->min_purchase_price = $request->min_purchase_price;
-        
-        $booking->variant_info = $request->variant_info; 
-        $booking->barcode = $request->barcode;
-        $booking->custom_fields = $request->custom_fields; 
-        
-        $booking->status = $request->status ?? 'pending';
-        $booking->save();
-
-        // Update Product Stock
         $product = Product::findOrFail($request->product_id);
-        $product->increment('qty', $request->qty);
 
-        if($request->has('sale_price') && $request->sale_price > 0){
-             $product->price = $request->sale_price;
-             $product->save();
+        if ($request->has('variant_quantities') && is_array($request->variant_quantities) && count(array_filter($request->variant_quantities)) > 0) {
+            
+            // Calculate Total Variant Qty & Filter Variants
+            $variantSum = 0;
+            $variantsData = [];
+            foreach ($request->variant_quantities as $variant => $qty) {
+                if ($qty > 0) {
+                    $variantSum += $qty;
+                    $variantsData[$variant] = $qty; // Store as {'Color: Red': 5, ...}
+                }
+            }
+
+            // Trust $request->qty but ensure it covers variants
+            $finalQty = $request->qty;
+            if($finalQty < $variantSum) {
+                $finalQty = $variantSum; // Enforce minimum
+            }
+
+            if($finalQty > 0) {
+                $booking = new Booking();
+                foreach ($commonData as $key => $value) {
+                     $booking->$key = $value;
+                }
+                $booking->qty = $finalQty;
+                // Store the entire array of variants and quantities
+                $booking->variant_info = $variantsData; 
+                $booking->save();
+            }
+
+        } else {
+            // Single Booking (No variant selected or simple product)
+            $booking = new Booking();
+            foreach ($commonData as $key => $value) {
+                 $booking->$key = $value;
+            }
+            $booking->qty = $request->qty;
+            $booking->variant_info = $request->variant_info; 
+            $booking->save();
         }
+        
+        // $product->save(); // Already incremented? increment() saves immediately. Remove this if increment() saves. Yes it does.
 
-        Toastr::success('Booking Created Successfully!');
+        Toastr::success('Booking(s) Created Successfully!');
         return redirect()->route('admin.bookings.index');
     }
 
@@ -123,12 +144,12 @@ class BookingController extends Controller
     public function edit(string $id)
     {
         $booking = Booking::findOrFail($id);
-        $vendors = Vendor::where('status', 1)->get();
+        $vendors = Vendor::where('status', 1)->latest()->get();
         $units = Unit::where('status', 1)->get();
         $categories = Category::where('status', 1)->get();
         $subCategories = SubCategory::where('category_id', $booking->category_id)->where('status', 1)->get();
         $childCategories = ChildCategory::where('sub_category_id', $booking->sub_category_id)->where('status', 1)->get();
-        $products = Product::where('status', 1)->with(['variants', 'category', 'subCategory', 'childCategory', 'unit', 'vendor'])->get();
+        $products = Product::where('status', 1)->with(['variants.color', 'variants.size', 'category', 'subCategory', 'childCategory', 'unit'])->latest()->get();
         return view('backend.booking.edit', compact('booking', 'vendors', 'products', 'units', 'categories', 'subCategories', 'childCategories'));
     }
 
@@ -138,48 +159,50 @@ class BookingController extends Controller
     public function update(BookingUpdateRequest $request, string $id)
     {
         $booking = Booking::findOrFail($id);
+        $product = Product::findOrFail($request->product_id);
+
+        // 1. Calculate new Total Qty & Prepare Variant Info
+        $variantSum = 0;
+        $newVariantInfo = null;
+
+        if ($request->has('variant_quantities') && is_array($request->variant_quantities) && count(array_filter($request->variant_quantities)) > 0) {
+            $variantsData = [];
+            foreach ($request->variant_quantities as $variant => $qty) {
+                if ($qty > 0) {
+                    $variantSum += $qty;
+                    $variantsData[$variant] = $qty;
+                }
+            }
+            $newVariantInfo = $variantsData; // Array of {'Variant Name': Qty}
+        } else {
+             $newVariantInfo = $request->variant_info;
+        }
+
+        // Use Request Qty (manual override allowed)
+        $newTotalQty = $request->qty;
+        if($newTotalQty < $variantSum) {
+            $newTotalQty = $variantSum; // Enforce minimum
+        }
         
-        // Revert old stock? Diff calculation
-        $diff = $request->qty - $booking->qty;
+        // If product changed:
+        if($booking->product_id != $request->product_id) {
+             $booking->product_id = $request->product_id;
+        }
         
-        $booking->vendor_id = $request->vendor_id;
-        $booking->product_id = $request->product_id;
         $booking->category_id = $request->category_id;
         $booking->sub_category_id = $request->sub_category_id;
         $booking->child_category_id = $request->child_category_id;
         $booking->unit_id = $request->unit_id;
-        $booking->qty = $request->qty;
-        // Calculate costs in System Currency (Input is Vendor Currency)
-        $vendor = Vendor::findOrFail($request->vendor_id);
-        $rate = $vendor->currency_rate > 0 ? $vendor->currency_rate : 1;
-
-        $booking->unit_price = ($request->unit_price ?? 0) * $rate;
-        $booking->extra_cost = ($request->extra_cost ?? 0) * $rate;
+        $booking->qty = $newTotalQty;
         
-        $total_cost = ($booking->qty * $booking->unit_price) + $booking->extra_cost;
-        $booking->total_cost = $total_cost;
-        
-        $booking->sale_price = $request->sale_price;
         $booking->description = $request->description;
-        
-        $booking->min_inventory_qty = $request->min_inventory_qty;
-        $booking->min_sale_qty = $request->min_sale_qty;
-        $booking->min_purchase_price = $request->min_purchase_price;
-        
-        $booking->variant_info = $request->variant_info;
+        $booking->variant_info = $newVariantInfo;
         $booking->barcode = $request->barcode;
         $booking->custom_fields = $request->custom_fields;
-        
         $booking->status = $request->status;
+        
         $booking->save();
 
-        // Update Product Stock
-        $product = Product::findOrFail($request->product_id);
-        if($diff != 0) {
-            $product->qty = $product->qty + $diff;
-            $product->save();
-        }
-        
         Toastr::success('Booking Updated Successfully!');
         return redirect()->route('admin.bookings.index');
     }
@@ -190,11 +213,6 @@ class BookingController extends Controller
     public function destroy(string $id)
     {
         $booking = Booking::findOrFail($id);
-        // Decrease stock?
-        $product = Product::find($booking->product_id);
-        if($product) {
-            $product->decrement('qty', $booking->qty);
-        }
         $booking->delete();
 
         return response(['status' => 'success', 'message' => 'Deleted Successfully!']);

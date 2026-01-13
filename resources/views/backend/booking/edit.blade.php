@@ -38,7 +38,7 @@
                                             <select class="form-control select2" name="product_id" id="product_id">
                                                 <option value="">Select Product</option>
                                                 @foreach ($products as $product)
-                                                    <option {{ $booking->product_id == $product->id ? 'selected' : '' }} value="{{ $product->id }}">{{ $product->name }} (sku: {{ $product->sku }})</option>
+                                                    <option {{ $booking->product_id == $product->id ? 'selected' : '' }} value="{{ $product->id }}">{{ $product->name }}</option>
                                                 @endforeach
                                             </select>
                                         </div>
@@ -104,11 +104,26 @@
                                             </select>
                                         </div>
                                         
-                                         <div class="form-group col-md-4">
-                                            <label>Variant</label>
-                                            <select class="form-control" name="variant_info" id="variant_select">
-                                                <option value="">Select Variant (Optional)</option>
-                                            </select>
+                                    <div class="row mb-4 px-3">
+                                        <div class=" col-12">
+                                            <div class="section-title mt-0">Variant, Unit & Qty</div>
+                                        </div>
+                                        <div class="col-12" id="variant_container" style="display: none;">
+                                            <table class="table table-sm table-bordered">
+                                                <thead class="bg-light">
+                                                    <tr>
+                                                        <th width="60%">Variant</th>
+                                                        <th width="40%">Quantity</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="variant_table_body">
+                                                    <!-- Variants will be injected here -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="form-group col-md-4">
+                                            <label class="font-weight-bold">Quantity</label>
+                                            <input type="number" class="form-control" name="qty" id="qty_input" value="{{ $booking->qty }}" required>
                                         </div>
                                         <div class="form-group col-md-4">
                                             <label>Unit</label>
@@ -119,69 +134,22 @@
                                                 @endforeach
                                             </select>
                                         </div>
-                                    </div>
-
-                                    <div class="row mb-4">
-                                        <div class="col-12">
-                                            <div class="section-title mt-0 text-primary">Pricing & Costing</div>
-                                            <hr>
-                                        </div>
-                                        
-                                        <div class="form-group col-md-3">
-                                            <label class="font-weight-bold">Quantity</label>
-                                            <input type="number" class="form-control form-control-lg" name="qty" value="{{ $booking->qty }}" required>
-                                        </div>
-                                        
-                                        <div class="form-group col-md-3">
-                                            <label>Unit Price (Vendor)</label>
-                                             @php
-                                                $rate = $booking->vendor->currency_rate > 0 ? $booking->vendor->currency_rate : 1;
-                                                $vendorPrice = $booking->unit_price / $rate;
-                                                $vendorExtra = $booking->extra_cost / $rate;
-                                            @endphp
-                                            <input type="number" class="form-control" name="unit_price" id="unit_price" value="{{ $vendorPrice }}" step="0.01">
-                                            <small class="form-text text-muted">Enter price in Vendor's currency</small>
-                                        </div>
-                                        
-                                        <div class="form-group col-md-3">
-                                            <label>Extra Cost (Vendor)</label>
-                                            <input type="number" class="form-control" name="extra_cost" id="extra_cost" value="{{ $vendorExtra }}" step="0.01">
-                                        </div>
-                                        
-                                        <div class="form-group col-md-3">
-                                            <label>Selling Price</label>
-                                            <input type="number" class="form-control" name="sale_price" id="sale_price" step="0.01" value="{{ $booking->sale_price }}">
-                                        </div>
-
-                                        <!-- Calculated Fields Row -->
-                                        <div class="col-md-12 mt-2">
-                                            <div class="row p-3 bg-light rounded">
-                                                <div class="form-group col-md-3 mb-0">
-                                                    <label>System Unit Price</label>
-                                                    <input type="text" class="form-control border-0 bg-transparent font-weight-bold p-0" id="unit_price_system" readonly>
-                                                </div>
-                                                <div class="form-group col-md-3 mb-0">
-                                                    <label>Vendor Total</label>
-                                                    <input type="text" class="form-control border-0 bg-transparent font-weight-bold p-0 text-primary" id="total_cost_vendor" style="font-size: 1.2em;" readonly>
-                                                </div>
-                                                <div class="form-group col-md-3 mb-0">
-                                                    <label>System Total</label>
-                                                    <input type="number" class="form-control border-0 bg-transparent font-weight-bold p-0" name="total_cost" id="total_cost" value="{{ $booking->total_cost }}" step="0.01" readonly>
-                                                </div>
-                                            </div>
+                                        <div class="form-group col-md-4">
+                                            <label>Barcode</label>
+                                            <input type="text" class="form-control" name="barcode" id="barcode" value="{{ $booking->barcode }}">
                                         </div>
                                     </div>
 
-                                    <div class="row">
+                                    {{-- <div class="row"> --}}
                                         <div class="col-12">
-                                            <div class="form-group">
-                                                <label>Description</label>
+                                            <div class="form-group ">
+                                                <label>Notes</label>
                                                 <textarea name="description" class="form-control" rows="4">{{ $booking->description }}</textarea>
                                             </div>
                                         </div>
-                                    </div>
+                                    {{-- </div> --}}
 
-                                    <div class="row">
+                                    {{-- <div class="row"> --}}
                                         <div class="col-12">
                                             <div class="card border">
                                                 <div class="card-header bg-whitesmoke">
@@ -209,9 +177,9 @@
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
+                                    {{-- </div> --}}
 
-                                    <div class="row">
+                                    {{-- <div class="row"> --}}
                                         <div class="col-12">
                                             <div class="form-group">
                                                 <label>Status</label>
@@ -223,9 +191,9 @@
                                                 </select>
                                             </div>
                                         </div>
-                                    </div>
+                                    {{-- </div> --}}
 
-                                    <div class="row mt-4">
+                                    <div class="row mt-4 px-3">
                                         <div class="col-12 text-right">
                                             <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-save"></i> Update Booking</button>
                                         </div>
@@ -241,26 +209,159 @@
 
         $(document).ready(function() {
             
-            function recalculateAllPrices() {
-                let vendorPrice = parseFloat($('#unit_price').val()) || 0;
-                let vendorExtra = parseFloat($('#extra_cost').val()) || 0;
-                let qty = parseFloat($('input[name="qty"]').val()) || 0;
+            // Product Variant Population (Initial & Change)
+            function populateVariants(product, savedVariantsMap = {}) {
+                if(product.unit_id) {
+                     $('#unit_select').val(product.unit_id);
+                }
                 
-                // Calculate System Prices (Display is Vendor, Storage is System)
-                // Logic: System = Vendor * Rate
-                let rate = currentVendorRate > 0 ? currentVendorRate : 1;
-                let systemPrice = vendorPrice * rate;
-                let systemExtra = vendorExtra * rate;
-
-                let systemTotal = (systemPrice * qty) + systemExtra;
-                let vendorTotal = (vendorPrice * qty) + vendorExtra;
-
-                $('#total_cost').val(systemTotal.toFixed(2));
-                $('#unit_price_system').val('{{ $settings->currency_icon }}' + systemPrice.toFixed(2));
+                let hasVariants = false;
+                let tableHtml = '';
                 
-                // Vendor Display
-                $('#total_cost_vendor').val(currentVendorIcon + vendorTotal.toFixed(2));
+                if(product.variants && product.variants.length > 0) {
+                     $('#variant_container').show();
+                     
+                      product.variants.forEach(v => {
+                           let colorName = v.color ? v.color.name : '';
+                           let sizeName = v.size ? v.size.name : '';
+                           let name = (colorName + ' ' + sizeName).trim() || 'Default';
+                           
+                           // Backward compatibility check for old "Color: Name - Size: Name" format
+                           let parts = [];
+                           if(v.color) parts.push(`Color: ${v.color.name}`);
+                           if(v.size) parts.push(`Size: ${v.size.name}`);
+                           let oldName = parts.join(' - ');
+
+                            if(name) {
+                                hasVariants = true;
+                                
+                                let inputValue = '';
+                                // Check map for this variant name (New Format first, then Old Format)
+                                if(savedVariantsMap && (savedVariantsMap[name] !== undefined)) {
+                                    inputValue = savedVariantsMap[name];
+                                } else if(savedVariantsMap && (savedVariantsMap[oldName] !== undefined)) {
+                                    inputValue = savedVariantsMap[oldName];
+                                }
+                                
+                                let safeName = name.replace(/"/g, '&quot;');
+                               
+                               tableHtml += `
+                                 <tr>
+                                     <td class="align-middle">${name}</td>
+                                     <td>
+                                         <input type="number" class="form-control form-control-sm variant-qty" 
+                                                name="variant_quantities[${safeName}]" 
+                                                min="0" placeholder="0" value="${inputValue}">
+                                     </td>
+                                 </tr>
+                               `;
+                           }
+                      });
+                }
+                
+                if(hasVariants) {
+                     $('#variant_table_body').html(tableHtml);
+                     updateTotalQty(); 
+                } else {
+                     $('#variant_container').hide();
+                     $('#variant_table_body').empty();
+                }
             }
+            
+            function updateTotalQty() {
+                let total = 0;
+                $('.variant-qty').each(function() {
+                    let val = parseInt($(this).val()) || 0;
+                    total += val;
+                });
+                
+                // Only update if total table qty is greater than current manual input
+                // Or if manual input is empty
+                let currentQty = parseInt($('#qty_input').val()) || 0;
+                
+                if(total > currentQty) {
+                    $('#qty_input').val(total);
+                }
+                
+                // Never readonly, user can add more "Unassigned" qty
+                $('#qty_input').prop('readonly', false);
+                $('#qty_input').attr('min', total); // Enforce min
+            }
+            
+            // Listen for variant quantity changes
+            $(document).on('keyup change', '.variant-qty', function() {
+                updateTotalQty();
+            });
+
+            // Initial Load
+            let initialProductId = $('#product_id').val();
+            if(initialProductId) {
+                let product = products.find(p => p.id == initialProductId);
+                if(product) {
+                    // Prepare Saved Variant Data map
+                    let savedVariantsMap = {};
+                    let rawVariantInfo = @json($booking->variant_info);
+                    
+                    if(rawVariantInfo) {
+                        // Check if it's the old single-variant format (key 'variant' exists)
+                        if(rawVariantInfo['variant']) {
+                            savedVariantsMap[rawVariantInfo['variant']] = {{ $booking->qty }};
+                        } else {
+                            // New Aggregated Format (Key = name, Value = qty)
+                            savedVariantsMap = rawVariantInfo;
+                        }
+                    }
+                    populateVariants(product, savedVariantsMap);
+                }
+            }
+            // Product Selection Change
+            $('#product_id').on('change', function() {
+                let productId = $(this).val();
+                let product = products.find(p => p.id == productId);
+                
+                if (product) {
+                    $('#product_name').val(product.name);
+                    $('#product_number').val(product.product_number); 
+                    $('#product_category').val(product.category ? product.category.name : '');
+                    
+                    if (product.thumb_image) {
+                        $('#product_image').attr('src', "{{ asset('storage') }}/" + product.thumb_image).show();
+                    } else {
+                        $('#product_image').hide();
+                    }
+
+                    // Auto-select Category
+                    if(product.category_id) {
+                         $('#category_id').val(product.category_id).trigger('change');
+                         
+                         setTimeout(function(){
+                              if(product.sub_category_id) {
+                                  $('#sub_category_id').val(product.sub_category_id).trigger('change');
+                                  
+                                  setTimeout(function(){
+                                      if(product.child_category_id) {
+                                          $('#child_category_id').val(product.child_category_id);
+                                      }
+                                  }, 800);
+                              }
+                         }, 800);
+                    }
+                    
+                    if(product.unit_id) {
+                         $('#unit_select').val(product.unit_id);
+                    }
+
+                    populateVariants(product);
+
+                } else {
+                     $('#product_name').val('');
+                     $('#product_number').val('');
+                     $('#product_category').val('');
+                     $('#product_image').hide();
+                     populateVariants(null);
+                }
+            });
+
 
             // Trigger initial calculation
             $('select[name="vendor_id"]').trigger('change');

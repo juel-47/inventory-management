@@ -28,7 +28,7 @@
                                             value="{{ old('name') }}">
                                     </div>
                                     <div class="form-group col-md-6">
-                                        <label>Product Number</label>
+                                        <label>item number</label>
                                         <input type="text" class="form-control" name="product_number"
                                             value="{{ old('product_number') }}">
                                     </div>
@@ -59,7 +59,7 @@
                                 </div>
 
                                 <div class="row">
-                                    <div class="form-group col-md-4">
+                                    <div class="form-group col-md-6">
                                         <label>Brand</label>
                                         <select class="form-control select2" name="brand_id">
                                             <option value="">Select Brand</option>
@@ -68,16 +68,7 @@
                                             @endforeach
                                         </select>
                                     </div>
-                                    <div class="form-group col-md-4">
-                                        <label>Vendor</label>
-                                        <select class="form-control select2" name="vendor_id">
-                                            <option value="">Select Vendor</option>
-                                            @foreach ($vendors as $vendor)
-                                                <option value="{{ $vendor->id }}">{{ $vendor->shop_name }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    <div class="form-group col-md-4">
+                                    <div class="form-group col-md-6">
                                         <label>Unit</label>
                                         <select class="form-control select2" name="unit_id">
                                             <option value="">Select Unit</option>
@@ -90,13 +81,13 @@
 
                                 <div class="row">
                                      <div class="form-group col-md-4">
-                                         <label>Base Purchase Price</label>
-                                         <input type="number" class="form-control" name="purchase_price" step="0.01"
+                                         <label>Purchase Price</label>
+                                         <input type="number" class="form-control" name="purchase_price" step="any"
                                              value="{{ old('purchase_price') }}">
                                      </div>
                                      <div class="form-group col-md-4">
-                                         <label>Base Sale Price</label>
-                                         <input type="number" class="form-control" name="price" step="0.01"
+                                         <label>Sale Price</label>
+                                         <input type="number" class="form-control" name="price" step="any"
                                              value="{{ old('price') }}">
                                      </div>
                                     <div class="form-group col-md-4">
@@ -107,12 +98,7 @@
                                 </div>
 
                                 <div class="row">
-                                    <div class="form-group col-md-6">
-                                        <label>SKU</label>
-                                        <input type="text" class="form-control" name="sku"
-                                            value="{{ old('sku') }}">
-                                    </div>
-                                    <div class="form-group col-md-6">
+                                    <div class="form-group col-md-12">
                                         <label>Status</label>
                                         <select class="form-control" name="status">
                                             <option value="1">Active</option>
@@ -148,7 +134,8 @@
                                         <table class="table table-bordered">
                                             <thead>
                                                 <tr>
-                                                    <th>Variant Name (Color/Size)</th>
+                                                    <th width="30%">Type</th>
+                                                    <th width="40%">Variant</th>
                                                     <th>Qty</th>
                                                     <th>Action</th>
                                                 </tr>
@@ -240,15 +227,57 @@
             // Variant Logic
             let variantCount = 0;
             $('#add-variant').on('click', function() {
+                let colorOptions = '<option value="">Select Color</option>';
+                @foreach($colors as $color)
+                    colorOptions += '<option value="{{ $color->id }}">{{ $color->name }}</option>';
+                @endforeach
+
+                let sizeOptions = '<option value="">Select Size</option>';
+                @foreach($sizes as $size)
+                    sizeOptions += '<option value="{{ $size->id }}">{{ $size->name }}</option>';
+                @endforeach
+
                 let html = `
                     <tr id="variant-row-${variantCount}">
-                        <td><input type="text" name="variants[${variantCount}][name]" class="form-control" placeholder="e.g. Red-L" required></td>
+                        <td>
+                            <select class="form-control variant-type" data-row="${variantCount}">
+                                <option value="color">Color</option>
+                                <option value="size">Size</option>
+                            </select>
+                        </td>
+                        <td>
+                            <div class="color-select-wrapper-${variantCount}">
+                                <select name="variants[${variantCount}][color_id]" class="form-control">
+                                    ${colorOptions}
+                                </select>
+                            </div>
+                            <div class="size-select-wrapper-${variantCount}" style="display:none;">
+                                <select name="variants[${variantCount}][size_id]" class="form-control">
+                                    ${sizeOptions}
+                                </select>
+                            </div>
+                        </td>
                         <td><input type="number" name="variants[${variantCount}][qty]" class="form-control" value="0"></td>
                         <td><button type="button" class="btn btn-danger remove-variant" data-id="${variantCount}"><i class="fas fa-trash"></i></button></td>
                     </tr>
                 `;
                 $('#variant-list').append(html);
                 variantCount++;
+            });
+
+            $(document).on('change', '.variant-type', function() {
+                let rowId = $(this).data('row');
+                let type = $(this).val();
+                
+                if (type === 'color') {
+                    $(`.color-select-wrapper-${rowId}`).show();
+                    $(`.size-select-wrapper-${rowId}`).hide();
+                    $(`.size-select-wrapper-${rowId} select`).val('');
+                } else {
+                    $(`.color-select-wrapper-${rowId}`).hide();
+                    $(`.size-select-wrapper-${rowId}`).show();
+                    $(`.color-select-wrapper-${rowId} select`).val('');
+                }
             });
 
             $(document).on('click', '.remove-variant', function() {

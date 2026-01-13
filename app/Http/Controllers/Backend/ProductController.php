@@ -10,8 +10,10 @@ use App\Models\Brand;
 use App\Models\Category;
 use App\Models\SubCategory;
 use App\Models\ChildCategory;
+use App\Models\Color;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Models\Size;
 use App\Models\Unit;
 use App\Models\Vendor;
 use App\Traits\ImageUploadTrait;
@@ -48,9 +50,10 @@ class ProductController extends Controller implements HasMiddleware
     {
         $categories = Category::where('status', 1)->get();
         $brands = Brand::where('status', 1)->get();
-        $vendors = Vendor::where('status', 1)->get();
         $units = Unit::where('status', 1)->get();
-        return view('backend.product.create', compact('categories', 'brands', 'units', 'vendors'));
+        $colors = Color::where('status', 1)->get();
+        $sizes = Size::where('status', 1)->get();
+        return view('backend.product.create', compact('categories', 'brands', 'units', 'colors', 'sizes'));
     }
 
     /**
@@ -71,11 +74,10 @@ class ProductController extends Controller implements HasMiddleware
         $product->vendor_id = $request->vendor_id;
         $product->unit_id = $request->unit_id;
         $product->product_number = $request->product_number;
-        $product->sku = $request->sku;
         $product->qty = $request->qty ?? 0;
         $product->long_description = $request->long_description;
         $product->purchase_price = $request->purchase_price ?? 0;
-        $product->price = $request->price;
+        $product->price = $request->price ?? 0;
         $product->barcode = $request->barcode;
         $product->status = $request->status;
         $product->save();
@@ -83,10 +85,17 @@ class ProductController extends Controller implements HasMiddleware
         // Handle Variants
         if ($request->has('variants')) {
             foreach ($request->variants as $variant) {
-                if(!empty($variant['name'])) {
+                if(!empty($variant['color_id']) || !empty($variant['size_id'])) {
                     $productVariant = new ProductVariant();
                     $productVariant->product_id = $product->id;
-                    $productVariant->name = $variant['name'];
+                    $productVariant->color_id = $variant['color_id'] ?? null;
+                    $productVariant->size_id = $variant['size_id'] ?? null;
+                    
+                    // Generate name for backward compatibility
+                    $colorName = $productVariant->color_id ? Color::find($productVariant->color_id)->name : '';
+                    $sizeName = $productVariant->size_id ? Size::find($productVariant->size_id)->name : '';
+                    $productVariant->name = trim($colorName . ' ' . $sizeName);
+                    
                     $productVariant->qty = $variant['qty'] ?? 0;
                     $productVariant->save();
                 }
@@ -115,9 +124,10 @@ class ProductController extends Controller implements HasMiddleware
         $subCategories = SubCategory::where('category_id', $product->category_id)->get();
         $childCategories = ChildCategory::where('sub_category_id', $product->sub_category_id)->get();
         $brands = Brand::where('status', 1)->get();
-        $vendors = Vendor::where('status', 1)->get();
         $units = Unit::where('status', 1)->get();
-        return view('backend.product.edit', compact('product', 'categories', 'subCategories', 'childCategories', 'brands', 'units', 'vendors'));
+        $colors = Color::where('status', 1)->get();
+        $sizes = Size::where('status', 1)->get();
+        return view('backend.product.edit', compact('product', 'categories', 'subCategories', 'childCategories', 'brands', 'units', 'colors', 'sizes'));
     }
 
     /**
@@ -141,11 +151,10 @@ class ProductController extends Controller implements HasMiddleware
         $product->vendor_id = $request->vendor_id;
         $product->unit_id = $request->unit_id;
         $product->product_number = $request->product_number;
-        $product->sku = $request->sku;
         $product->qty = $request->qty ?? 0;
         $product->long_description = $request->long_description;
         $product->purchase_price = $request->purchase_price ?? 0;
-        $product->price = $request->price;
+        $product->price = $request->price ?? 0;
         $product->barcode = $request->barcode;
         $product->status = $request->status;
         $product->save();
@@ -153,10 +162,17 @@ class ProductController extends Controller implements HasMiddleware
         ProductVariant::where('product_id', $product->id)->delete();
          if ($request->has('variants')) {
             foreach ($request->variants as $variant) {
-                 if(!empty($variant['name'])) {
+                 if(!empty($variant['color_id']) || !empty($variant['size_id'])) {
                     $productVariant = new ProductVariant();
                     $productVariant->product_id = $product->id;
-                    $productVariant->name = $variant['name'];
+                    $productVariant->color_id = $variant['color_id'] ?? null;
+                    $productVariant->size_id = $variant['size_id'] ?? null;
+                    
+                    // Generate name for backward compatibility
+                    $colorName = $productVariant->color_id ? Color::find($productVariant->color_id)->name : '';
+                    $sizeName = $productVariant->size_id ? Size::find($productVariant->size_id)->name : '';
+                    $productVariant->name = trim($colorName . ' ' . $sizeName);
+                    
                     $productVariant->qty = $variant['qty'] ?? 0;
                     $productVariant->save();
                  }

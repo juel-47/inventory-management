@@ -3,7 +3,7 @@
 @section('content')
     <section class="section">
         <div class="section-header">
-            <h1>Create Purchase</h1>
+            <h1>Create Purchase Invoice</h1>
             <div class="section-header-breadcrumb">
                 <div class="breadcrumb-item active"><a href="{{ route('admin.dashboard') }}">Dashboard</a></div>
                 <div class="breadcrumb-item"><a href="{{ route('admin.purchases.index') }}">Purchases</a></div>
@@ -14,44 +14,69 @@
         <div class="section-body">
             <div class="row">
                 <div class="col-12">
-                    <div class="card">
+                    <div class="card card-primary">
                         <div class="card-header">
-                            <h4>New Purchase Invoice</h4>
+                            <h4>New Purchase</h4>
+                            <div class="card-header-action">
+                                <div class="dropdown">
+                                    <button class="btn btn-primary dropdown-toggle" type="button" id="bookingDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        <i class="fas fa-file-import"></i> Import from Booking
+                                    </button>
+                                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="bookingDropdown" style="min-width: 320px; padding: 15px;">
+                                        <div class="form-group mb-0">
+                                            <label class="d-block">Select Pending Booking</label>
+                                            <select class="form-control select2" id="booking_select" style="width: 100%;">
+                                                <option value="">-- Manual / None --</option>
+                                                @foreach ($bookings as $booking)
+                                                    <option value="{{ $booking->id }}">#{{ $booking->booking_no }} | {{ $booking->vendor->shop_name }}</option>
+                                                @endforeach
+                                            </select>
+                                            <small class="text-muted mt-2 d-block">Selecting a booking will auto-import items and vendor.</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div class="card-body">
                             <form action="{{ route('admin.purchases.store') }}" method="POST">
                                 @csrf
-                                <div class="row">
+                                
+                                <!-- Section 1: General Information -->
+                                <div class="section-title mt-0">General Information</div>
+                                <div class="row mb-4">
                                     <div class="form-group col-md-4">
-                                        <label>Vendor</label>
-                                        <select class="form-control select2" name="vendor_id" required>
+                                        <label>Vendor <span class="text-danger">*</span></label>
+                                        <select class="form-control select2" name="vendor_id" id="vendor_select" required>
                                             <option value="">Select Vendor</option>
                                             @foreach ($vendors as $vendor)
                                                 <option value="{{ $vendor->id }}">{{ $vendor->shop_name }}</option>
                                             @endforeach
                                         </select>
+                                        <small class="text-muted mt-1 d-block">System Rate: <strong id="current_rate_display">1.00</strong></small>
                                     </div>
                                     <div class="form-group col-md-4">
-                                        <label>Date</label>
+                                        <label>Purchase Date <span class="text-danger">*</span></label>
                                         <input type="date" class="form-control" name="date" value="{{ date('Y-m-d') }}" required>
                                     </div>
-                                     <div class="form-group col-md-4">
-                                        <label>Note (Optional)</label>
-                                        <input type="text" class="form-control" name="note">
+                                    <div class="form-group col-md-4">
+                                        <label>Reference / Note</label>
+                                        <input type="text" class="form-control" name="note" placeholder="Optional reference...">
                                     </div>
+                                    <input type="hidden" name="booking_id" id="booking_id_hidden">
                                 </div>
 
-                                <div class="table-responsive">
-                                    <table class="table table-bordered" id="product_table">
-                                        <thead>
+                                <!-- Section 2: Invoice Items -->
+                                <div class="section-title">Invoice Items</div>
+                                <div class="table-responsive mb-4">
+                                    <table class="table table-bordered table-md" id="product_table">
+                                        <thead class="bg-light text-center">
                                             <tr>
-                                                <th>Product</th>
-                                                <th id="vendor_unit_cost_header">Vendor Unit Cost</th>
-                                                <th>System Unit Cost</th>
-                                                <th>Qty</th>
-                                                <th id="vendor_subtotal_header">Vendor Sub Total</th>
-                                                <th>System Sub Total</th>
-                                                <th>Action</th>
+                                                <th width="5%">Image</th>
+                                                <th width="35%">Product & Variants</th>
+                                                <th width="15%" id="vendor_unit_cost_header">Unit Cost (Vendor)</th>
+                                                <th width="15%">Qty</th>
+                                                <th width="20%" id="vendor_subtotal_header">Total (Vendor)</th>
+                                                <th width="5%"></th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -59,21 +84,61 @@
                                         </tbody>
                                         <tfoot>
                                             <tr>
-                                                <td colspan="5">
-                                                    <button type="button" class="btn btn-primary btn-sm" id="add_row_btn"><i class="fas fa-plus"></i> Add Product</button>
+                                                <td colspan="6" class="p-0">
+                                                    <button type="button" class="btn btn-block btn-outline-primary border-dashed py-3" id="add_row_btn">
+                                                        <i class="fas fa-plus-circle"></i> Add Another Product Line
+                                                    </button>
                                                 </td>
-                                                <td></td>
                                             </tr>
                                         </tfoot>
                                     </table>
                                 </div>
-                                
-                                <div class="row mt-4">
-                                    <div class="col-md-12 text-right">
-                                        <h4 id="vendor_grand_total_container">Vendor Total: <span id="vendor_grand_total">0.00</span></h4>
-                                        <h4>System Total: <span id="grand_total_display">{{ $settings->currency_icon }}0.00</span></h4>
-                                        <input type="hidden" name="total_amount" id="total_amount_hidden">
-                                        <button type="submit" class="btn btn-success btn-lg mt-2">Save Purchase</button>
+
+                                <!-- Section 3: Payment Summary & Fees -->
+                                <div class="section-title">Payment Summary & Extra Fees</div>
+                                <div class="row justify-content-end mb-4">
+                                    <div class="col-md-6 col-lg-5">
+                                        <div class="form-group row mb-2">
+                                            <label class="col-sm-6 col-form-label text-right">Product Total (Vendor):</label>
+                                            <div class="col-sm-6">
+                                                <div class="form-control-plaintext font-weight-bold" id="vendor_grand_total">0.00</div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row mb-2">
+                                            <label class="col-sm-6 col-form-label text-right">Raw Material Cost:</label>
+                                            <div class="col-sm-6">
+                                                <input type="number" name="material_cost" class="form-control form-control-sm extra_cost_input" step="any" value="0.00">
+                                            </div>
+                                        </div>
+                                        <div class="form-group row mb-2">
+                                            <label class="col-sm-6 col-form-label text-right">Transport Cost:</label>
+                                            <div class="col-sm-6">
+                                                <input type="number" name="transport_cost" class="form-control form-control-sm extra_cost_input" step="any" value="0.00">
+                                            </div>
+                                        </div>
+                                        <div class="form-group row mb-2">
+                                            <label class="col-sm-6 col-form-label text-right">Tax / VAT:</label>
+                                            <div class="col-sm-6">
+                                                <input type="number" name="tax" class="form-control form-control-sm extra_cost_input" step="any" value="0.00">
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <div class="form-group row">
+                                            <label class="col-sm-6 col-form-label text-right h5 mb-0">Grand Total (System):</label>
+                                            <div class="col-sm-6">
+                                                <div class="h4 text-primary mb-0 font-weight-bold" id="grand_total_display">{{ $settings->currency_icon }}0.00</div>
+                                                <input type="hidden" name="total_amount" id="total_amount_hidden">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-5">
+                                    <div class="col-12 text-right">
+                                        <a href="{{ route('admin.purchases.index') }}" class="btn btn-secondary btn-lg mr-2">Cancel</a>
+                                        <button type="submit" class="btn btn-primary btn-lg px-5">
+                                            <i class="fas fa-check-circle mr-2"></i> Confirm and Save Purchase
+                                        </button>
                                     </div>
                                 </div>
 
@@ -87,18 +152,49 @@
 @endsection
 
 @push('scripts')
+    <style>
+        .border-dashed { border-style: dashed !important; }
+        .unit_cost_system { font-size: 11px; color: #98a6ad; }
+        .product_select_col .select2-container { width: 100% !important; }
+    </style>
     <script>
         const products = @json($products);
         let rowCount = 0;
         let currentVendorRate = 1;
         let currentVendorIcon = '{{ $settings->currency_icon }}';
         let currentVendorName = '{{ $settings->currency_name }}';
-        
         const systemIcon = '{{ $settings->currency_icon }}';
 
         $(document).ready(function() {
-            // Vendor selection change
-            $('select[name="vendor_id"]').on('change', function() {
+            
+            // 1. Booking Selection Handler
+            $('#booking_select').on('change', function() {
+                let bookingId = $(this).val();
+                $('#product_table tbody').empty();
+                rowCount = 0;
+                
+                if(bookingId) {
+                    $('#booking_id_hidden').val(bookingId); 
+                    $.ajax({
+                        url: "{{ route('admin.purchases.get-booking-details') }}",
+                        method: 'GET',
+                        data: { id: bookingId },
+                        success: function(booking) {
+                            if(booking.vendor_id) {
+                                $('#vendor_select').val(booking.vendor_id).trigger('change');
+                            }
+                            addBookingRow(booking);
+                            Toastr.success('Booking data imported.', 'Loaded');
+                        }
+                    });
+                } else {
+                     $('#booking_id_hidden').val('');
+                     addRow();
+                }
+            });
+
+            // 2. Vendor Change Handler
+            $('#vendor_select').on('change', function() {
                 let vendorId = $(this).val();
                 if (vendorId) {
                     $.ajax({
@@ -109,11 +205,7 @@
                             currentVendorRate = data.currency_rate;
                             currentVendorIcon = data.currency_icon;
                             currentVendorName = data.currency_name;
-                            
-                            $('#vendor_unit_cost_header').text('Vendor Unit Cost (' + currentVendorName + ')');
-                            $('#vendor_subtotal_header').text('Vendor Subtotal (' + currentVendorName + ')');
-                            $('#vendor_grand_total_container').html('Vendor Total (' + currentVendorName + '): <span id="vendor_grand_total">0.00</span>');
-                            
+                            updateCurrencyMetadata();
                             recalculateAllRows();
                         }
                     });
@@ -121,108 +213,206 @@
                     currentVendorRate = 1;
                     currentVendorIcon = '{{ $settings->currency_icon }}';
                     currentVendorName = '{{ $settings->currency_name }}';
-                    $('#vendor_unit_cost_header').text('Vendor Unit Cost (' + currentVendorName + ')');
-                    $('#vendor_subtotal_header').text('Vendor Subtotal (' + currentVendorName + ')');
-                    $('#vendor_grand_total_container').html('Vendor Total (' + currentVendorName + '): <span id="vendor_grand_total">0.00</span>');
+                    updateCurrencyMetadata();
                     recalculateAllRows();
                 }
             });
 
-            // Add initial row
-            addRow();
-
-            $('#add_row_btn').on('click', function() {
-                addRow();
-            });
-
+            // 3. Init
+            addRow(); 
+            $('#add_row_btn').on('click', function() { addRow(); });
+            
+            // 4. Calculations & Events
             $(document).on('click', '.remove_row', function() {
                 $(this).closest('tr').remove();
                 calculateGrandTotal();
             });
 
-            // On Product Change
             $(document).on('change', '.product_select', function() {
                 let id = $(this).val();
                 let row = $(this).closest('tr');
                 let product = products.find(p => p.id == id);
-                
                 if(product) {
-                    // Assuming product.purchase_price is System Price
-                    // We need to back-calculate Vendor Price? 
-                    // Or set System Price and empty Vendor Price?
-                    // Let's set the Input (Vendor Price) to 0 or product.purchase_price (converted?)
-                    // For now, let's just set it to product.purchase_price (System) / Rate (if we want match)
-                    // But simplified: user enters what they buy at.
-                    row.find('.unit_cost').val(''); 
+                    row.find('.unit_cost').val(product.purchase_price); 
+                    
+                    // Update Image
+                    let imgContainer = row.find('td:first-child');
+                    if(product.thumb_image) {
+                        imgContainer.html(`<img src="{{ asset('storage') }}/${product.thumb_image}" class="rounded" style="width: 40px; height: 40px; object-fit: cover;">`);
+                    } else {
+                        imgContainer.html(`<div class="bg-light rounded d-flex align-items-center justify-content-center text-muted small" style="width: 40px; height: 40px;">N/A</div>`);
+                    }
+
+                    // Handle Variants
+                    let variantHtml = '';
+                    if(product.variants && product.variants.length > 0) {
+                        variantHtml += '<div class="mt-2"><table class="table table-sm table-bordered mb-0" style="font-size: 12px; background: white;"><tbody>';
+                        product.variants.forEach(v => {
+                            let colorName = v.color ? v.color.name : '';
+                            let sizeName = v.size ? v.size.name : '';
+                            let name = (colorName + ' ' + sizeName).trim() || 'Default';
+                            variantHtml += `<tr><td class="p-1">${name}</td><td class="p-1" width="60"><input type="number" class="form-control variant-qty-input p-0 text-center" data-key="${name}" value="0" min="0" style="height: 25px; font-size: 12px;"></td></tr>`;
+                        });
+                        variantHtml += '</tbody></table></div>';
+                    }
+                    row.find('.variant-container').html(variantHtml);
+                    row.find('.variant_info_hidden').val(''); // Clear old info
+                    
                     calculateRowTotal(row);
                 }
             });
 
-            // On Input Change
             $(document).on('input', '.qty, .unit_cost', function() {
                 calculateRowTotal($(this).closest('tr'));
             });
+
+            $(document).on('input', '.extra_cost_input', function() {
+                calculateGrandTotal();
+            });
+            
+            $(document).on('input', '.variant-qty-input', function() {
+                let row = $(this).closest('.main-row');
+                let container = row.find('.variant-container');
+                let totalQty = 0;
+                let newVariantInfo = {};
+                
+                container.find('.variant-qty-input').each(function() {
+                    let val = parseInt($(this).val()) || 0;
+                    let key = $(this).data('key');
+                    totalQty += val;
+                    if(val > 0) newVariantInfo[key] = val;
+                });
+                
+                row.find('.qty').val(totalQty);
+                row.find('.variant_info_hidden').val(JSON.stringify(newVariantInfo));
+                calculateRowTotal(row);
+            });
         });
 
-        function addRow() {
-            let html = `
-                <tr>
-                    <td>
+        // --- Helpers ---
+
+        function updateCurrencyMetadata() {
+            $('#vendor_unit_cost_header').text('Unit Cost (' + currentVendorName + ')');
+            $('#vendor_subtotal_header').text('Total (' + currentVendorName + ')');
+            $('#current_rate_display').text(currentVendorRate);
+        }
+
+        function addBookingRow(booking) {
+             let product = booking.product;
+             let variantHtml = '';
+             let variantInput = '';
+             let hasVariants = false;
+             
+             if(booking.variant_info) {
+                 variantInput = JSON.stringify(booking.variant_info);
+                 let variants = booking.variant_info['variant'] ? {[booking.variant_info['variant']]: booking.qty} : booking.variant_info;
+
+                 variantHtml += '<div class="mt-2"><table class="table table-sm table-bordered mb-0" style="font-size: 12px; background: white;">';
+                 variantHtml += '<tbody>';
+                 for (const [key, qty] of Object.entries(variants)) {
+                     hasVariants = true;
+                     // Aggressively clean keys like "Color: white - Size: 500" into "white 500"
+                     let cleanKey = key.replace(/Color:\s*/gi, '')
+                                       .replace(/Size:\s*/gi, '')
+                                       .replace(/\s*-\s*/g, ' ')
+                                       .trim();
+                     variantHtml += `<tr><td class="p-1">${cleanKey}</td><td class="p-1" width="60"><input type="number" class="form-control variant-qty-input p-0 text-center" data-key="${cleanKey}" value="${qty}" min="0" style="height: 25px; font-size: 12px;"></td></tr>`;
+                 }
+                 variantHtml += '</tbody></table></div>';
+             }
+
+             if(!hasVariants) { variantHtml = ''; variantInput = ''; }
+
+             let imageHtml = product.thumb_image 
+                ? `<img src="{{ asset('storage') }}/${product.thumb_image}" class="rounded" style="width: 40px; height: 40px; object-fit: cover;">`
+                : `<div class="bg-light rounded d-flex align-items-center justify-content-center text-muted small" style="width: 40px; height: 40px;">N/A</div>`;
+
+             if(booking.vendor && booking.vendor.currency_rate) {
+                 currentVendorRate = booking.vendor.currency_rate;
+                 currentVendorIcon = booking.vendor.currency_icon;
+                 currentVendorName = booking.vendor.currency_name;
+                 updateCurrencyMetadata();
+             }
+             
+             let rowId = rowCount;
+             let html = `
+                <tr data-row-id="${rowId}" class="main-row">
+                    <td class="align-middle text-center">${imageHtml}</td>
+                    <td class="align-middle product_select_col">
                         <select class="form-control product_select select2" name="items[${rowCount}][product_id]" required>
-                            <option value="">Select Product</option>
-                            ${products.map(p => `<option value="${p.id}">${p.name} (SKU: ${p.sku})</option>`).join('')}
+                            <option value="${product.id}" selected>${product.name}</option>
+                            ${products.map(p => p.id != product.id ? `<option value="${p.id}">${p.name}</option>` : '').join('')}
                         </select>
+                        <div class="variant-container">${variantHtml}</div>
+                        <input type="hidden" class="variant_info_hidden" name="items[${rowCount}][variant_info]" value='${variantInput}'>
                     </td>
-                    <td>
-                        <input type="number" class="form-control unit_cost" name="items[${rowCount}][unit_cost]" step="0.01" required>
+                    <td class="align-middle text-center">
+                        <input type="number" class="form-control unit_cost text-center" name="items[${rowCount}][unit_cost]" step="any" value="${booking.unit_price}" required>
+                        <small class="text-muted d-block mt-1">Sys: <span class="unit_cost_system">${systemIcon}0.00</span></small>
                     </td>
-                    <td>
-                        <input type="text" class="form-control unit_cost_system" readonly>
+                    <td class="align-middle text-center">
+                        <input type="number" class="form-control qty text-center" name="items[${rowCount}][qty]" value="${booking.qty}" min="1" required style="font-weight: bold;">
                     </td>
-                    <td>
-                        <input type="number" class="form-control qty" name="items[${rowCount}][qty]" value="1" min="1" required>
+                    <td class="align-middle text-right">
+                        <input type="text" class="form-control-plaintext subtotal h6 mb-0 text-dark text-right pr-2" readonly value="0.00">
                     </td>
-                     <td>
-                        <input type="text" class="form-control subtotal" readonly>
-                    </td>
-                    <td>
-                        <input type="text" class="form-control subtotal_system" readonly>
-                    </td>
-                    <td>
+                    <td class="align-middle text-center">
                         <button type="button" class="btn btn-danger btn-sm remove_row"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>
             `;
             $('#product_table tbody').append(html);
             $('.select2').select2();
+            calculateRowTotal($('#product_table tbody tr').last());
+            rowCount++;
+        }
+
+        function addRow() {
+             let html = `
+                <tr class="main-row">
+                    <td class="align-middle text-center">
+                        <div class="bg-light rounded d-flex align-items-center justify-content-center text-muted small" style="width: 40px; height: 40px;"><i class="fas fa-box"></i></div>
+                    </td>
+                    <td class="align-middle product_select_col">
+                        <select class="form-control product_select select2" name="items[${rowCount}][product_id]" required>
+                            <option value="">Select Product...</option>
+                            ${products.map(p => `<option value="${p.id}">${p.name}</option>`).join('')}
+                        </select>
+                        <div class="variant-container"></div>
+                        <input type="hidden" class="variant_info_hidden" name="items[${rowCount}][variant_info]">
+                    </td>
+                    <td class="align-middle text-center">
+                        <input type="number" class="form-control unit_cost text-center" name="items[${rowCount}][unit_cost]" step="any" required placeholder="0.00">
+                        <small class="text-muted d-block mt-1">Sys: <span class="unit_cost_system">${systemIcon}0.00</span></small>
+                    </td>
+                    <td class="align-middle text-center">
+                       <input type="number" class="form-control qty text-center" name="items[${rowCount}][qty]" value="1" min="1" required style="font-weight: bold;">
+                    </td>
+                    <td class="align-middle text-right">
+                        <input type="text" class="form-control-plaintext subtotal h6 mb-0 text-dark text-right pr-2" readonly value="0.00">
+                    </td>
+                    <td class="align-middle text-center">
+                        <button type="button" class="btn btn-danger btn-sm remove_row"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `;
+            $('#product_table tbody').append(html);
+            $('.select2').select2(); 
             rowCount++;
         }
 
         function calculateRowTotal(row) {
             let qty = parseFloat(row.find('.qty').val()) || 0;
-            let vendorCost = parseFloat(row.find('.unit_cost').val()) || 0; // Input is Vendor
+            let vendorCost = parseFloat(row.find('.unit_cost').val()) || 0;
             let vendorTotal = qty * vendorCost;
-            
-            row.find('.subtotal').val(vendorTotal.toFixed(2)); // Use .subtotal for vendor display initially? No, .subtotal was System in prev code.
-            // Let's rely on specific classes.
-            
-            // System conversions
+            row.find('.subtotal').val(vendorTotal.toFixed(2));
             let systemCost = (vendorCost * currentVendorRate).toFixed(2);
-            let systemSubtotal = (vendorTotal * currentVendorRate).toFixed(2);
-            
-            row.find('.unit_cost_system').val(systemIcon + systemCost);
-            row.find('.subtotal_system').val(systemIcon + systemSubtotal);
-            
-            // Wait, previous code used .subtotal for input total.
-            // Let's ensure headers match.
-        
+            row.find('.unit_cost_system').text(systemIcon + systemCost);
             calculateGrandTotal();
         }
 
         function recalculateAllRows() {
-            $('#product_table tbody tr').each(function() {
-                calculateRowTotal($(this));
-            });
+            $('#product_table tbody tr').each(function() { calculateRowTotal($(this)); });
         }
 
         function calculateGrandTotal() {
@@ -232,12 +422,15 @@
                  let cost = parseFloat($(this).find('.unit_cost').val()) || 0;
                  vendorTotal += qty * cost;
             });
-            
-            let systemTotal = (vendorTotal * currentVendorRate).toFixed(2);
+            let systemTotal = (vendorTotal * currentVendorRate);
+            let material = parseFloat($('input[name="material_cost"]').val()) || 0;
+            let transport = parseFloat($('input[name="transport_cost"]').val()) || 0;
+            let tax = parseFloat($('input[name="tax"]').val()) || 0;
+            systemTotal += (material + transport + tax);
             
             $('#vendor_grand_total').text(currentVendorIcon + vendorTotal.toFixed(2));
-            $('#grand_total_display').text(systemIcon + systemTotal);
-            $('#total_amount_hidden').val(systemTotal); // Send System Total? Or Backend calcs it? Backend calcs it. This hidden might be for display or other checks.
+            $('#grand_total_display').text(systemIcon + systemTotal.toFixed(2));
+            $('#total_amount_hidden').val(systemTotal.toFixed(2)); 
         }
     </script>
 @endpush

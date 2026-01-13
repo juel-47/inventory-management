@@ -23,16 +23,7 @@ class BookingDataTable extends DataTable
                 return $query->product->name ?? 'N/A';
             })
             ->addColumn('vendor', function ($query) {
-                return $query->vendor->name ?? 'N/A'; // Assuming Vendor has 'name' or similar, strict user said 'Vendor Management Module' ... 'Vendor name'.
-            })
-            ->addColumn('total_cost', function ($query) {
-                return formatConverted($query->total_cost);
-            })
-            ->addColumn('total_cost_vendor', function ($query) {
-                if ($query->vendor) {
-                    return formatWithVendor($query->total_cost, $query->vendor->currency_icon, $query->vendor->currency_rate);
-                }
-                return formatConverted($query->total_cost);
+                return $query->vendor->shop_name ?? 'N/A';
             })
             ->addColumn('status', function ($query) {
                 // Determine current status. Default strict check.
@@ -87,8 +78,6 @@ class BookingDataTable extends DataTable
             Column::make('vendor')->title('Vendor'),
             Column::make('product')->title('Product'),
             Column::make('qty')->title('Qty'),
-            Column::make('total_cost')->title('Total'),
-            Column::make('total_cost_vendor')->title('Vendor Total'),
             Column::make('status'),
             Column::computed('action')
                 ->exportable(false)

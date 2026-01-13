@@ -30,8 +30,20 @@ class PurchaseController extends Controller
     {
         $vendors = Vendor::where('status', 1)->get();
         // Passing products for JS selection
-        $products = Product::where('status', 1)->select('id', 'name', 'sku', 'purchase_price')->get(); 
-        return view('backend.purchase.create', compact('vendors', 'products'));
+        $products = Product::where('status', 1)->with('variants.color', 'variants.size')->get(); 
+        
+        // Fetch Bookings (Only those not fully purchased? For now, only 'pending' bookings)
+        $bookings = \App\Models\Booking::with('product', 'vendor')
+                    ->where('status', 'pending')
+                    ->latest()
+                    ->get();
+
+        return view('backend.purchase.create', compact('vendors', 'products', 'bookings'));
+    }
+
+    public function getBookingDetails(Request $request) {
+        $booking = \App\Models\Booking::with(['product', 'vendor', 'unit'])->findOrFail($request->id);
+        return response()->json($booking);
     }
 
     /**
@@ -53,9 +65,13 @@ class PurchaseController extends Controller
             $purchase = new Purchase();
             $purchase->invoice_no = 'INV-' . mt_rand(100000, 999999);
             $purchase->vendor_id = $request->vendor_id;
+            $purchase->booking_id = $request->booking_id; // Save Booking ID
             $purchase->user_id = Auth::id(); // Track Creator
             $purchase->date = $request->date;
             $purchase->note = $request->note;
+            $purchase->material_cost = $request->material_cost ?? 0;
+            $purchase->transport_cost = $request->transport_cost ?? 0;
+            $purchase->tax = $request->tax ?? 0;
             $purchase->total_amount = 0; // Will calculate
             $purchase->status = 1;
             $purchase->save();
@@ -80,27 +96,77 @@ class PurchaseController extends Controller
                 $detail->qty = $item['qty'];
                 $detail->unit_cost = $itemUnitCost;
                 $detail->total = $subTotal;
+                
+                // Save & Standardize Variant Info
+                $vInfo = null;
+                if(isset($item['variant_info']) && !empty($item['variant_info'])) {
+                    $vInfo = is_string($item['variant_info']) ? json_decode($item['variant_info'], true) : $item['variant_info'];
+                    $detail->variant_info = $vInfo; 
+                }
+                
                 $detail->save();
 
-                // Update Stock
+                // Update Stock and Purchase Price (Main Product)
                 $product = Product::findOrFail($item['product_id']);
+                $product->purchase_price = $itemUnitCost;
+                $product->save();
                 $product->increment('qty', $item['qty']);
                 
-                // Optional: Update purchase_price if changed? 
-                // Let's keep it simple: We don't overwrite product default price automatically unless requested
+                // Update Stock (Variants)
+                if($vInfo && is_array($vInfo)) {
+                    $processedVariants = [];
+                    // Handle "Old Format" single variant {variant: "Name"}
+                    if(isset($vInfo['variant'])) {
+                        $variantName = $vInfo['variant'];
+                        $variantQty = $item['qty'];
+                        
+                        $pVariant = \App\Models\ProductVariant::where('product_id', $item['product_id'])
+                                    ->where('name', $variantName)
+                                    ->first();
+                        if($pVariant && !in_array($pVariant->id, $processedVariants)) {
+                            $pVariant->increment('qty', $variantQty);
+                            $processedVariants[] = $pVariant->id;
+                        }
+                    } else {
+                        // Handle "New Aggregated Format" {"Name": Qty, "Name2": Qty}
+                        foreach($vInfo as $vName => $vQty) {
+                            // Robust cleaning for legacy booking data
+                            $cleanName = preg_replace('/Color:\s*/i', '', $vName);
+                            $cleanName = preg_replace('/Size:\s*/i', '', $cleanName);
+                            $cleanName = preg_replace('/\s*-\s*/', ' ', $cleanName);
+                            $cleanName = trim($cleanName);
+
+                            $pVariant = \App\Models\ProductVariant::where('product_id', $item['product_id'])
+                                        ->where('name', $cleanName)
+                                        ->first();
+                            if($pVariant && !in_array($pVariant->id, $processedVariants)) {
+                                $pVariant->increment('qty', $vQty);
+                                $processedVariants[] = $pVariant->id;
+                            }
+                        }
+                    }
+                }
             }
 
+            // Add extra costs to total (Directly in system currency from UI)
+            $totalAmount += ($purchase->material_cost + $purchase->transport_cost + $purchase->tax);
+            
             $purchase->total_amount = $totalAmount;
             $purchase->save();
 
+            // Automate Booking Completion
+            if($purchase->booking_id) {
+                \App\Models\Booking::where('id', $purchase->booking_id)->update(['status' => 'completed']);
+            }
+
             DB::commit();
             
-            Toastr::success('Purchase Created Successfully!', 'Success');
+            Toastr::success('Purchase Created Successfully!');
             return redirect()->route('admin.purchases.index');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Toastr::error('Something went wrong: ' . $e->getMessage(), 'Error');
+            Toastr::error('Something went wrong: ' . $e->getMessage());
             return redirect()->back();
         }
     }

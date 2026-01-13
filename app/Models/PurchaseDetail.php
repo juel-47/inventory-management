@@ -13,7 +13,12 @@ class PurchaseDetail extends Model
         'product_id',
         'qty',
         'unit_cost',
-        'total'
+        'total',
+        'variant_info'
+    ];
+
+    protected $casts = [
+        'variant_info' => 'array'
     ];
 
     public function purchase()

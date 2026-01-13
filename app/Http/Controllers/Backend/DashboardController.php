@@ -26,13 +26,42 @@ class DashboardController extends Controller
             
             // Recent Requests for Admin
             $recentRequests = ProductRequest::with('user')->orderBy('id', 'desc')->take(5)->get();
+
+            // Chart Data: Monthly Sales (Last 12 Months)
+            $monthlySales = Sale::select(
+                DB::raw('SUM(total_amount) as total'),
+                DB::raw("DATE_FORMAT(date, '%Y-%m') as month_year"),
+                DB::raw("DATE_FORMAT(date, '%M') as month_name")
+            )
+            ->where('date', '>=', now()->subMonths(11))
+            ->groupBy('month_year', 'month_name')
+            ->orderBy('month_year')
+            ->get();
+
+            $salesLabels = $monthlySales->pluck('month_name');
+            $salesData = $monthlySales->pluck('total');
+
+            // Chart Data: Request Status Distribution
+            $requestStatus = ProductRequest::select('status', DB::raw('count(*) as total'))
+                ->groupBy('status')
+                ->pluck('total', 'status');
+            
+            // Ensure all statuses are present for consistent coloring
+            $statuses = ['pending', 'approved', 'rejected'];
+            $statusData = [];
+            foreach ($statuses as $status) {
+                $statusData[] = $requestStatus[$status] ?? 0;
+            }
             
             return view('backend.dashboard', compact(
                 'totalProducts', 
                 'totalSales', 
                 'pendingRequests', 
                 'totalOutlets',
-                'recentRequests'
+                'recentRequests',
+                'salesLabels',
+                'salesData',
+                'statusData'
             ));
         } else {
             // Outlet Specific Stats

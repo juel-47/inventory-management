@@ -69,7 +69,21 @@
                                     @foreach ($purchase->details as $index => $detail)
                                     <tr>
                                         <td>{{ $index + 1 }}</td>
-                                        <td>{{ $detail->product->name }} (SKU: {{ $detail->product->sku }})</td>
+                                        <td>
+                                            {{ $detail->product->name }} (SKU: {{ $detail->product->sku }})
+                                            @if($detail->variant_info)
+                                                <div class="mt-1">
+                                                    @foreach($detail->variant_info as $name => $qty)
+                                                        @if(is_array($qty)) {{-- Fallback for old single-item format if it exists --}}
+                                                            @continue
+                                                        @endif
+                                                        <span class="badge badge-light border text-muted small mr-1 mb-1">
+                                                            {{ is_numeric($name) ? '' : $name.':' }} {{ $qty }}
+                                                        </span>
+                                                    @endforeach
+                                                </div>
+                                            @endif
+                                        </td>
                                         <td class="text-center">{{ formatConverted($detail->unit_cost) }}</td>
                                         <td class="text-center">{{ formatWithVendor($detail->unit_cost, $purchase->vendor->currency_icon, $purchase->vendor->currency_rate) }}</td>
                                         <td class="text-center">{{ $detail->qty }}</td>
@@ -87,9 +101,31 @@
                                     @endif
                                 </div>
                                 <div class="col-lg-4 text-right">
+                                    <div class="invoice-detail-item">
+                                        <div class="invoice-detail-name">Subtotal (Items)</div>
+                                        <div class="invoice-detail-value">{{ formatConverted($purchase->total_amount - ($purchase->material_cost + $purchase->transport_cost + $purchase->tax)) }}</div>
+                                    </div>
+                                    @if($purchase->material_cost > 0)
+                                    <div class="invoice-detail-item">
+                                        <div class="invoice-detail-name">Material Cost</div>
+                                        <div class="invoice-detail-value">{{ formatConverted($purchase->material_cost) }}</div>
+                                    </div>
+                                    @endif
+                                    @if($purchase->transport_cost > 0)
+                                    <div class="invoice-detail-item">
+                                        <div class="invoice-detail-name">Transport Cost</div>
+                                        <div class="invoice-detail-value">{{ formatConverted($purchase->transport_cost) }}</div>
+                                    </div>
+                                    @endif
+                                    @if($purchase->tax > 0)
+                                    <div class="invoice-detail-item">
+                                        <div class="invoice-detail-name">Tax</div>
+                                        <div class="invoice-detail-value">{{ formatConverted($purchase->tax) }}</div>
+                                    </div>
+                                    @endif
                                     <hr class="mt-2 mb-2">
                                     <div class="invoice-detail-item">
-                                        <div class="invoice-detail-name">Total</div>
+                                        <div class="invoice-detail-name">Grand Total</div>
                                         <div class="invoice-detail-value invoice-detail-value-lg">{{ formatConverted($purchase->total_amount) }}</div>
                                     </div>
                                     <div class="invoice-detail-item">

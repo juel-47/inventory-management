@@ -37,7 +37,7 @@
                                         <select class="form-control select2" name="product_id" id="product_id">
                                             <option value="">Select Product</option>
                                             @foreach ($products as $product)
-                                                <option value="{{ $product->id }}">{{ $product->name }} (sku: {{ $product->sku }})</option>
+                                                <option value="{{ $product->id }}">{{ $product->name }}</option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -95,13 +95,24 @@
 
                                 <div class="row mb-4">
                                     <div class="col-12">
-                                        <div class="section-title mt-0">Variant & Unit</div>
+                                        <div class="section-title mt-0">Variant, Unit & Qty</div>
+                                    </div>
+                                    <div class="col-12" id="variant_container" style="display: none;">
+                                        <table class="table table-sm table-bordered">
+                                            <thead class="bg-light">
+                                                <tr>
+                                                    <th width="60%">Variant</th>
+                                                    <th width="40%">Quantity</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="variant_table_body">
+                                                <!-- Variants will be injected here -->
+                                            </tbody>
+                                        </table>
                                     </div>
                                     <div class="form-group col-md-4">
-                                        <label>Variant</label>
-                                        <select class="form-control" name="variant_info" id="variant_select">
-                                            <option value="">Select Variant (Optional)</option>
-                                        </select>
+                                        <label class="font-weight-bold">Quantity</label>
+                                        <input type="number" class="form-control" name="qty" required>
                                     </div>
                                     <div class="form-group col-md-4">
                                         <label>Unit</label>
@@ -116,70 +127,13 @@
                                         <label>Barcode</label>
                                         <input type="text" class="form-control" name="barcode" id="barcode">
                                     </div>
-                                </div>
-
-                                <div class="row mb-4">
-                                    <div class="col-12">
-                                        <div class="section-title mt-0 text-primary">Pricing & Costing</div>
-                                        <hr>
-                                    </div>
-                                      <div class="form-group col-md-3">
-                                         <label class="font-weight-bold">Quantity</label>
-                                         <input type="number" class="form-control form-control-lg" name="qty" required>
-                                     </div>
-                                       <div class="form-group col-md-3">
-                                          <label>Price (Vendor Currency)</label>
-                                          <input type="number" class="form-control" name="unit_price" id="unit_price" step="0.01">
-                                          <small class="form-text text-muted">Enter price in Vendor's currency</small>
-                                      </div>
-                                       <div class="form-group col-md-3">
-                                          <label>Extra Cost (Vendor)</label>
-                                          <input type="number" class="form-control" name="extra_cost" id="extra_cost" step="0.01">
-                                      </div>
-                                       <div class="form-group col-md-3">
-                                           <label>Selling Price</label>
-                                           <input type="number" class="form-control" name="sale_price" id="sale_price" step="0.01">
-                                       </div>
-                                </div>
-
-                                <div class="row mb-4">
-                                    <div class="col-md-12">
-                                        <div class="row p-3 bg-light rounded">
-                                            <div class="form-group col-md-3 mb-0">
-                                                <label>System Unit Price</label>
-                                                <input type="text" class="form-control border-0 bg-transparent font-weight-bold p-0" id="unit_price_vendor" readonly>
-                                            </div>
-                                            <div class="form-group col-md-3 mb-0">
-                                                <label>Vendor Total</label>
-                                                <input type="text" class="form-control border-0 bg-transparent font-weight-bold p-0 text-primary" id="total_cost_vendor" style="font-size: 1.2em;" readonly>
-                                            </div>
-                                            <div class="form-group col-md-3 mb-0">
-                                                <label>System Total</label>
-                                                <input type="number" class="form-control border-0 bg-transparent font-weight-bold p-0" name="total_cost" id="total_cost" step="0.01" readonly>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="row">
-                                     <div class="form-group col-md-4">
-                                        <label>Min Inventory Qty</label>
-                                        <input type="number" class="form-control" name="min_inventory_qty">
-                                    </div>
-                                     <div class="form-group col-md-4">
-                                        <label>Min Sale Qty</label>
-                                        <input type="number" class="form-control" name="min_sale_qty">
-                                    </div>
-                                     <div class="form-group col-md-4">
-                                        <label>Min Purchase Price</label>
-                                        <input type="number" class="form-control" name="min_purchase_price" step="0.01">
-                                    </div>
+                                    
                                 </div>
 
                                 <div class="row">
                                     <div class="col-12">
                                         <div class="form-group">
-                                            <label>Description</label>
+                                            <label>Notes</label>
                                             <textarea name="description" class="form-control" rows="4"></textarea>
                                         </div>
                                     </div>
@@ -217,7 +171,7 @@
 
                                 <div class="row mt-4">
                                     <div class="col-12 text-right">
-                                        <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-save"></i> Save Booking</button>
+                                        <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-save"></i> Create Booking</button>
                                     </div>
                                 </div>
 
@@ -246,7 +200,7 @@
                 
                 if (product) {
                     $('#product_name').val(product.name);
-                    $('#product_number').val(product.sku); // Assuming SKU as number
+                    $('#product_number').val(product.product_number); 
                     $('#product_category').val(product.category ? product.category.name : '');
                     
                     if (product.thumb_image) {
@@ -255,37 +209,101 @@
                         $('#product_image').hide();
                     }
 
-                    // Auto-select Category/Sub/Child if not manually set (Optional Override logic)
-                    // If user hasn't touched the selects? 
-                    // Let's just set the selects to the product's defaults if they are empty
-                    if(!$('#category_id').val()) {
-                        $('#category_id').val(product.category_id).trigger('change');
-                        // Wait for ajax or just set if we had the data? 
-                        // Since subcategories are loaded via ajax, we might need a timeout or chain
+                    // Auto-select Category
+                    if(!$('#category_id').val() && product.category_id) {
+                         $('#category_id').val(product.category_id).trigger('change');
+                         
+                         setTimeout(function(){
+                              if(product.sub_category_id) {
+                                  $('#sub_category_id').val(product.sub_category_id).trigger('change');
+                                  
+                                  setTimeout(function(){
+                                      if(product.child_category_id) {
+                                          $('#child_category_id').val(product.child_category_id);
+                                      }
+                                  }, 800);
+                              }
+                         }, 800);
                     }
                     
                     if(product.unit_id) {
                          $('#unit_select').val(product.unit_id);
                     }
                     
-                    // Variants
-                    let variantHtml = '<option value="">Select Variant (Optional)</option>';
-                    // Assuming product.variants is array/json?
-                    // Controller passes: with(['variants'...])
+                    if(product.unit_id) {
+                         $('#unit_select').val(product.unit_id);
+                    }
+                    
+                    if(product.unit_id) {
+                         $('#unit_select').val(product.unit_id);
+                    }
+                    
+                    // Populate Variants (Simple Table)
+                    let hasVariants = false;
+                    let tableHtml = '';
+                    
                     if(product.variants && product.variants.length > 0) {
                          product.variants.forEach(v => {
-                             variantHtml += `<option value="${v.id}">${v.name}</option>`;
+                             let colorName = v.color ? v.color.name : '';
+                             let sizeName = v.size ? v.size.name : '';
+                             let name = (colorName + ' ' + sizeName).trim() || 'Default';
+                             
+                             if(name) {
+                                 hasVariants = true;
+                                 let safeName = name.replace(/"/g, '&quot;');
+                                 
+                                 tableHtml += `
+                                    <tr>
+                                        <td class="align-middle">${name}</td>
+                                        <td>
+                                            <input type="number" class="form-control form-control-sm variant-qty" name="variant_quantities[${safeName}]" min="0" placeholder="0">
+                                        </td>
+                                    </tr>
+                                 `;
+                             }
                          });
                     }
-                    $('#variant_select').html(variantHtml);
+                    
+                    if(hasVariants) {
+                        $('#variant_table_body').html(tableHtml);
+                        $('#variant_container').show();
+                        // unlock main qty, but keep auto-calc
+                    } else {
+                        $('#variant_container').hide();
+                        $('#variant_table_body').empty();
+                    }
+
                 } else {
                      $('#product_name').val('');
                      $('#product_number').val('');
                      $('#product_category').val('');
                      $('#product_image').hide();
-                     $('#variant_select').html('<option value="">Select Variant (Optional)</option>');
+                     $('#variant_container').hide();
+                     $('#variant_table_body').empty();
                 }
             });
+
+            // Listen for variant quantity changes
+            $(document).on('keyup change', '.variant-qty', function() {
+                let total = 0;
+                $('.variant-qty').each(function() {
+                    let val = parseInt($(this).val()) || 0;
+                    total += val;
+                });
+                
+                let currentQty = parseInt($('input[name="qty"]').val()) || 0;
+
+                if(total > 0) {
+                    // Only increase, don't decrease if user manually typed more
+                    if(total > currentQty) {
+                         $('input[name="qty"]').val(total);
+                    }
+                    $('input[name="qty"]').attr('min', total);
+                } else {
+                    $('input[name="qty"]').removeAttr('min');
+                }
+            });
+
 
             // Vendor Currency Logic
             $('select[name="vendor_id"]').on('change', function() {
@@ -310,29 +328,12 @@
                 }
             });
 
-            $('input[name="qty"], #unit_price, #extra_cost').on('keyup change', function() {
-                recalculateAllPrices();
+            $('input[name="qty"]').on('keyup change', function() {
+                // Pricing recalculation removed
             });
 
             function recalculateAllPrices() {
-                let vendorPrice = parseFloat($('#unit_price').val()) || 0;
-                let vendorExtra = parseFloat($('#extra_cost').val()) || 0;
-                let qty = parseFloat($('input[name="qty"]').val()) || 0;
-                
-                // Calculate System Prices (Display is Vendor, Storage is System)
-                // Logic: System = Vendor * Rate
-                let rate = currentVendorRate > 0 ? currentVendorRate : 1;
-                let systemPrice = vendorPrice * rate;
-                let systemExtra = vendorExtra * rate;
-                
-                let systemTotal = (systemPrice * qty) + systemExtra;
-                let vendorTotal = (vendorPrice * qty) + vendorExtra;
-
-                $('#total_cost').val(systemTotal.toFixed(2)); // System Total
-                $('#unit_price_vendor').val('{{ $settings->currency_icon }}' + systemPrice.toFixed(2)); // System Unit Price
-                
-                // Vendor Display
-                $('#total_cost_vendor').val(currentVendorIcon + vendorTotal.toFixed(2));
+                // Pricing recalculation removed
             }
             
             // Category Change - Load Subcategories

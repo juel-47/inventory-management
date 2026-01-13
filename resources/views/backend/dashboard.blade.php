@@ -19,8 +19,7 @@
                                 <h4>Total Sales</h4>
                             </div>
                              <div class="card-body">
-                                <div>{{ $settings->base_currency_icon . number_format($totalSales, 2) }}</div>
-                                <div class="text-small text-muted">({{ $settings->currency_name }}: {!! formatConverted($totalSales) !!})</div>
+                                <div>{!! formatConverted($totalSales) !!}</div>
                             </div>
                         </div>
                     </div>
@@ -120,6 +119,34 @@
             @endif
         </div>
 
+        @if(Auth::user()->hasRole('Admin'))
+        <div class="row">
+            <div class="col-lg-8 col-md-12 col-12 col-sm-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Monthly Sales Statistics</h4>
+                        <div class="card-header-action">
+                            
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="salesChart" height="158"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-12 col-12 col-sm-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Request Status Info</h4>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="statusChart" height="158"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
+
         <div class="row">
             <div class="col-lg-12">
                 <div class="card border shadow-sm">
@@ -137,7 +164,7 @@
                                         <th>Requester</th>
                                         @endif
                                          <th>Date</th>
-                                         <th class="text-right">Total ({{ $settings->base_currency_name }})</th>
+                                         <th class="text-right d-none">Total ({{ $settings->base_currency_name }})</th>
                                          <th class="text-right">Total ({{ $settings->currency_name }})</th>
                                         <th class="text-center">Status</th>
                                         <th class="text-right pr-4">Action</th>
@@ -151,7 +178,7 @@
                                             <td>{{ $request->user->name }}</td>
                                             @endif
                                              <td>{{ $request->created_at->format('d M, Y') }}</td>
-                                             <td class="text-right font-weight-bold text-dark">{{ $settings->base_currency_icon . number_format($request->total_amount, 2) }}</td>
+                                             <td class="text-right font-weight-bold text-dark d-none">{{ $settings->base_currency_icon . number_format($request->total_amount, 2) }}</td>
                                              <td class="text-right font-weight-bold text-dark">{!! formatConverted($request->total_amount) !!}</td>
                                             <td class="text-center">
                                                 @php
@@ -184,3 +211,91 @@
         </div>
     </section>
 @endsection
+
+@push('scripts')
+@if(Auth::user()->hasRole('Admin'))
+    <script>
+        "use strict";
+
+        var currencyIcon = "{{ $settings->currency_icon }}";
+        var salesCtx = document.getElementById("salesChart").getContext('2d');
+        var salesChart = new Chart(salesCtx, {
+            type: 'line',
+            data: {
+                labels: {!! json_encode($salesLabels) !!},
+                datasets: [{
+                    label: 'Sales',
+                    data: {!! json_encode($salesData) !!},
+                    borderWidth: 2,
+                    backgroundColor: 'rgba(63,82,227,.8)',
+                    borderColor: 'transparent',
+                    pointBorderWidth: 0,
+                    pointRadius: 3.5,
+                    pointBackgroundColor: 'transparent',
+                    pointHoverBackgroundColor: 'rgba(63,82,227,.8)',
+                }]
+            },
+            options: {
+                legend: {
+                    display: false
+                },
+                tooltips: {
+                    callbacks: {
+                        label: function(tooltipItem, data) {
+                            return currencyIcon + tooltipItem.yLabel.toLocaleString();
+                        }
+                    }
+                },
+                scales: {
+                    yAxes: [{
+                        gridLines: {
+                            drawBorder: false,
+                            color: '#f2f2f2',
+                        },
+                        ticks: {
+                            beginAtZero: true,
+                            stepSize: 1500,
+                            callback: function(value, index, values) {
+                                return currencyIcon + value;
+                            }
+                        }
+                    }],
+                    xAxes: [{
+                        gridLines: {
+                            display: false,
+                            tickMarkLength: 15,
+                        }
+                    }]
+                },
+            }
+        });
+
+        var statusCtx = document.getElementById("statusChart").getContext('2d');
+        var statusChart = new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                datasets: [{
+                    data: {!! json_encode($statusData) !!},
+                    backgroundColor: [
+                        '#ffa426', // Pending - Warning
+                        '#6777ef', // Approved - Primary/Info
+                        '#fc544b', // Rejected - Danger
+                    ],
+                    label: 'Dataset 1'
+                }],
+                labels: [
+                    'Pending',
+                    'Approved',
+                    'Rejected'
+                ],
+            },
+            options: {
+                responsive: true,
+                legend: {
+                    position: 'bottom',
+                },
+            }
+        });
+    </script>
+@endif
+@endpush

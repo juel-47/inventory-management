@@ -164,8 +164,8 @@
                                         <th>Requester</th>
                                         @endif
                                          <th>Date</th>
-                                         <th class="text-right d-none">Total ({{ $settings->base_currency_name }})</th>
-                                         <th class="text-right">Total ({{ $settings->currency_name }})</th>
+                                         <th class="text-right d-none">Total ({{@ $settings->base_currency_name }})</th>
+                                         <th class="text-right">Total ({{@ $settings->currency_name }})</th>
                                         <th class="text-center">Status</th>
                                         <th class="text-right pr-4">Action</th>
                                     </tr>
@@ -217,7 +217,7 @@
     <script>
         "use strict";
 
-        var currencyIcon = "{{ $settings->currency_icon }}";
+        var currencyIcon = "{{  $settings->currency_icon ?? '' }}";
         var salesCtx = document.getElementById("salesChart").getContext('2d');
         var salesChart = new Chart(salesCtx, {
             type: 'line',

@@ -85,17 +85,38 @@
                                 </div>
 
                                 <div class="row">
+                                    <div class="form-group col-md-4">
+                                        <label>Purchase Price</label>
+                                        <input type="number" class="form-control" name="purchase_price" step="any"
+                                            value="{{ $product->purchase_price }}">
+                                    </div>
+                                    <div class="form-group col-md-4">
+                                        <label>Sale Price</label>
+                                        <input type="number" class="form-control" name="price" step="any"
+                                            value="{{ $product->price }}">
+                                    </div>
+                                    <div class="form-group col-md-4">
+                                        <label>Self Number</label>
+                                        <input type="text" class="form-control" name="self_number"
+                                            value="{{ $product->self_number }}">
+                                    </div>
+                                </div>
+
+                                <div class="row">
                                      <div class="form-group col-md-4">
-                                         <label>Purchase Price</label>
-                                         <input type="number" class="form-control" name="purchase_priceanytep="any" value="{{ $product->purchase_price }}">
+                                         <label>Raw Material Cost</label>
+                                         <input type="number" class="form-control" name="raw_material_cost" step="any"
+                                             value="{{ old('raw_material_cost', $product->raw_material_cost ?? 0) }}">
                                      </div>
                                      <div class="form-group col-md-4">
-                                         <label>Sale Price</label>
-                                         <input type="number" class="form-control" name="priceanytep="any" value="{{ $product->price }}">
+                                         <label>Transport Cost</label>
+                                         <input type="number" class="form-control" name="transport_cost" step="any"
+                                             value="{{ old('transport_cost', $product->transport_cost ?? 0) }}">
                                      </div>
                                     <div class="form-group col-md-4">
-                                        <label>Quantity</label>
-                                        <input type="number" class="form-control" name="qty" value="{{ $product->qty }}">
+                                        <label>Tax</label>
+                                        <input type="number" class="form-control" name="tax" step="any"
+                                            value="{{ old('tax', $product->tax ?? 0) }}">
                                     </div>
                                 </div>
 
@@ -134,8 +155,7 @@
                                             <thead>
                                                 <tr>
                                                     <th width="30%">Type</th>
-                                                    <th width="40%">Variant</th>
-                                                    <th>Qty</th>
+                                                    <th width="60%">Variant</th>
                                                     <th>Action</th>
                                                 </tr>
                                             </thead>
@@ -166,7 +186,6 @@
                                                                 </select>
                                                             </div>
                                                         </td>
-                                                        <td><input type="number" name="variants[{{ $index }}][qty]" class="form-control" value="{{ $variant->qty }}"></td>
                                                         <td><button type="button" class="btn btn-danger remove-variant" data-id="{{ $index }}"><i class="fas fa-trash"></i></button></td>
                                                     </tr>
                                                 @endforeach
@@ -287,7 +306,6 @@
                                 </select>
                             </div>
                         </td>
-                        <td><input type="number" name="variants[${variantCount}][qty]" class="form-control" value="0"></td>
                         <td><button type="button" class="btn btn-danger remove-variant" data-id="${variantCount}"><i class="fas fa-trash"></i></button></td>
                     </tr>
                 `;

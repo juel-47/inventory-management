@@ -53,12 +53,12 @@
                                         <tr>
                                             <th>Image</th>
                                             <th>Product</th>
-                                            <th>SKU</th>
                                             <th>Category</th>
                                             <th>Qty</th>
                                             <th>Unit</th>
-                                            <th>Base Unit Price</th>
-                                            <th>Base Total Value</th>
+                                            <th>local Purchase Unit Price</th>
+                                            <th>local Purchase Total Unit Price</th>
+                                            <th>Total Value</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -77,18 +77,18 @@
                                                     @endif
                                                 </td>
                                                 <td>{{ $product->name }}</td>
-                                                <td>{{ $product->sku }}</td>
                                                 <td>{{ $product->category->name ?? 'N/A' }}</td>
                                                 <td>{{ $product->qty }}</td>
                                                 <td>{{ $product->unit->name ?? 'N/A' }}</td>
                                                 <td>{!! formatConverted($product->purchase_price) !!}</td>
                                                 <td>{!! formatConverted($value) !!}</td>
+                                                <td>{!! formatConverted($product->value) !!}</td>
                                             </tr>
                                         @endforeach
                                     </tbody>
                                     <tfoot>
                                         <tr>
-                                            <th colspan="7" class="text-right">Total Inventory Value:</th>
+                                            <th colspan="6" class="text-right">Total Inventory Value:</th>
                                             <th>{!! formatConverted($totalValue) !!}</th>
                                         </tr>
                                     </tfoot>

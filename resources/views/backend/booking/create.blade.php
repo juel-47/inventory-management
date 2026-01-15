@@ -21,31 +21,7 @@
                                 @csrf
                                 <div class="row mb-4">
                                     <div class="col-12">
-                                        <div class="section-title mt-0">General Information</div>
-                                    </div>
-                                    <div class="form-group col-md-6">
-                                        <label>Vendor</label>
-                                        <select class="form-control select2" name="vendor_id">
-                                            <option value="">Select Vendor</option>
-                                            @foreach ($vendors as $vendor)
-                                                <option value="{{ $vendor->id }}">{{ $vendor->shop_name }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    <div class="form-group col-md-6">
-                                        <label>Product</label>
-                                        <select class="form-control select2" name="product_id" id="product_id">
-                                            <option value="">Select Product</option>
-                                            @foreach ($products as $product)
-                                                <option value="{{ $product->id }}">{{ $product->name }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="row mb-4">
-                                    <div class="col-12">
-                                        <div class="section-title mt-0">Categorization (Optional Override)</div>
+                                        <div class="section-title mt-0">Categorization</div>
                                     </div>
                                     <div class="form-group col-md-4">
                                         <label>Category</label>
@@ -66,6 +42,30 @@
                                         <label>Child Category</label>
                                         <select class="form-control select2" name="child_category_id" id="child_category_id">
                                             <option value="">Select Child Category (Optional)</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-4">
+                                    <div class="col-12">
+                                        <div class="section-title mt-0">General Information</div>
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label>Vendor</label>
+                                        <select class="form-control select2" name="vendor_id">
+                                            <option value="">Select Vendor</option>
+                                            @foreach ($vendors as $vendor)
+                                                <option value="{{ $vendor->id }}">{{ $vendor->shop_name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label>Product</label>
+                                        <select class="form-control select2" name="product_id" id="product_id">
+                                            <option value="">Select Product</option>
+                                            @foreach ($products as $product)
+                                                <option value="{{ $product->id }}">{{ $product->name }}</option>
+                                            @endforeach
                                         </select>
                                     </div>
                                 </div>
@@ -273,6 +273,9 @@
                         $('#variant_table_body').empty();
                     }
 
+                    // ensure booking barcode input is not auto-filled from product
+                    $('#barcode').val('');
+
                 } else {
                      $('#product_name').val('');
                      $('#product_number').val('');
@@ -280,6 +283,7 @@
                      $('#product_image').hide();
                      $('#variant_container').hide();
                      $('#variant_table_body').empty();
+                     $('#barcode').val('');
                 }
             });
 
@@ -336,6 +340,45 @@
                 // Pricing recalculation removed
             }
             
+            // Filter products client-side by selected category/subcategory/child
+            function filterProductsBySelectedCategory() {
+                let categoryId = $('#category_id').val();
+                let subCategoryId = $('#sub_category_id').val();
+                let childCategoryId = $('#child_category_id').val();
+
+                let html = '<option value="">Select Product</option>';
+                products.forEach(function(p) {
+                    if(!categoryId) {
+                        html += `<option value="${p.id}">${p.name}</option>`;
+                        return;
+                    }
+
+                    if(childCategoryId && p.child_category_id && p.child_category_id == childCategoryId) {
+                        html += `<option value="${p.id}">${p.name}</option>`;
+                        return;
+                    }
+                    if(subCategoryId && p.sub_category_id && p.sub_category_id == subCategoryId) {
+                        html += `<option value="${p.id}">${p.name}</option>`;
+                        return;
+                    }
+                    if(p.category_id && p.category_id == categoryId) {
+                        html += `<option value="${p.id}">${p.name}</option>`;
+                        return;
+                    }
+                });
+
+                $('#product_id').html(html);
+                $('#product_id').val('').trigger('change');
+                // Clear product detail fields when filter applied
+                $('#product_name').val('');
+                $('#product_number').val('');
+                $('#product_category').val('');
+                $('#product_image').hide();
+                $('#variant_container').hide();
+                $('#variant_table_body').empty();
+                $('#barcode').val('');
+            }
+            
             // Category Change - Load Subcategories
             $('#category_id').on('change', function() {
                 let categoryId = $(this).val();
@@ -358,6 +401,8 @@
                             console.log('Error loading subcategories');
                         }
                     });
+                    // filter products for this category client-side
+                    filterProductsBySelectedCategory();
                 }
             });
             
@@ -382,7 +427,14 @@
                             console.log('Error loading child categories');
                         }
                     });
+                    // filter products for this subcategory
+                    filterProductsBySelectedCategory();
                 }
+            });
+
+            // Child category manual change should also filter products
+            $('#child_category_id').on('change', function() {
+                filterProductsBySelectedCategory();
             });
             
             // Custom Fields

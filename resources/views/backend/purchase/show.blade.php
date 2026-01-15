@@ -84,11 +84,11 @@
                                                 </div>
                                             @endif
                                         </td>
-                                        <td class="text-center">{{ formatConverted($detail->unit_cost) }}</td>
-                                        <td class="text-center">{{ formatWithVendor($detail->unit_cost, $purchase->vendor->currency_icon, $purchase->vendor->currency_rate) }}</td>
-                                        <td class="text-center">{{ $detail->qty }}</td>
-                                        <td class="text-right">{{ formatConverted($detail->total) }}</td>
-                                        <td class="text-right">{{ formatWithVendor($detail->total, $purchase->vendor->currency_icon, $purchase->vendor->currency_rate) }}</td>
+                                         <td class="text-center">{{ formatConverted($detail->unit_cost) }}</td>
+                                         <td class="text-center">{{ $purchase->vendor->currency_icon }}{{ number_format($detail->unit_cost_vendor, 2) }}</td>
+                                         <td class="text-center">{{ $detail->qty }}</td>
+                                         <td class="text-right">{{ formatConverted($detail->total) }}</td>
+                                         <td class="text-right">{{ $purchase->vendor->currency_icon }}{{ number_format($detail->unit_cost_vendor * $detail->qty, 2) }}</td>
                                     </tr>
                                     @endforeach
                                 </table>
@@ -124,14 +124,20 @@
                                     </div>
                                     @endif
                                     <hr class="mt-2 mb-2">
-                                    <div class="invoice-detail-item">
-                                        <div class="invoice-detail-name">Grand Total</div>
-                                        <div class="invoice-detail-value invoice-detail-value-lg">{{ formatConverted($purchase->total_amount) }}</div>
-                                    </div>
-                                    <div class="invoice-detail-item">
-                                        <div class="invoice-detail-name">Vendor Total ({{ $purchase->vendor->currency_name }})</div>
-                                        <div class="invoice-detail-value">{{ formatWithVendor($purchase->total_amount, $purchase->vendor->currency_icon, $purchase->vendor->currency_rate) }}</div>
-                                    </div>
+                                     @php
+                                         $vendorItemTotal = $purchase->details->sum(function($d) { return $d->unit_cost_vendor * $d->qty; });
+                                         $grandTotal = $purchase->total_amount;
+                                         // Round for display if very close to integer or if currency logic suggests it
+                                         $displayTotal = (abs($grandTotal - round($grandTotal)) < 0.01) ? round($grandTotal) : $grandTotal;
+                                     @endphp
+                                     <div class="invoice-detail-item">
+                                         <div class="invoice-detail-name">Grand Total</div>
+                                         <div class="invoice-detail-value invoice-detail-value-lg">{{ formatConverted($displayTotal) }}</div>
+                                     </div>
+                                     <div class="invoice-detail-item">
+                                         <div class="invoice-detail-name">Vendor Total ({{ $purchase->vendor->currency_name }})</div>
+                                         <div class="invoice-detail-value">{{ $purchase->vendor->currency_icon }}{{ number_format($vendorItemTotal, 2) }}</div>
+                                     </div>
                                 </div>
                             </div>
                         </div>

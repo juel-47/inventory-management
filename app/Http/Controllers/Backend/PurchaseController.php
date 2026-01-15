@@ -19,7 +19,7 @@ class PurchaseController extends Controller
      */
     public function index()
     {
-        $purchases = Purchase::with(['vendor', 'user'])->orderBy('id', 'desc')->get(); // Using get() for simple list first, or DataTable later if requested in plan
+        $purchases = Purchase::with(['vendor', 'user', 'details'])->orderBy('id', 'desc')->get(); // Using get() for simple list first, or DataTable later if requested in plan
         return view('backend.purchase.index', compact('purchases'));
     }
 
@@ -28,6 +28,7 @@ class PurchaseController extends Controller
      */
     public function create()
     {
+        
         $vendors = Vendor::where('status', 1)->get();
         // Passing products for JS selection
         $products = Product::where('status', 1)->with('variants.color', 'variants.size')->get(); 
@@ -51,6 +52,7 @@ class PurchaseController extends Controller
      */
     public function store(Request $request)
     {
+
         $request->validate([
             'vendor_id' => 'required',
             'date' => 'required|date',
@@ -83,10 +85,18 @@ class PurchaseController extends Controller
             $totalAmount = 0;
 
             foreach ($request->items as $item) {
-                // Convert Vendor Currency (Input) to System Currency (Storage)
-                $itemUnitCost = $item['unit_cost'] * $rate;
+                $qty = $item['qty'] > 0 ? $item['qty'] : 1;
+                // Get cost breakdown components (these are in system currency)
+                // Raw material cost acts as the base cost (includes converted vendor cost)
+                $rawMaterial = ($item['raw_material_cost'] ?? 0);
+                $tax = ($item['tax_cost'] ?? 0);
+                $transport = ($item['transport_cost'] ?? 0);
                 
-                $subTotal = $item['qty'] * $itemUnitCost;
+                // Landed cost (per unit) = rawMaterial + (tax total / qty) + (transport total / qty)
+                $itemUnitCost = $rawMaterial + $tax + $transport;
+                
+                // Subtotal = (Raw Material * Qty) + Tax Total + Transport Total
+                $subTotal = ($rawMaterial * $qty) + $tax + $transport;
                 $totalAmount += $subTotal;
 
                 // Create Detail
@@ -95,6 +105,10 @@ class PurchaseController extends Controller
                 $detail->product_id = $item['product_id'];
                 $detail->qty = $item['qty'];
                 $detail->unit_cost = $itemUnitCost;
+                $detail->unit_cost_vendor = $item['unit_cost'] ?? 0;
+                $detail->raw_material_cost = $rawMaterial;
+                $detail->tax_cost = $tax;
+                $detail->transport_cost = $transport;
                 $detail->total = $subTotal;
                 
                 // Save & Standardize Variant Info
@@ -106,10 +120,25 @@ class PurchaseController extends Controller
                 
                 $detail->save();
 
-                // Update Stock and Purchase Price (Main Product)
+                // Update Product Costs and Prices
                 $product = Product::findOrFail($item['product_id']);
+                
+                // Store the total landed cost (system currency) as the purchase price
                 $product->purchase_price = $itemUnitCost;
+                
+                // Update local costs to the product record
+                $product->raw_material_cost = $rawMaterial;
+                $product->tax = $tax;
+                $product->transport_cost = $transport;
+                
+                // Update sale price if provided
+                if(isset($item['sale_price']) && $item['sale_price'] > 0) {
+                    $product->price = $item['sale_price'];
+                }
+                
                 $product->save();
+                
+                // Update main stock
                 $product->increment('qty', $item['qty']);
                 
                 // Update Stock (Variants)
@@ -148,9 +177,7 @@ class PurchaseController extends Controller
                 }
             }
 
-            // Add extra costs to total (Directly in system currency from UI)
-            $totalAmount += ($purchase->material_cost + $purchase->transport_cost + $purchase->tax);
-            
+            // The totalAmount already includes material, transport, and tax distributed at row level
             $purchase->total_amount = $totalAmount;
             $purchase->save();
 

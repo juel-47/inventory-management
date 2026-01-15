@@ -29,8 +29,8 @@
                                             <th>Invoice No</th>
                                             <th>Vendor</th>
                                             <th>Created By</th>
-                                            <th>Total</th>
-                                            <th>Vendor Total</th>
+                                            <th>local currency Total</th>
+                                            <th>Vendor Total price</th>
                                             <th>Status</th>
                                             <th>Action</th>
                                         </tr>
@@ -45,9 +45,12 @@
                                                 <td>{{ formatConverted($purchase->total_amount) }}</td>
                                                 <td>
                                                     @if($purchase->vendor)
-                                                        {!! formatWithVendor($purchase->total_amount, $purchase->vendor->currency_icon, $purchase->vendor->currency_rate) !!}
+                                                        @php
+                                                            $vendorSubtotal = $purchase->details->sum(function($d) { return $d->unit_cost_vendor * $d->qty; });
+                                                        @endphp
+                                                        {{ $purchase->vendor->currency_icon }}{{ number_format($vendorSubtotal, 2) }}
                                                     @else
-                                                        {!! formatConverted($purchase->total_amount) !!}
+                                                        {{ formatConverted($purchase->total_amount) }}
                                                     @endif
                                                 </td>
                                                 <td>

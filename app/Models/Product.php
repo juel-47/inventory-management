@@ -25,7 +25,11 @@ class Product extends Model
         'purchase_price',
         'price',
         'barcode',
-        'status'
+        'status',
+        'self_number',
+        'raw_material_cost',
+        'transport_cost',
+        'tax',
     ];
 
     public function category()

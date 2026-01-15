@@ -1,5 +1,4 @@
 @extends('backend.layouts.master')
-
 @section('content')
     <section class="section">
         <div class="section-header">
@@ -68,15 +67,20 @@
                                 <!-- Section 2: Invoice Items -->
                                 <div class="section-title">Invoice Items</div>
                                 <div class="table-responsive mb-4">
-                                    <table class="table table-bordered table-md" id="product_table">
+                                    <table class="table table-bordered table-sm" id="product_table">
                                         <thead class="bg-light text-center">
                                             <tr>
-                                                <th width="5%">Image</th>
-                                                <th width="35%">Product & Variants</th>
-                                                <th width="15%" id="vendor_unit_cost_header">Unit Cost (Vendor)</th>
-                                                <th width="15%">Qty</th>
-                                                <th width="20%" id="vendor_subtotal_header">Total (Vendor)</th>
-                                                <th width="5%"></th>
+                                                <th width="4%">Image</th>
+                                                <th width="18%">Product Details</th>
+                                                <th width="7%" id="vendor_unit_cost_header">unit cost (Vendor)</th>
+                                                <th width="7%">Qty</th>
+                                                <th width="12%" id="vendor_subtotal_header">Total purchase price (Vendor)</th>
+                                                <th width="7%">Raw Cost</th>
+                                                <th width="7%">Tax</th>
+                                                <th width="7%">Transport</th>
+                                                <th width="8%">Sale Price</th>
+                                                <th width="8%">Local Unit Cost</th>
+                                                <th width="4%"></th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -84,7 +88,7 @@
                                         </tbody>
                                         <tfoot>
                                             <tr>
-                                                <td colspan="6" class="p-0">
+                                                <td colspan="11" class="p-0">
                                                     <button type="button" class="btn btn-block btn-outline-primary border-dashed py-3" id="add_row_btn">
                                                         <i class="fas fa-plus-circle"></i> Add Another Product Line
                                                     </button>
@@ -104,7 +108,7 @@
                                                 <div class="form-control-plaintext font-weight-bold" id="vendor_grand_total">0.00</div>
                                             </div>
                                         </div>
-                                        <div class="form-group row mb-2">
+                                        {{-- <div class="form-group row mb-2">
                                             <label class="col-sm-6 col-form-label text-right">Raw Material Cost:</label>
                                             <div class="col-sm-6">
                                                 <input type="number" name="material_cost" class="form-control form-control-sm extra_cost_input" step="any" value="0.00">
@@ -121,7 +125,7 @@
                                             <div class="col-sm-6">
                                                 <input type="number" name="tax" class="form-control form-control-sm extra_cost_input" step="any" value="0.00">
                                             </div>
-                                        </div>
+                                        </div> --}}
                                         <hr>
                                         <div class="form-group row">
                                             <label class="col-sm-6 col-form-label text-right h5 mb-0">Grand Total (System):</label>
@@ -243,6 +247,20 @@
                         imgContainer.html(`<div class="bg-light rounded d-flex align-items-center justify-content-center text-muted small" style="width: 40px; height: 40px;">N/A</div>`);
                     }
 
+                    // Display Product Info (name, number, category, sale price)
+                    let productInfo = `<strong>${product.name}</strong>`;
+                    if(product.product_number) productInfo += `<br><small class="text-muted">Item #: ${product.product_number}</small>`;
+                    if(product.category && product.category.name) productInfo += `<br><small class="text-muted">Category: ${product.category.name}</small>`;
+                    row.find('.product-info').html(productInfo);
+                    
+                  
+                    
+                    // Set cost fields from product
+                    row.find('.raw_material_cost').val(product.raw_material_cost || 0);
+                    row.find('.tax_cost').val(product.tax || 0);
+                    row.find('.transport_cost').val(product.transport_cost || 0);
+                      // Set sale price (editable)
+                    row.find('.sale_price').val(product.price || 0);
                     // Handle Variants
                     let variantHtml = '';
                     if(product.variants && product.variants.length > 0) {
@@ -258,16 +276,38 @@
                     row.find('.variant-container').html(variantHtml);
                     row.find('.variant_info_hidden').val(''); // Clear old info
                     
+                    calculateLocalUnitCost(row);
                     calculateRowTotal(row);
                 }
             });
 
             $(document).on('input', '.qty, .unit_cost', function() {
-                calculateRowTotal($(this).closest('tr'));
+                let row = $(this).closest('tr');
+                if ($(this).hasClass('unit_cost')) {
+                    let vendorCost = parseFloat($(this).val()) || 0;
+                    // Update only base raw material (converted vendor cost)
+                    row.find('.raw_material_cost').val((vendorCost * currentVendorRate).toFixed(2));
+                    
+                    // If cost is set to exactly 0, and user hasn't manually added fees, clear them to avoid 0.01 remainder
+                    if (vendorCost === 0) {
+                        let existingTax = parseFloat(row.find('.tax_cost').val()) || 0;
+                        let existingTransport = parseFloat(row.find('.transport_cost').val()) || 0;
+                        if (existingTax < 0.01) row.find('.tax_cost').val('0.00');
+                        if (existingTransport < 0.01) row.find('.transport_cost').val('0.00');
+                    }
+                }
+                calculateRowTotal(row);
+                calculateLocalUnitCost(row);
+            });
+
+            $(document).on('input', '.raw_material_cost, .tax_cost, .transport_cost', function() {
+                let row = $(this).closest('tr');
+                calculateLocalUnitCost(row);
+                calculateRowTotal(row);
             });
 
             $(document).on('input', '.extra_cost_input', function() {
-                calculateGrandTotal();
+                distributeExtraCosts();
             });
             
             $(document).on('input', '.variant-qty-input', function() {
@@ -293,7 +333,7 @@
 
         function updateCurrencyMetadata() {
             $('#vendor_unit_cost_header').text('Unit Cost (' + currentVendorName + ')');
-            $('#vendor_subtotal_header').text('Total (' + currentVendorName + ')');
+            $('#vendor_subtotal_header').text('Total purchase price  (' + currentVendorName + ')');
             $('#current_rate_display').text(currentVendorRate);
         }
 
@@ -311,7 +351,6 @@
                  variantHtml += '<tbody>';
                  for (const [key, qty] of Object.entries(variants)) {
                      hasVariants = true;
-                     // Aggressively clean keys like "Color: white - Size: 500" into "white 500"
                      let cleanKey = key.replace(/Color:\s*/gi, '')
                                        .replace(/Size:\s*/gi, '')
                                        .replace(/\s*-\s*/g, ' ')
@@ -326,6 +365,11 @@
              let imageHtml = product.thumb_image 
                 ? `<img src="{{ asset('storage') }}/${product.thumb_image}" class="rounded" style="width: 40px; height: 40px; object-fit: cover;">`
                 : `<div class="bg-light rounded d-flex align-items-center justify-content-center text-muted small" style="width: 40px; height: 40px;">N/A</div>`;
+
+             // Build product info display
+             let productInfo = `<strong>${product.name}</strong>`;
+             if(product.product_number) productInfo += `<br><small class="text-muted">Item #: ${product.product_number}</small>`;
+             if(product.category && product.category.name) productInfo += `<br><small class="text-muted">Category: ${product.category.name}</small>`;
 
              if(booking.vendor && booking.vendor.currency_rate) {
                  currentVendorRate = booking.vendor.currency_rate;
@@ -343,18 +387,39 @@
                             <option value="${product.id}" selected>${product.name}</option>
                             ${products.map(p => p.id != product.id ? `<option value="${p.id}">${p.name}</option>` : '').join('')}
                         </select>
+                        <div class="product-info mt-2" style="font-size: 13px; color: #666;">${productInfo}</div>
                         <div class="variant-container">${variantHtml}</div>
                         <input type="hidden" class="variant_info_hidden" name="items[${rowCount}][variant_info]" value='${variantInput}'>
                     </td>
                     <td class="align-middle text-center">
-                        <input type="number" class="form-control unit_cost text-center" name="items[${rowCount}][unit_cost]" step="any" value="${booking.unit_price}" required>
+                        <input type="number" class="form-control unit_cost text-center" name="items[${rowCount}][unit_cost]" step="any" value="${booking.unit_price}" required style="font-size: 12px;">
                         <small class="text-muted d-block mt-1">Sys: <span class="unit_cost_system">${systemIcon}0.00</span></small>
                     </td>
                     <td class="align-middle text-center">
-                        <input type="number" class="form-control qty text-center" name="items[${rowCount}][qty]" value="${booking.qty}" min="1" required style="font-weight: bold;">
+                        <input type="number" class="form-control qty text-center" name="items[${rowCount}][qty]" value="${booking.qty}" min="1" required style="font-weight: bold; font-size: 12px;">
                     </td>
                     <td class="align-middle text-right">
-                        <input type="text" class="form-control-plaintext subtotal h6 mb-0 text-dark text-right pr-2" readonly value="0.00">
+                        <input type="text" class="form-control-plaintext subtotal h6 mb-0 text-dark text-right pr-2" readonly value="0.00" style="font-size: 12px;">
+                    </td>
+                    <td class="align-middle text-center">
+                        <input type="number" class="form-control raw_material_cost text-center" name="items[${rowCount}][raw_material_cost]" value="${product.raw_material_cost || 0}" step="any" style="font-size: 12px;">
+                        <small class="text-muted d-block mt-1">Raw Cost</small>
+                    </td>
+                    <td class="align-middle text-center">
+                        <input type="number" class="form-control tax_cost text-center" name="items[${rowCount}][tax_cost]" value="${product.tax || 0}" step="any" style="font-size: 12px;">
+                        <small class="text-muted d-block mt-1">Tax</small>
+                    </td>
+                    <td class="align-middle text-center">
+                        <input type="number" class="form-control transport_cost text-center" name="items[${rowCount}][transport_cost]" value="${product.transport_cost || 0}" step="any" style="font-size: 12px;">
+                        <small class="text-muted d-block mt-1">Transport</small>
+                    </td>
+                     <td class="align-middle text-center">
+                        <input type="number" class="form-control sale_price text-center" name="items[${rowCount}][sale_price]" value="${product.price || 0}" step="any" style="font-size: 12px;">
+                        <small class="text-muted d-block mt-1">Sale Price</small>
+                    </td>
+                    <td class="align-middle text-center">
+                        <div class="form-control-plaintext local_unit_cost h6 mb-0 text-primary text-center pr-2" style="font-size: 12px; font-weight: bold;">0.00</div>
+                        <small class="text-muted d-block mt-1">Local Unit Cost</small>
                     </td>
                     <td class="align-middle text-center">
                         <button type="button" class="btn btn-danger btn-sm remove_row"><i class="fas fa-trash"></i></button>
@@ -363,7 +428,9 @@
             `;
             $('#product_table tbody').append(html);
             $('.select2').select2();
-            calculateRowTotal($('#product_table tbody tr').last());
+            let newRow = $('#product_table tbody tr').last();
+            calculateLocalUnitCost(newRow);
+            calculateRowTotal(newRow);
             rowCount++;
         }
 
@@ -378,18 +445,39 @@
                             <option value="">Select Product...</option>
                             ${products.map(p => `<option value="${p.id}">${p.name}</option>`).join('')}
                         </select>
+                        <div class="product-info mt-2" style="font-size: 13px; color: #666;"></div>
                         <div class="variant-container"></div>
                         <input type="hidden" class="variant_info_hidden" name="items[${rowCount}][variant_info]">
                     </td>
                     <td class="align-middle text-center">
-                        <input type="number" class="form-control unit_cost text-center" name="items[${rowCount}][unit_cost]" step="any" required placeholder="0.00">
+                        <input type="number" class="form-control unit_cost text-center" name="items[${rowCount}][unit_cost]" step="any" required placeholder="0.00" style="font-size: 12px;">
                         <small class="text-muted d-block mt-1">Sys: <span class="unit_cost_system">${systemIcon}0.00</span></small>
                     </td>
                     <td class="align-middle text-center">
-                       <input type="number" class="form-control qty text-center" name="items[${rowCount}][qty]" value="1" min="1" required style="font-weight: bold;">
+                       <input type="number" class="form-control qty text-center" name="items[${rowCount}][qty]" value="1" min="1" required style="font-weight: bold; font-size: 12px;">
                     </td>
                     <td class="align-middle text-right">
-                        <input type="text" class="form-control-plaintext subtotal h6 mb-0 text-dark text-right pr-2" readonly value="0.00">
+                        <input type="text" class="form-control-plaintext subtotal h6 mb-0 text-dark text-right pr-2" readonly value="0.00" style="font-size: 12px;">
+                    </td>
+                    <td class="align-middle text-center">
+                        <input type="number" class="form-control raw_material_cost text-center" name="items[${rowCount}][raw_material_cost]" placeholder="0.00" step="any" value="0" style="font-size: 12px;">
+                        <small class="text-muted d-block mt-1">Raw Cost</small>
+                    </td>
+                    <td class="align-middle text-center">
+                        <input type="number" class="form-control tax_cost text-center" name="items[${rowCount}][tax_cost]" placeholder="0.00" step="any" value="0" style="font-size: 12px;">
+                        <small class="text-muted d-block mt-1">Tax</small>
+                    </td>
+                    <td class="align-middle text-center">
+                        <input type="number" class="form-control transport_cost text-center" name="items[${rowCount}][transport_cost]" placeholder="0.00" step="any" value="0" style="font-size: 12px;">
+                        <small class="text-muted d-block mt-1">Transport</small>
+                    </td>
+                    <td class="align-middle text-center">
+                        <input type="number" class="form-control sale_price text-center" name="items[${rowCount}][sale_price]" placeholder="0.00" step="any" style="font-size: 12px;">
+                        <small class="text-muted d-block mt-1">Sale Price</small>
+                    </td>
+                    <td class="align-middle text-center">
+                        <div class="form-control-plaintext local_unit_cost h6 mb-0 text-primary text-center pr-2" style="font-size: 12px; font-weight: bold;">0.00</div>
+                        <small class="text-muted d-block mt-1">Local Unit Cost</small>
                     </td>
                     <td class="align-middle text-center">
                         <button type="button" class="btn btn-danger btn-sm remove_row"><i class="fas fa-trash"></i></button>
@@ -398,16 +486,45 @@
             `;
             $('#product_table tbody').append(html);
             $('.select2').select2(); 
+            let newRow = $('#product_table tbody tr').last();
+            calculateLocalUnitCost(newRow);
+            calculateRowTotal(newRow);
             rowCount++;
+        }
+
+        function calculateLocalUnitCost(row) {
+            let qty = parseFloat(row.find('.qty').val()) || 1;
+            let rawMaterial = parseFloat(row.find('.raw_material_cost').val()) || 0;
+            let tax = parseFloat(row.find('.tax_cost').val()) || 0;
+            let transport = parseFloat(row.find('.transport_cost').val()) || 0;
+            
+            // Local unit cost = raw material + tax + transport (all predefined amounts)
+            let totalLocalCost = rawMaterial + tax + transport;
+            
+            row.find('.local_unit_cost').text(systemIcon + totalLocalCost.toFixed(2));
         }
 
         function calculateRowTotal(row) {
             let qty = parseFloat(row.find('.qty').val()) || 0;
             let vendorCost = parseFloat(row.find('.unit_cost').val()) || 0;
+            
+            // Get landed cost components
+            let rawMaterial = parseFloat(row.find('.raw_material_cost').val()) || 0;
+            let tax = parseFloat(row.find('.tax_cost').val()) || 0;
+            let transport = parseFloat(row.find('.transport_cost').val()) || 0;
+            
+            // System cost = raw material + tax + transport (all predefined amounts)
+            let systemCost = rawMaterial + tax + transport;
+
+            // Precision fix: If after summing everything we have a tiny fraction but inputs were zero, clamp to 0.00
+            if (systemCost < 0.009 && vendorCost === 0 && rawMaterial < 0.009) systemCost = 0;
+            
             let vendorTotal = qty * vendorCost;
             row.find('.subtotal').val(vendorTotal.toFixed(2));
-            let systemCost = (vendorCost * currentVendorRate).toFixed(2);
-            row.find('.unit_cost_system').text(systemIcon + systemCost);
+            
+            row.find('.unit_cost_system').text(systemIcon + systemCost.toFixed(2));
+            
+            calculateLocalUnitCost(row);
             calculateGrandTotal();
         }
 
@@ -417,20 +534,83 @@
 
         function calculateGrandTotal() {
             let vendorTotal = 0;
-            $('#product_table tbody tr').each(function() {
-                 let qty = parseFloat($(this).find('.qty').val()) || 0;
-                 let cost = parseFloat($(this).find('.unit_cost').val()) || 0;
-                 vendorTotal += qty * cost;
-            });
-            let systemTotal = (vendorTotal * currentVendorRate);
-            let material = parseFloat($('input[name="material_cost"]').val()) || 0;
-            let transport = parseFloat($('input[name="transport_cost"]').val()) || 0;
-            let tax = parseFloat($('input[name="tax"]').val()) || 0;
-            systemTotal += (material + transport + tax);
+            let totalTax = 0;
+            let totalTransport = 0;
             
+            $('#product_table tbody tr').each(function() {
+                 let row = $(this);
+                 let qty = parseFloat(row.find('.qty').val()) || 0;
+                 let vendorCost = parseFloat(row.find('.unit_cost').val()) || 0;
+                 
+                 // Get tax and transport for this row
+                 let tax = parseFloat(row.find('.tax_cost').val()) || 0;
+                 let transport = parseFloat(row.find('.transport_cost').val()) || 0;
+                 
+                 vendorTotal += qty * vendorCost;
+                 totalTax += tax;
+                 totalTransport += transport;
+            });
+
             $('#vendor_grand_total').text(currentVendorIcon + vendorTotal.toFixed(2));
-            $('#grand_total_display').text(systemIcon + systemTotal.toFixed(2));
+            
+            // System total = (Vendor Total × Currency Rate) + Total Tax + Total Transport
+            let rate = parseFloat(currentVendorRate) || 1;
+            let systemTotal = (vendorTotal * rate) + totalTax + totalTransport;
+            
+            $('#grand_total_display').text(systemIcon + systemTotal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+            
             $('#total_amount_hidden').val(systemTotal.toFixed(2)); 
+        }
+
+        function distributeExtraCosts() {
+            let vendorTotal = 0;
+            let rows = $('#product_table tbody tr');
+            
+            rows.each(function() {
+                let qty = parseFloat($(this).find('.qty').val()) || 0;
+                let cost = parseFloat($(this).find('.unit_cost').val()) || 0;
+                vendorTotal += qty * cost;
+            });
+
+            let globalMaterial = parseFloat($('input[name="material_cost"]').val()) || 0;
+            let globalTransport = parseFloat($('input[name="transport_cost"]').val()) || 0;
+            let globalTax = parseFloat($('input[name="tax"]').val()) || 0;
+
+            if (vendorTotal > 0) {
+                rows.each(function() {
+                    let row = $(this);
+                    let qty = parseFloat(row.find('.qty').val()) || 1;
+                    let cost = parseFloat(row.find('.unit_cost').val()) || 0;
+                    let rowVendorSubtotal = qty * cost;
+                    let ratio = rowVendorSubtotal / vendorTotal;
+
+                    // Distribute proportionately
+                    let rowMaterial = (globalMaterial * ratio);
+                    let rowTransport = (globalTransport * ratio);
+                    let rowTax = (globalTax * ratio);
+
+                    // Base raw material cost = (vendor cost * rate) + distributed material
+                    // Material is still treated as per-unit for this specific label/calc if requested, 
+                    // but let's keep everything consistent: Raw Cost (Per Unit), Tax/Transport (Row Totals)
+                    let baseRaw = (cost * currentVendorRate) + (rowMaterial / qty);
+                    
+                    row.find('.raw_material_cost').val(baseRaw.toFixed(2));
+                    row.find('.transport_cost').val(rowTransport.toFixed(2));
+                    row.find('.tax_cost').val(rowTax.toFixed(2));
+                    
+                    calculateLocalUnitCost(row);
+                    calculateRowTotal(row);
+                });
+            } else {
+                // If no subtotal yet, just clear or set defaults
+                rows.each(function() {
+                    let row = $(this);
+                    let cost = parseFloat(row.find('.unit_cost').val()) || 0;
+                    row.find('.raw_material_cost').val((cost * currentVendorRate).toFixed(2));
+                    calculateLocalUnitCost(row);
+                });
+            }
+            calculateGrandTotal();
         }
     </script>
 @endpush

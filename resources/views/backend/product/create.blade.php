@@ -79,8 +79,8 @@
                                     </div>
                                 </div>
 
-                                <div class="row">
-                                     <div class="form-group col-md-4">
+                               <div class="row">
+                                    <div class="form-group col-md-4">
                                          <label>Purchase Price</label>
                                          <input type="number" class="form-control" name="purchase_price" step="any"
                                              value="{{ old('purchase_price') }}">
@@ -91,9 +91,27 @@
                                              value="{{ old('price') }}">
                                      </div>
                                     <div class="form-group col-md-4">
-                                        <label>Quantity</label>
-                                        <input type="number" class="form-control" name="qty"
-                                            value="{{ old('qty') }}">
+                                        <label>Self Number</label>
+                                        <input type="text" class="form-control" name="self_number"
+                                            value="{{ old('self_number') }}">
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                     <div class="form-group col-md-4">
+                                         <label>Raw Material Cost</label>
+                                         <input type="number" class="form-control" name="raw_material_cost" step="any"
+                                             value="{{ old('raw_material_cost', 0) }}">
+                                     </div>
+                                     <div class="form-group col-md-4">
+                                         <label>Transport Cost</label>
+                                         <input type="number" class="form-control" name="transport_cost" step="any"
+                                             value="{{ old('transport_cost', 0) }}">
+                                     </div>
+                                    <div class="form-group col-md-4">
+                                        <label>Tax</label>
+                                        <input type="number" class="form-control" name="tax" step="any"
+                                            value="{{ old('tax', 0) }}">
                                     </div>
                                 </div>
 
@@ -134,11 +152,10 @@
                                         <table class="table table-bordered">
                                             <thead>
                                                 <tr>
-                                                    <th width="30%">Type</th>
-                                                    <th width="40%">Variant</th>
-                                                    <th>Qty</th>
-                                                    <th>Action</th>
-                                                </tr>
+                                                        <th width="30%">Type</th>
+                                                        <th width="60%">Variant</th>
+                                                        <th>Action</th>
+                                                    </tr>
                                             </thead>
                                             <tbody id="variant-list">
                                                 <!-- Dynamic Rows -->
@@ -257,7 +274,6 @@
                                 </select>
                             </div>
                         </td>
-                        <td><input type="number" name="variants[${variantCount}][qty]" class="form-control" value="0"></td>
                         <td><button type="button" class="btn btn-danger remove-variant" data-id="${variantCount}"><i class="fas fa-trash"></i></button></td>
                     </tr>
                 `;

@@ -61,6 +61,7 @@ class ProductController extends Controller implements HasMiddleware
      */
     public function store(ProductCreateRequest $request)
     {
+        // dd($request->all());
         $imagePath = $this->upload_image($request, 'image', 'uploads/products');
 
         $product = new Product();
@@ -74,12 +75,15 @@ class ProductController extends Controller implements HasMiddleware
         $product->vendor_id = $request->vendor_id;
         $product->unit_id = $request->unit_id;
         $product->product_number = $request->product_number;
-        $product->qty = $request->qty ?? 0;
         $product->long_description = $request->long_description;
         $product->purchase_price = $request->purchase_price ?? 0;
         $product->price = $request->price ?? 0;
         $product->barcode = $request->barcode;
         $product->status = $request->status;
+        $product->self_number = $request->self_number;
+        $product->raw_material_cost=$request->raw_material_cost;
+        $product->transport_cost=$request->transport_cost;
+        $product->tax=$request->tax;
         $product->save();
 
         // Handle Variants
@@ -96,7 +100,7 @@ class ProductController extends Controller implements HasMiddleware
                     $sizeName = $productVariant->size_id ? Size::find($productVariant->size_id)->name : '';
                     $productVariant->name = trim($colorName . ' ' . $sizeName);
                     
-                    $productVariant->qty = $variant['qty'] ?? 0;
+                    // variant qty omitted from create/edit forms; keep DB default
                     $productVariant->save();
                 }
             }
@@ -135,6 +139,7 @@ class ProductController extends Controller implements HasMiddleware
      */
     public function update(ProductUpdateRequest $request, string $id)
     {
+        // dd($request->all());
         $product = Product::findOrFail($id);
         $imagePath = $this->update_image($request, 'image', 'uploads/products', $product->thumb_image);
 
@@ -151,12 +156,15 @@ class ProductController extends Controller implements HasMiddleware
         $product->vendor_id = $request->vendor_id;
         $product->unit_id = $request->unit_id;
         $product->product_number = $request->product_number;
-        $product->qty = $request->qty ?? 0;
         $product->long_description = $request->long_description;
         $product->purchase_price = $request->purchase_price ?? 0;
         $product->price = $request->price ?? 0;
         $product->barcode = $request->barcode;
         $product->status = $request->status;
+        $product->self_number = $request->self_number;
+        $product->raw_material_cost=$request->raw_material_cost;
+        $product->transport_cost=$request->transport_cost;
+        $product->tax=$request->tax;
         $product->save();
 
         ProductVariant::where('product_id', $product->id)->delete();
@@ -173,7 +181,7 @@ class ProductController extends Controller implements HasMiddleware
                     $sizeName = $productVariant->size_id ? Size::find($productVariant->size_id)->name : '';
                     $productVariant->name = trim($colorName . ' ' . $sizeName);
                     
-                    $productVariant->qty = $variant['qty'] ?? 0;
+                    // variant qty omitted from create/edit forms; keep DB default
                     $productVariant->save();
                  }
             }

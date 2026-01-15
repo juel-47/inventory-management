@@ -31,12 +31,11 @@ class ProductCreateRequest extends FormRequest
             'unit_id' => ['nullable', 'integer'],
             'price' => ['nullable', 'numeric', 'min:0'],
             'purchase_price' => ['nullable', 'numeric', 'min:0'],
-            'qty' => ['nullable', 'integer'],
             'long_description' => ['nullable', 'string'],
             'status' => ['required', 'boolean'],
             'barcode' => ['nullable', 'string', 'max:200'],
             'variants.*.name' => ['nullable', 'string', 'max:200'],
-            'variants.*.qty' => ['nullable', 'integer']
+            // qty removed from product create form
         ];
     }
 }

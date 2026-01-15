@@ -61,4 +61,15 @@ class Product extends Model
     {
         return $this->hasMany(ProductVariant::class);
     }
+
+    public function purchaseDetails()
+    {
+        return $this->hasMany(PurchaseDetail::class);
+    }
+
+    public function getTotalAttribute()
+    {
+        // Return latest purchase total safely using collection
+        return optional($this->purchaseDetails->last())->total ?? 0;
+    }
 }

@@ -57,16 +57,14 @@
                                             <th>Qty</th>
                                             <th>Unit</th>
                                             <th>local Purchase Unit Price</th>
-                                            <th>local Purchase Total Unit Price</th>
-                                            <th>Total Value</th>
+                                            <th>Total price</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @php $totalValue = 0; @endphp
                                         @foreach ($products as $product)
                                             @php 
-                                                $value = $product->qty * $product->purchase_price;
-                                                $totalValue += $value;
+                                                $totalValue += ($product->total ?? 0);
                                             @endphp
                                             <tr>
                                                 <td>
@@ -81,8 +79,8 @@
                                                 <td>{{ $product->qty }}</td>
                                                 <td>{{ $product->unit->name ?? 'N/A' }}</td>
                                                 <td>{!! formatConverted($product->purchase_price) !!}</td>
-                                                <td>{!! formatConverted($value) !!}</td>
-                                                <td>{!! formatConverted($product->value) !!}</td>
+                                                {{-- <td>{!! formatConverted($value) !!}</td> --}}
+                                                <td>{!! formatConverted($product->total ?? 0) !!}</td>
                                             </tr>
                                         @endforeach
                                     </tbody>

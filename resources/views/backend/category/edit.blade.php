@@ -35,7 +35,7 @@
                                 </div> --}}
                                 <div class="row">
                                     <div class="form-group col-md-6">
-                                        <label>Name</label>
+                                        <label>Category Name</label>
                                         <input type="text" class="form-control" name="name"
                                             value="{{ $category->name }}">
                                     </div>

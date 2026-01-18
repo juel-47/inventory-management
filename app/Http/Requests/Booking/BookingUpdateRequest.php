@@ -34,7 +34,7 @@ class BookingUpdateRequest extends FormRequest
             'min_inventory_qty' => ['nullable', 'integer'],
             'min_sale_qty' => ['nullable', 'integer'],
             'min_purchase_price' => ['nullable', 'numeric'],
-            'status' => ['required', 'in:pending,completed,cancelled'],
+            'status' => ['required', 'in:pending,complete,cancelled'],
         ];
     }
 }

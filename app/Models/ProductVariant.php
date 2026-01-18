@@ -34,4 +34,19 @@ class ProductVariant extends Model
     {
         return $this->belongsTo(Size::class);
     }
+
+    public function inventoryStocks()
+    {
+        return $this->hasMany(InventoryStock::class, 'variant_id');
+    }
+
+    public function stockLedgers()
+    {
+        return $this->hasMany(StockLedger::class, 'variant_id');
+    }
+
+    public function getInventoryStockAttribute()
+    {
+        return $this->inventoryStocks->sum('quantity');
+    }
 }

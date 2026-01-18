@@ -20,7 +20,7 @@
                                 @csrf
                                 <div class="row">
                                     <div class="form-group col-md-6">
-                                        <label>Name</label>
+                                        <label>Size Name</label>
                                         <input type="text" class="form-control" name="name" value="{{ old('name') }}" required>
                                         <small class="form-text text-muted">e.g., S, M, L, XL, XXL</small>
                                     </div>

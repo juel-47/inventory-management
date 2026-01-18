@@ -18,24 +18,29 @@
                             <h4>Financial Performance</h4>
                         </div>
                         <div class="card-body">
-                            <div x-data="{ start_date: '{{ request('start_date') }}', end_date: '{{ request('end_date') }}' }" class="mb-4">
+                            <form action="{{ route('admin.reports.profit-loss') }}" method="GET" class="mb-4">
                                 <div class="row">
                                     <div class="col-md-3">
                                         <label>Start Date</label>
-                                        <input type="date" class="form-control" x-model="start_date" @change="window.location.href = '{{ route('admin.reports.profit-loss') }}?start_date=' + start_date + '&end_date=' + end_date">
+                                        <input type="date" name="start_date" class="form-control" value="{{ request('start_date') }}">
                                     </div>
                                     <div class="col-md-3">
                                         <label>End Date</label>
-                                        <input type="date" class="form-control" x-model="end_date" @change="window.location.href = '{{ route('admin.reports.profit-loss') }}?start_date=' + start_date + '&end_date=' + end_date">
+                                        <input type="date" name="end_date" class="form-control" value="{{ request('end_date') }}">
                                     </div>
-                                    <div class="col-md-2">
+                                    <div class="col-md-4">
                                         <label>&nbsp;</label>
-                                        <button type="button" @click="start_date = ''; end_date = ''; window.location.href = '{{ route('admin.reports.profit-loss') }}'" class="btn btn-secondary btn-block">
-                                            <i class="fas fa-redo"></i> Reset
-                                        </button>
+                                        <div class="d-flex">
+                                            <button type="submit" class="btn btn-primary flex-grow-1 mr-2">
+                                                <i class="fas fa-filter"></i> Filter
+                                            </button>
+                                            <a href="{{ route('admin.reports.profit-loss') }}" class="btn btn-secondary">
+                                                <i class="fas fa-redo"></i> Reset
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            </form>
 
                             <div class="row">
                                     <div class="col-lg-4 col-md-6 col-sm-6 col-12">
@@ -95,7 +100,7 @@
                                             <table class="table table-bordered">
                                                 <tbody>
                                                      <tr>
-                                                         <td class="font-weight-bold">Revenue (Sales)</td>
+                                                        <td class="font-weight-bold">Revenue</td>
                                                          <td class="text-right text-success">{!! formatConverted($totalRevenue) !!}</td>
                                                      </tr>
                                                      <tr>

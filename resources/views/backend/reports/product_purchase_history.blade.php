@@ -18,25 +18,30 @@
                             <h4>Track Product Purchases by Vendor & User</h4>
                         </div>
                         <div class="card-body">
-                            <div x-data="{ product_id: '{{ request('product_id') }}' }" class="mb-4">
+                            <form action="{{ route('admin.reports.product-purchase-history') }}" method="GET" class="mb-4">
                                 <div class="row">
-                                    <div class="col-md-4">
+                                    <div class="col-md-5">
                                         <label>Filter by Product</label>
-                                        <select class="form-control select2" x-model="product_id" @change="window.location.href = '{{ route('admin.reports.product-purchase-history') }}?product_id=' + product_id">
+                                        <select name="product_id" class="form-control select2">
                                             <option value="">All Products</option>
                                             @foreach ($products as $product)
-                                                <option value="{{ $product->id }}">{{ $product->name }} ({{ $product->sku }})</option>
+                                                <option value="{{ $product->id }}" {{ request('product_id') == $product->id ? 'selected' : '' }}>{{ $product->name }} ({{ $product->sku }})</option>
                                             @endforeach
                                         </select>
                                     </div>
-                                    <div class="col-md-2">
+                                    <div class="col-md-4">
                                         <label>&nbsp;</label>
-                                        <button type="button" @click="product_id = ''; window.location.href = '{{ route('admin.reports.product-purchase-history') }}'" class="btn btn-secondary btn-block">
-                                            <i class="fas fa-redo"></i> Reset
-                                        </button>
+                                        <div class="d-flex">
+                                            <button type="submit" class="btn btn-primary flex-grow-1 mr-2">
+                                                <i class="fas fa-filter"></i> Filter
+                                            </button>
+                                            <a href="{{ route('admin.reports.product-purchase-history') }}" class="btn btn-secondary">
+                                                <i class="fas fa-redo"></i> Reset
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            </form>
 
                             <div class="table-responsive">
                                 <table class="table table-striped" id="table-1">

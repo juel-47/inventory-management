@@ -32,7 +32,7 @@
                                         </select>
                                     </div>
                                     <div class="form-group col-md-6">
-                                        <label>Name</label>
+                                        <label>SubCategory Name</label>
                                         <input type="text" class="form-control" name="name"
                                             value="{{ $subCategory->name }}">
                                     </div>

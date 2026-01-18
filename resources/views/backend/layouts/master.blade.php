@@ -40,6 +40,33 @@
     <!-- custom css -->
     <link rel="stylesheet" href="{{ asset('backend/assets/css/custom.css') }}">
     @stack('css')
+    <style>
+        @media (min-width: 1200px) {
+            .main-wrapper.container {
+                max-width: 98% !important;
+                width: 98% !important;
+            }
+        }
+
+        /* Bell Shake Animation */
+        @keyframes bell-shake {
+            0% { transform: rotate(0); }
+            15% { transform: rotate(5deg); }
+            30% { transform: rotate(-5deg); }
+            45% { transform: rotate(4deg); }
+            60% { transform: rotate(-4deg); }
+            75% { transform: rotate(2deg); }
+            85% { transform: rotate(-2deg); }
+            100% { transform: rotate(0); }
+        }
+
+        .shake {
+            animation: bell-shake 0.5s cubic-bezier(.36,.07,.19,.97) both infinite;
+            transform: translate3d(0, 0, 0);
+            backface-visibility: hidden;
+            perspective: 1000px;
+        }
+    </style>
     <!-- DataTables CSS for Bootstrap 4 -->
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css">
 <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap4.min.css">
@@ -60,16 +87,6 @@
 
             <!-- Main Content -->
             <div class="main-content">
-                {{-- Global Low Stock Notification Banner --}}
-                <div id="low-stock-banner" style="display: none;" class="alert alert-warning alert-dismissible fade show m-3" role="alert">
-                    <strong><i class="fas fa-exclamation-triangle"></i> Stock Alert!</strong>
-                    <span id="low-stock-message"></span>
-                    <a href="{{ route('admin.reports.low-stock') }}" class="alert-link">View Details</a>
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                
                 @yield('content')
             </div>
             <footer class="main-footer">
@@ -204,45 +221,75 @@
         });
     </script>
 
-    {{-- Low Stock Notification System --}}
+    {{-- Notification System --}}
     <script>
-        let notificationTimeout;
-        
         function checkLowStock() {
+            if ($('#low-stock-count-toggle').length === 0) return;
+
             $.ajax({
                 url: '{{ route("admin.low-stock-check") }}',
                 method: 'GET',
                 success: function(data) {
                     if (data.count > 0) {
-                        $('#low-stock-message').html(` ${data.count} product(s) are running low or out of stock. `);
-                        $('#low-stock-banner').slideDown();
+                        // Update Navbar Badge
+                        $('#low-stock-count-badge').text(data.count).show();
                         
-                        // Auto-dismiss after 5 seconds
-                        clearTimeout(notificationTimeout);
-                        notificationTimeout = setTimeout(function() {
-                            $('#low-stock-banner').slideUp();
-                        }, 5000); // 5 seconds
+                        // Add Shake Animation to the Bell ICON only
+                        $('#low-stock-count-toggle i').addClass('shake');
                     } else {
-                        $('#low-stock-banner').slideUp();
+                        $('#low-stock-count-badge').hide();
+                        $('#low-stock-count-toggle i').removeClass('shake');
                     }
+
+                    // Always update current items list even if count is 0 (to show read ones)
+                    let listHtml = '';
+                    if (data.notifications && data.notifications.length > 0) {
+                        data.notifications.forEach(function(item) {
+                            let unreadStyle = item.is_unread ? 'background-color: #f8f9fa; border-left: 4px solid #6777ef;' : '';
+                            listHtml += `
+                                <a href="${item.url}" class="dropdown-item" style="padding: 15px; ${unreadStyle}">
+                                    <div class="dropdown-item-icon ${item.class} text-white" style="width: 45px; height: 45px; line-height: 45px; font-size: 18px;">
+                                        <i class="${item.icon}"></i>
+                                    </div>
+                                    <div class="dropdown-item-desc" style="padding-left: 15px;">
+                                        <b style="font-size: 15px;">${item.title}</b>
+                                        <p class="mb-0" style="font-size: 13px;">${item.desc}</p>
+                                        <div class="time text-primary" style="margin-top: 5px;">${item.time}</div>
+                                    </div>
+                                </a>
+                            `;
+                        });
+                    } else {
+                        listHtml = '<div class="dropdown-item text-center py-4">No new notifications</div>';
+                    }
+                    $('#low-stock-list').html(listHtml);
                 },
                 error: function() {
-                    console.log('Failed to check stock levels');
+                    console.log('Failed to check notifications');
                 }
             });
         }
 
-        // Check immediately on page load
+        function markAllAsRead() {
+            $.ajax({
+                url: '{{ route("admin.low-stock-mark-read") }}',
+                method: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function() {
+                    $('#low-stock-count-badge').hide();
+                    $('#low-stock-count-toggle i').removeClass('shake');
+                    // Refresh the list to show them as "read" (no background)
+                    checkLowStock();
+                }
+            });
+        }
+
         $(document).ready(function() {
             checkLowStock();
-            
-            // Auto-refresh every 10 minutes (600000 milliseconds)
-            setInterval(checkLowStock, 600000);
-        });
-
-        // If user manually closes, don't auto-dismiss for that session
-        $('#low-stock-banner').on('closed.bs.alert', function () {
-            clearTimeout(notificationTimeout);
+            // Auto-refresh every 5 minutes
+            setInterval(checkLowStock, 300000);
         });
     </script>
 

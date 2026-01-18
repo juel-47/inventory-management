@@ -30,11 +30,10 @@
                                                     <table class="table table-hover mb-0" id="items-table">
                                                         <thead class="bg-whitesmoke text-uppercase small font-weight-bold">
                                                             <tr>
-                                                                <th width="40%">Product Description</th>
-                                                                <th width="15%" class="text-center">Stock</th>
-                                                                 <th width="15%" class="text-right">Base Unit Price</th>
-                                                                 <th width="15%" class="text-center">Quantity</th>
-                                                                 <th width="15%" class="text-right">Base Total</th>
+                                                                <th width="50%">Product Details</th>
+                                                                 <th width="15%" class="text-right">Local Unit Price</th>
+                                                                 <th width="10%" class="text-center">Total Qty</th>
+                                                                 <th width="20%" class="text-right">Local Total Price</th>
                                                                 <th width="5%"></th>
                                                             </tr>
                                                         </thead>
@@ -55,15 +54,15 @@
                                     <div class="col-md-3">
                                         <div class="card border shadow-sm sticky-top" style="top: 80px;">
                                             <div class="card-header bg-primary text-white">
-                                                <h4 class="mb-0 text-white">Request Summary</h4>
+                                                <h4 class="mb-0 text-white">Summary</h4>
                                             </div>
                                             <div class="card-body bg-light">
                                                 <div class="d-flex justify-content-between mb-2">
-                                                    <span class="text-muted">Total Items:</span>
+                                                    <span class="text-muted">Total Products:</span>
                                                     <span id="total-items-count" class="font-weight-bold">0</span>
                                                 </div>
                                                 <div class="d-flex justify-content-between mb-3 border-bottom pb-2">
-                                                    <span class="text-muted">Total Quantity:</span>
+                                                    <span class="text-muted">Grand Total Qty:</span>
                                                     <span id="total-qty-display" class="font-weight-bold">0</span>
                                                 </div>
                                                 <div class="d-flex justify-content-between align-items-center">
@@ -71,10 +70,7 @@
                                                      <h4 class="mb-0 text-primary">{{ $settings->base_currency_icon }}<span id="grand-total-display">0.00</span></h4>
                                                 </div>
                                                 <hr>
-                                                <p class="small text-muted mb-4">
-                                                    <i class="fas fa-info-circle mr-1"></i> Prices are based on current company rates.
-                                                </p>
-                                                <button type="submit" class="btn btn-success btn-lg btn-block shadow-sm">
+                                                <button type="submit" class="btn btn-success btn-lg btn-block shadow-sm" id="submit-btn" disabled>
                                                     <i class="fas fa-paper-plane mr-2"></i> Submit Request
                                                 </button>
                                             </div>
@@ -93,111 +89,220 @@
 @push('scripts')
     <script>
         $(document).ready(function() {
-            let itemIndex = 0;
+            let rowCounter = 0;
+            const currencyIcon = "{{ $settings->base_currency_icon }}";
+            const products = @json($products);
 
-            function addRow() {
+            function addProductRow() {
+                let options = '<option value=""></option>';
+                products.forEach(p => {
+                    options += `<option value="${p.id}">${p.name}</option>`;
+                });
+
                 let html = `
-                    <tr id="row-${itemIndex}" class="item-row">
-                        <td>
-                            <select name="items[${itemIndex}][product_id]" class="form-control select2 product-select" data-placeholder="Choose a product" required>
-                                <option value=""></option>
-                                @foreach($products as $product)
-                                    <option value="{{ $product->id }}" 
-                                            data-qty="{{ $product->qty }}"
-                                            data-price="{{ $product->price }}">
-                                        {{ $product->name }} ({{ $product->sku }})
-                                    </option>
-                                @endforeach
-                            </select>
+                    <tr id="row-${rowCounter}" class="product-row border-bottom">
+                        <td class="p-4" style="vertical-align: top;">
+                            <div class="d-flex align-items-start mb-3">
+                                <div class="product-image-container mr-3" style="width: 60px; height: 60px; border: 1px solid #e4e6fc; border-radius: 6px; overflow: hidden; background: #fbfbfb; flex-shrink: 0;">
+                                    <img src="" class="product-thumb w-100 h-100" style="object-fit: cover; display: none;">
+                                    <div class="no-image-placeholder h-100 d-flex align-items-center justify-content-center text-muted small">
+                                        <i class="fas fa-image"></i>
+                                    </div>
+                                </div>
+                                <div class="form-group mb-0 flex-grow-1">
+                                    <select class="form-control select2 product-selector" data-placeholder="Choose Product">
+                                        ${options}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="variant-entry-area mt-4" style="display:none;">
+                                <div class="variant-list d-flex flex-wrap" style="gap: 15px;">
+                                    <!-- Variants will be injected here -->
+                                </div>
+                            </div>
                         </td>
-                        <td class="text-center align-middle">
-                            <span class="badge badge-light stock-badge">0</span>
+                        <td class="text-right align-middle px-4">
+                            <div class="text-muted small mb-1 text-uppercase font-weight-bold">Price</div>
+                            <div class="unit-price-display font-weight-bold">0.00</div>
                         </td>
-                        <td class="text-right align-middle">
-                            <span class="text-muted unit-price-display">0.00</span>
+                        <td class="text-center align-middle px-4">
+                            <div class="text-muted small mb-1 text-uppercase font-weight-bold">Total Qty</div>
+                            <div class="row-qty-text font-weight-bold h6 mb-0">0</div>
                         </td>
-                        <td>
-                            <input type="number" name="items[${itemIndex}][qty]" class="form-control text-center qty-input" min="1" placeholder="0" required>
+                        <td class="text-right align-middle px-4">
+                            <div class="text-muted small mb-1 text-uppercase font-weight-bold">Subtotal</div>
+                            <div class="row-total-text font-weight-bold h6 mb-0 text-primary">0.00</div>
                         </td>
-                        <td class="text-right align-middle font-weight-bold">
-                            <span class="subtotal-text text-dark">0.00</span>
-                        </td>
-                        <td class="text-center align-middle">
-                            <button type="button" class="btn btn-outline-danger btn-sm remove-row border-0" data-id="${itemIndex}">
-                                <i class="fas fa-trash"></i>
+                        <td class="text-center align-middle pr-4">
+                            <button type="button" class="btn btn-light btn-sm text-danger remove-row" data-id="${rowCounter}">
+                                <i class="fas fa-times"></i>
                             </button>
                         </td>
                     </tr>
                 `;
+                
                 $('#items-container').append(html);
-                
-                // Initialize Select2 for the specific new select
-                $(`#row-${itemIndex} .select2`).select2({
-                    width: '100%'
-                });
-                
-                itemIndex++;
+                const newRow = $(`#row-${rowCounter}`);
+                newRow.find('.select2').select2({ width: '100%', dropdownAutoWidth: true });
+                rowCounter++;
                 updateGlobalSummary();
             }
 
-            // Initial row
-            addRow();
-
-            $('#add-item').on('click', function() {
-                addRow();
-            });
+            // Start with one row
+            addProductRow();
+            $('#add-item').on('click', function() { addProductRow(); });
 
             $(document).on('click', '.remove-row', function() {
-                let id = $(this).data('id');
+                const id = $(this).data('id');
                 $(`#row-${id}`).fadeOut(200, function() {
                     $(this).remove();
+                    reindexFormInputs();
                     updateGlobalSummary();
                 });
             });
 
-            $(document).on('change', '.product-select', function() {
-                let selected = $(this).find(':selected');
-                let qty = selected.data('qty') || 0;
-                let price = selected.data('price') || 0;
+            $(document).on('change', '.product-selector', function() {
+                const productId = $(this).val();
+                const row = $(this).closest('tr');
+                const product = products.find(p => p.id == productId);
+                const variantArea = row.find('.variant-entry-area');
+                const variantList = row.find('.variant-list');
+                const imageTag = row.find('.product-thumb');
+                const noImagePlaceholder = row.find('.no-image-placeholder');
                 
-                let row = $(this).closest('tr');
-                row.find('.stock-badge').text(qty).removeClass('badge-light badge-danger badge-success').addClass(qty > 0 ? 'badge-success' : 'badge-danger');
-                row.find('.unit-price-display').text(parseFloat(price).toFixed(2));
+                variantList.empty();
                 
-                calculateRowSubtotal(row);
+                if (product) {
+                    row.find('.unit-price-display').text(parseFloat(product.price).toFixed(2));
+
+                    // Update Image
+                    if (product.thumb_image) {
+                        imageTag.attr('src', `/storage/${product.thumb_image}`).show();
+                        noImagePlaceholder.hide();
+                    } else {
+                        imageTag.hide();
+                        noImagePlaceholder.show();
+                    }
+
+                    if (product.variants && product.variants.length > 0) {
+                        product.variants.forEach(v => {
+                            const stock = v.inventory_stocks.find(s => s.outlet_id == 1)?.quantity || 0;
+                            variantList.append(`
+                                <div class="variant-item bg-white p-2 border rounded text-center shadow-sm" style="min-width: 100px;">
+                                    <div class="small font-weight-bold text-dark mb-1">${v.name}</div>
+                                    <div class="text-muted small mb-2">Stock: ${stock}</div>
+                                    <input type="number" class="form-control form-control-sm variant-qty-input text-center mx-auto" 
+                                           style="width: 70px; height: 32px;"
+                                           data-product-id="${product.id}" 
+                                           data-variant-id="${v.id}" 
+                                           data-max="${stock}" 
+                                           min="0" max="${stock}" value="0">
+                                </div>
+                            `);
+                        });
+                        variantArea.fadeIn();
+                    } else {
+                        const stock = product.inventory_stocks.find(s => s.outlet_id == 1)?.quantity || 0;
+                        variantList.append(`
+                            <div class="variant-item bg-white p-2 border rounded text-center shadow-sm" style="min-width: 120px;">
+                                <div class="small font-weight-bold text-dark mb-1">Standard</div>
+                                <div class="text-muted small mb-2">Stock: ${stock}</div>
+                                <input type="number" class="form-control form-control-sm variant-qty-input text-center mx-auto" 
+                                       style="width: 70px; height: 32px;"
+                                       data-product-id="${product.id}" 
+                                       data-variant-id="" 
+                                       data-max="${stock}" 
+                                       min="0" max="${stock}" value="0">
+                            </div>
+                        `);
+                        variantArea.fadeIn();
+                    }
+                } else {
+                    variantArea.fadeOut();
+                }
+                calculateRowTotals(row);
             });
 
-            $(document).on('input change', '.qty-input', function() {
-                let row = $(this).closest('tr');
-                calculateRowSubtotal(row);
+            $(document).on('input', '.variant-qty-input', function() {
+                const val = parseInt($(this).val()) || 0;
+                const max = parseInt($(this).data('max')) || 0;
+                
+                if (val > max) {
+                    $(this).addClass('border-danger text-danger');
+                } else {
+                    $(this).removeClass('border-danger text-danger');
+                }
+                
+                const row = $(this).closest('.product-row');
+                calculateRowTotals(row);
             });
 
-            function calculateRowSubtotal(row) {
-                let qty = parseFloat(row.find('.qty-input').val()) || 0;
-                let priceDisplay = row.find('.unit-price-display').text();
-                let price = parseFloat(priceDisplay) || 0;
-                let subtotal = qty * price;
+            function calculateRowTotals(row) {
+                let totalQty = 0;
+                row.find('.variant-qty-input').each(function() {
+                    totalQty += parseInt($(this).val()) || 0;
+                });
                 
-                row.find('.subtotal-text').text(subtotal.toFixed(2));
+                const price = parseFloat(row.find('.unit-price-display').text()) || 0;
+                const totalAmount = totalQty * price;
+                
+                row.find('.row-qty-text').text(totalQty);
+                row.find('.row-total-text').text(totalAmount.toFixed(2));
+                
                 updateGlobalSummary();
             }
 
             function updateGlobalSummary() {
                 let grandTotal = 0;
-                let totalQty = 0;
-                let itemCount = $('.item-row').length;
+                let grandTotalQty = 0;
+                let hasInvalid = false;
+                let hasItems = false;
 
-                $('.item-row').each(function() {
-                    let qty = parseFloat($(this).find('.qty-input').val()) || 0;
-                    let subtotal = parseFloat($(this).find('.subtotal-text').text()) || 0;
+                $('.product-row').each(function() {
+                    let qty = parseInt($(this).find('.row-qty-text').text()) || 0;
+                    let total = parseFloat($(this).find('.row-total-text').text()) || 0;
                     
-                    totalQty += qty;
-                    grandTotal += subtotal;
+                    if (qty > 0) hasItems = true;
+                    
+                    $(this).find('.variant-qty-input').each(function() {
+                        if (parseInt($(this).val()) > parseInt($(this).data('max'))) hasInvalid = true;
+                    });
+
+                    grandTotalQty += qty;
+                    grandTotal += total;
                 });
 
-                $('#total-items-count').text(itemCount);
-                $('#total-qty-display').text(totalQty);
+                $('#total-items-count').text($('.product-row').length);
+                $('#total-qty-display').text(grandTotalQty);
                 $('#grand-total-display').text(grandTotal.toFixed(2));
+                
+                $('#submit-btn').prop('disabled', hasInvalid || !hasItems);
+                
+                // Regenerate hidden inputs for submission
+                reindexFormInputs();
+            }
+
+            function reindexFormInputs() {
+                // Remove all previous hidden inputs
+                $('#hidden-inputs-container').remove();
+                
+                const container = $('<div id="hidden-inputs-container"></div>');
+                let index = 0;
+                
+                $('.variant-qty-input').each(function() {
+                    const qty = parseInt($(this).val()) || 0;
+                    if (qty > 0) {
+                        const pid = $(this).data('product-id');
+                        const vid = $(this).data('variant-id');
+                        
+                        container.append(`<input type="hidden" name="items[${index}][product_id]" value="${pid}">`);
+                        if (vid) container.append(`<input type="hidden" name="items[${index}][variant_id]" value="${vid}">`);
+                        container.append(`<input type="hidden" name="items[${index}][qty]" value="${qty}">`);
+                        index++;
+                    }
+                });
+                
+                $('form').append(container);
             }
         });
     </script>

@@ -18,33 +18,38 @@
                             <h4>All Purchase Invoices</h4>
                         </div>
                         <div class="card-body">
-                            <div x-data="{ start_date: '{{ request('start_date') }}', end_date: '{{ request('end_date') }}', vendor_id: '{{ request('vendor_id') }}' }" class="mb-4">
+                            <form action="{{ route('admin.reports.purchase') }}" method="GET" class="mb-4">
                                 <div class="row">
                                     <div class="col-md-3">
                                         <label>Start Date</label>
-                                        <input type="date" class="form-control" x-model="start_date" @change="window.location.href = '{{ route('admin.reports.purchase') }}?start_date=' + start_date + '&end_date=' + end_date + '&vendor_id=' + vendor_id">
+                                        <input type="date" name="start_date" class="form-control" value="{{ request('start_date') }}">
                                     </div>
                                     <div class="col-md-3">
                                         <label>End Date</label>
-                                        <input type="date" class="form-control" x-model="end_date" @change="window.location.href = '{{ route('admin.reports.purchase') }}?start_date=' + start_date + '&end_date=' + end_date + '&vendor_id=' + vendor_id">
+                                        <input type="date" name="end_date" class="form-control" value="{{ request('end_date') }}">
                                     </div>
                                     <div class="col-md-3">
                                         <label>Vendor</label>
-                                        <select class="form-control" x-model="vendor_id" @change="window.location.href = '{{ route('admin.reports.purchase') }}?start_date=' + start_date + '&end_date=' + end_date + '&vendor_id=' + vendor_id">
+                                        <select name="vendor_id" class="form-control">
                                             <option value="">All Vendors</option>
                                             @foreach ($vendors as $vendor)
-                                                <option value="{{ $vendor->id }}">{{ $vendor->shop_name }}</option>
+                                                <option value="{{ $vendor->id }}" {{ request('vendor_id') == $vendor->id ? 'selected' : '' }}>{{ $vendor->shop_name }}</option>
                                             @endforeach
                                         </select>
                                     </div>
-                                    <div class="col-md-2">
+                                    <div class="col-md-3">
                                         <label>&nbsp;</label>
-                                        <button type="button" @click="start_date = ''; end_date = ''; vendor_id = ''; window.location.href = '{{ route('admin.reports.purchase') }}'" class="btn btn-secondary btn-block">
-                                            <i class="fas fa-redo"></i> Reset
-                                        </button>
+                                        <div class="d-flex">
+                                            <button type="submit" class="btn btn-primary flex-grow-1 mr-2">
+                                                <i class="fas fa-filter"></i> Filter
+                                            </button>
+                                            <a href="{{ route('admin.reports.purchase') }}" class="btn btn-secondary">
+                                                <i class="fas fa-redo"></i> Reset
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            </form>
 
                             <div class="table-responsive">
                                 <table class="table table-striped" id="table-1">

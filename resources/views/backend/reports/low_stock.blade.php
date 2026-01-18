@@ -26,7 +26,7 @@
                             @if($products->count() > 0)
                                 <div class="alert alert-warning">
                                     <i class="fas fa-exclamation-triangle"></i> 
-                                    <strong>{{ $products->count() }}</strong> product(s) are running low on stock!
+                                    <strong>{{ $products->count() }}</strong> product(s) have stock levels at or below 100!
                                 </div>
 
                                 <div class="table-responsive">
@@ -37,16 +37,14 @@
                                                 <th>SKU</th>
                                                 <th>Category</th>
                                                 <th>Current Stock</th>
-                                                <th>Min Required</th>
-                                                <th>Deficit</th>
                                                 <th>Status</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             @foreach ($products as $product)
                                                 @php
-                                                    $deficit = $product->min_inventory_qty - $product->qty;
-                                                    $isCritical = $product->qty == 0;
+                                                    $currentStock = $product->inventory_stocks_sum_quantity ?? 0;
+                                                    $isCritical = $currentStock == 0;
                                                 @endphp
                                                 <tr class="{{ $isCritical ? 'table-danger' : '' }}">
                                                     <td>{{ $product->name }}</td>
@@ -54,11 +52,9 @@
                                                     <td>{{ $product->category->name ?? 'N/A' }}</td>
                                                     <td>
                                                         <span class="badge badge-{{ $isCritical ? 'danger' : 'warning' }}">
-                                                            {{ $product->qty }} {{ $product->unit->name ?? '' }}
+                                                            {{ $currentStock }} {{ $product->unit->name ?? '' }}
                                                         </span>
                                                     </td>
-                                                    <td>{{ $product->min_inventory_qty }}</td>
-                                                    <td>{{ $deficit }}</td>
                                                     <td>
                                                         @if($isCritical)
                                                             <span class="badge badge-danger">OUT OF STOCK</span>

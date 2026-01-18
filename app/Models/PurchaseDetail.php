@@ -11,6 +11,7 @@ class PurchaseDetail extends Model
     protected $fillable = [
         'purchase_id',
         'product_id',
+        'variant_id',
         'qty',
         'unit_cost',
         'total',
@@ -30,8 +31,9 @@ class PurchaseDetail extends Model
     {
         return $this->belongsTo(Product::class);
     }
-    public function products()
+    
+    public function variant()
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(ProductVariant::class);
     }
 }

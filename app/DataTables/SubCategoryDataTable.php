@@ -55,7 +55,8 @@ class SubCategoryDataTable extends DataTable
             ->setTableId('subcategory-table')
             ->columns($this->getColumns())
             ->minifiedAjax()
-            ->orderBy(0)
+            ->orderBy(1)
+            ->stateSave(true)
             ->selectStyleSingle()
             ->buttons([
                 Button::make('excel'),
@@ -71,10 +72,10 @@ class SubCategoryDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::make('id'),
-            Column::make('name'),
-            Column::make('category'),
-            Column::make('status'),
+            // Column::make('id'),
+            Column::make('name')->title('SubCategory Name')->addClass('text-center'),
+            Column::make('category')->title('Category Name')->addClass('text-center'),
+            Column::make('status')->addClass('text-center'),
             Column::computed('action')
                 ->exportable(false)
                 ->printable(false)

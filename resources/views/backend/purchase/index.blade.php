@@ -3,10 +3,10 @@
 @section('content')
     <section class="section">
         <div class="section-header">
-            <h1>Purchases</h1>
+            <h1>Order Receive</h1>
             <div class="section-header-breadcrumb">
                 <div class="breadcrumb-item active"><a href="{{ route('admin.dashboard') }}">Dashboard</a></div>
-                <div class="breadcrumb-item">Purchases</div>
+                <div class="breadcrumb-item">Order Receive</div>
             </div>
         </div>
 
@@ -15,9 +15,9 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-header">
-                            <h4>All Purchases</h4>
+                            <h4>All Order Receive</h4>
                             <div class="card-header-action">
-                                <a href="{{ route('admin.purchases.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> New Purchase</a>
+                                <a href="{{ route('admin.purchases.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> New Order Receive</a>
                             </div>
                         </div>
                         <div class="card-body">
@@ -80,8 +80,9 @@
 @push('scripts')
     <script>
         $("#table-1").dataTable({
+            "order": [[0, "desc"]],
             "columnDefs": [
-                { "sortable": false, "targets": [6] }
+                { "sortable": false, "targets": [7] }
             ]
         });
     </script>

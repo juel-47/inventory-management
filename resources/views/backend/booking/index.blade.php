@@ -3,10 +3,10 @@
 @section('content')
     <section class="section">
         <div class="section-header">
-            <h1>Booking</h1>
+            <h1>Order Place</h1>
             <div class="section-header-breadcrumb">
                 <div class="breadcrumb-item active"><a href="{{ route('admin.dashboard') }}">Dashboard</a></div>
-                <div class="breadcrumb-item">Booking</div>
+                <div class="breadcrumb-item">Order Place</div>
             </div>
         </div>
 
@@ -15,7 +15,7 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-header">
-                            <h4>All Bookings</h4>
+                            <h4>All Order Place</h4>
                             <div class="card-header-action">
                                 <a href="{{ route('admin.bookings.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i>
                                     Create New</a>

@@ -58,7 +58,8 @@ class ChildCategoryDataTable extends DataTable
             ->setTableId('childcategory-table')
             ->columns($this->getColumns())
             ->minifiedAjax()
-            ->orderBy(0)
+            ->orderBy(1)
+            ->stateSave(true)
             ->selectStyleSingle()
             ->buttons([
                 Button::make('excel'),
@@ -74,12 +75,12 @@ class ChildCategoryDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::make('id'),
-            Column::make('name'),
-            Column::make('category'),
-            Column::make('sub_category'),
-            Column::make('status'),
-            Column::computed('action')
+            // Column::make('id'),
+            Column::make('name')->title('ChildCategory Name')->addClass('text-center'),
+            Column::make('category')->title('Category Name')->addClass('text-center'),
+            Column::make('sub_category')->title('SubCategory Name')->addClass('text-center'),
+            Column::make('status')->title('Status')->addClass('text-center'),
+            Column::computed('action')->title('Action')->addClass('text-center')
                 ->exportable(false)
                 ->printable(false)
                 ->width(120)

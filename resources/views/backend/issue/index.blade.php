@@ -3,10 +3,10 @@
 @section('content')
     <section class="section">
         <div class="section-header">
-            <h1>Sales</h1>
+            <h1>Stock Issues</h1>
             <div class="section-header-breadcrumb">
                 <div class="breadcrumb-item active"><a href="{{ route('admin.dashboard') }}">Dashboard</a></div>
-                <div class="breadcrumb-item">Sales</div>
+                <div class="breadcrumb-item">Stock Issues</div>
             </div>
         </div>
 
@@ -15,40 +15,36 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-header">
-                            <h4>All Sales</h4>
+                            <h4>All Stock Issues</h4>
                             <div class="card-header-action">
-                                <a href="{{ route('admin.sales.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> New Sale</a>
+                                <a href="{{ route('admin.issues.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> New Issue</a>
                             </div>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
-                                <table class="table table-striped" id="table-1">
+                                <table class="table table-striped" id="table-issues">
                                     <thead>
                                         <tr>
                                             <th>Date</th>
-                                            <th>Invoice No</th>
-                                            <th>Outlet User</th>
-                                             <th>Base Total</th>
+                                            <th>Issue No</th>
+                                            <th>Note</th>
+                                            <th>Total Qty</th>
                                             <th>Status</th>
                                             <th>Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach ($sales as $sale)
+                                        @foreach ($issues as $issue)
                                             <tr>
-                                                <td>{{ $sale->date }}</td>
-                                                <td>{{ $sale->invoice_no }}</td>
-                                                <td>{{ $sale->outletUser->name ?? 'N/A' }}</td>
-                                                <td>{!! formatConverted($sale->total_amount) !!}</td>
+                                                <td>{{ $issue->created_at->format('Y-m-d') }}</td>
+                                                <td>{{ $issue->issue_no }}</td>
+                                                <td>{{ $issue->note }}</td>
+                                                <td>{{ $issue->total_qty }}</td>
                                                 <td>
-                                                    @if($sale->status == 1)
-                                                        <div class="badge badge-success">Completed</div>
-                                                    @else
-                                                        <div class="badge badge-warning">Draft</div>
-                                                    @endif
+                                                    <div class="badge badge-success">{{ ucfirst($issue->status) }}</div>
                                                 </td>
                                                 <td>
-                                                    <a href="{{ route('admin.sales.show', $sale->id) }}" class="btn btn-info btn-sm"><i class="fas fa-eye"></i> View</a>
+                                                    <a href="{{ route('admin.issues.show', $issue->id) }}" class="btn btn-info btn-sm"><i class="fas fa-eye"></i> View</a>
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -65,10 +61,11 @@
 
 @push('scripts')
     <script>
-        $("#table-1").dataTable({
+        $("#table-issues").dataTable({
             "columnDefs": [
                 { "sortable": false, "targets": [5] }
-            ]
+            ],
+            "order": [[0, "desc"]]
         });
     </script>
 @endpush

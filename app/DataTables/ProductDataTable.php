@@ -45,13 +45,18 @@ class ProductDataTable extends DataTable
              ->addColumn('purchase_price', function($query){
                 return formatConverted($query->purchase_price);
              })
-            ->rawColumns(['action', 'status', 'thumb_image', 'price', 'purchase_price'])
+            ->editColumn('qty', function($query) {
+                $stock = $query->inventory_stock;
+                $badgeClass = $stock > 0 ? 'badge-info' : 'badge-danger';
+                return '<span class="badge ' . $badgeClass . '">' . (float)$stock . '</span>';
+            })
+            ->rawColumns(['action', 'status', 'thumb_image', 'price', 'purchase_price', 'qty'])
             ->setRowId('id');
     }
 
     public function query(Product $model)
     {
-        return $model->newQuery()->with('category'); // Eager load category
+        return $model->newQuery()->with(['category', 'inventoryStocks']); // Eager load category and stocks
     }
 
     public function html(): HtmlBuilder
@@ -74,14 +79,18 @@ class ProductDataTable extends DataTable
     {
         $settings = getSettings();
         $columns = [
-            Column::make('id'),
+            // Column::make('id'),
             Column::make('thumb_image')->title('Image'),
-            Column::make('name'),
-            Column::make('category')->title('Category'),
-            Column::make('purchase_price')->title('Purchase Price'),
-            Column::make('price')->title('Selling Price'),
-            Column::make('qty')->title('Qty'),
+            Column::make('name')->title('Product Name')->addClass('text-center'),
+            Column::make('category')->title('Category Name')->addClass('text-center'),
         ];
+
+        if (Auth::user()->can('Manage Purchases')) {
+            $columns[] = Column::make('purchase_price')->title('Purchase Price')->addClass('text-center');
+        }
+
+        $columns[] = Column::make('price')->title('Selling Price');
+        $columns[] = Column::make('qty')->title('Qty');
 
         if (Auth::user()->hasRole('Admin')) {
             $columns[] = Column::make('status');

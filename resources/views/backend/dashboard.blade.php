@@ -14,12 +14,12 @@
                         <div class="card-icon bg-primary">
                             <i class="fas fa-money-bill-wave"></i>
                         </div>
-                        <div class="card-wrap">
+                         <div class="card-wrap">
                             <div class="card-header">
-                                <h4>Total Sales</h4>
+                                <h4>Total Issues</h4>
                             </div>
                              <div class="card-body">
-                                <div>{!! formatConverted($totalSales) !!}</div>
+                                <div>{{ $totalIssues }}</div>
                             </div>
                         </div>
                     </div>
@@ -124,7 +124,7 @@
             <div class="col-lg-8 col-md-12 col-12 col-sm-12">
                 <div class="card">
                     <div class="card-header">
-                        <h4>Monthly Sales Statistics</h4>
+                        <h4>Monthly Issues Statistics</h4>
                         <div class="card-header-action">
                             
                         </div>
@@ -222,10 +222,10 @@
         var salesChart = new Chart(salesCtx, {
             type: 'line',
             data: {
-                labels: {!! json_encode($salesLabels) !!},
+                labels: {!! json_encode($issueLabels) !!},
                 datasets: [{
-                    label: 'Sales',
-                    data: {!! json_encode($salesData) !!},
+                    label: 'Issues',
+                    data: {!! json_encode($issueData) !!},
                     borderWidth: 2,
                     backgroundColor: 'rgba(63,82,227,.8)',
                     borderColor: 'transparent',
@@ -242,7 +242,7 @@
                 tooltips: {
                     callbacks: {
                         label: function(tooltipItem, data) {
-                            return currencyIcon + tooltipItem.yLabel.toLocaleString();
+                            return tooltipItem.yLabel.toLocaleString();
                         }
                     }
                 },
@@ -254,9 +254,9 @@
                         },
                         ticks: {
                             beginAtZero: true,
-                            stepSize: 1500,
+                            stepSize: 1, // Issues are integers
                             callback: function(value, index, values) {
-                                return currencyIcon + value;
+                                return value;
                             }
                         }
                     }],

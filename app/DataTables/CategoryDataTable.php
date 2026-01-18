@@ -55,7 +55,8 @@ class CategoryDataTable extends DataTable
             ->setTableId('category-table')
             ->columns($this->getColumns())
             ->minifiedAjax()
-            ->orderBy(0)
+            ->orderBy(1)
+            ->stateSave(true)
             ->selectStyleSingle()
             ->buttons([
                 Button::make('excel'),
@@ -71,11 +72,11 @@ class CategoryDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::make('id')->width(50),
+            // Column::make('id')->width(50),
             // Column::make('image')->width(150),
-            Column::make('name'),
-            Column::make('status'),
-            Column::computed('action')
+            Column::make('name')->title('Category Name')->addClass('text-center'),
+            Column::make('status')->addClass('text-center'),
+            Column::computed('action')->addClass('text-center')
                 ->exportable(false)
                 ->printable(false)
                 ->width(120)

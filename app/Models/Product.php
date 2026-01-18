@@ -72,4 +72,19 @@ class Product extends Model
         // Return latest purchase total safely using collection
         return optional($this->purchaseDetails->last())->total ?? 0;
     }
+
+    public function inventoryStocks()
+    {
+        return $this->hasMany(InventoryStock::class);
+    }
+
+    public function stockLedgers()
+    {
+        return $this->hasMany(StockLedger::class, 'variant_id');
+    }
+
+    public function getInventoryStockAttribute()
+    {
+        return $this->inventoryStocks->sum('quantity');
+    }
 }

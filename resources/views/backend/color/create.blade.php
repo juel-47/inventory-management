@@ -20,7 +20,7 @@
                                 @csrf
                                 <div class="row">
                                     <div class="form-group col-md-6">
-                                        <label>Name</label>
+                                        <label>Color Name</label>
                                         <input type="text" class="form-control" name="name" value="{{ old('name') }}" required>
                                     </div>
                                     <div class="form-group col-md-6">

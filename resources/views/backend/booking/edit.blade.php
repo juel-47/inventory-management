@@ -3,7 +3,7 @@
 @section('content')
     <section class="section">
         <div class="section-header">
-            <h1>Booking</h1>
+            <h1>Order Place</h1>
         </div>
 
         <div class="section-body">
@@ -11,7 +11,7 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-header">
-                            <h4>Edit Booking ({{ $booking->booking_no }})</h4>
+                            <h4>Edit Order Place ({{ $booking->booking_no }})</h4>
                             <div class="card-header-action">
                                 <a href="{{ route('admin.bookings.index') }}" class="btn btn-primary">Back</a>
                             </div>

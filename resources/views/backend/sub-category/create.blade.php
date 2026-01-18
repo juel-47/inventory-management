@@ -22,7 +22,7 @@
                                 <div class="row">
 
                                     <div class="form-group col-md-6">
-                                        <label for="inputCategory">Category</label>
+                                        <label for="inputCategory">Select Category</label>
                                         <select id="inputCategory" class="form-control" name="category">
                                             <option value="">Select</option>
                                             @foreach ($categories as $category)
@@ -38,7 +38,7 @@
                                         </select>
                                     </div>
                                     <div class="form-group  col-md-12">
-                                        <label>Name</label>
+                                        <label>SubCategory Name</label>
                                         <input type="text" class="form-control" name="name"
                                             value="{{ old('name') }}">
                                     </div>

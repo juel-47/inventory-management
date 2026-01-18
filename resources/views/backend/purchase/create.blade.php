@@ -2,10 +2,10 @@
 @section('content')
     <section class="section">
         <div class="section-header">
-            <h1>Create Purchase Invoice</h1>
+            <h1>Create Order Receive Invoice</h1>
             <div class="section-header-breadcrumb">
                 <div class="breadcrumb-item active"><a href="{{ route('admin.dashboard') }}">Dashboard</a></div>
-                <div class="breadcrumb-item"><a href="{{ route('admin.purchases.index') }}">Purchases</a></div>
+                <div class="breadcrumb-item"><a href="{{ route('admin.purchases.index') }}">Order Receive</a></div>
                 <div class="breadcrumb-item">Create</div>
             </div>
         </div>
@@ -15,15 +15,15 @@
                 <div class="col-12">
                     <div class="card card-primary">
                         <div class="card-header">
-                            <h4>New Purchase</h4>
+                            <h4>New Order Receive</h4>
                             <div class="card-header-action">
                                 <div class="dropdown">
                                     <button class="btn btn-primary dropdown-toggle" type="button" id="bookingDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        <i class="fas fa-file-import"></i> Import from Booking
+                                        <i class="fas fa-file-import"></i> Import from Order Place
                                     </button>
                                     <div class="dropdown-menu dropdown-menu-right" aria-labelledby="bookingDropdown" style="min-width: 320px; padding: 15px;">
                                         <div class="form-group mb-0">
-                                            <label class="d-block">Select Pending Booking</label>
+                                            <label class="d-block">Select Pending Order Place</label>
                                             <select class="form-control select2" id="booking_select" style="width: 100%;">
                                                 <option value="">-- Manual / None --</option>
                                                 @foreach ($bookings as $booking)
@@ -37,13 +37,13 @@
                             </div>
                         </div>
                         <div class="card-body">
-                            <form action="{{ route('admin.purchases.store') }}" method="POST">
+                            <form action="{{ route('admin.purchases.store') }}" method="POST" enctype="multipart/form-data">
                                 @csrf
                                 
                                 <!-- Section 1: General Information -->
                                 <div class="section-title mt-0">General Information</div>
                                 <div class="row mb-4">
-                                    <div class="form-group col-md-4">
+                                    <div class="form-group col-md-6">
                                         <label>Vendor <span class="text-danger">*</span></label>
                                         <select class="form-control select2" name="vendor_id" id="vendor_select" required>
                                             <option value="">Select Vendor</option>
@@ -53,13 +53,17 @@
                                         </select>
                                         <small class="text-muted mt-1 d-block">System Rate: <strong id="current_rate_display">1.00</strong></small>
                                     </div>
-                                    <div class="form-group col-md-4">
+                                    <div class="form-group col-md-6">
                                         <label>Purchase Date <span class="text-danger">*</span></label>
                                         <input type="date" class="form-control" name="date" value="{{ date('Y-m-d') }}" required>
                                     </div>
-                                    <div class="form-group col-md-4">
+                                    <div class="form-group col-md-6">
                                         <label>Reference / Note</label>
                                         <input type="text" class="form-control" name="note" placeholder="Optional reference...">
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label>Invoice Attachment <span class="text-muted">(PDF, Excel, Image)</span></label>
+                                        <input type="file" class="form-control" name="invoice_attachment">
                                     </div>
                                     <input type="hidden" name="booking_id" id="booking_id_hidden">
                                 </div>
@@ -78,8 +82,8 @@
                                                 <th width="7%">Raw Cost</th>
                                                 <th width="7%">Tax</th>
                                                 <th width="7%">Transport</th>
-                                                <th width="8%">Sale Price</th>
                                                 <th width="8%">Local Unit Cost</th>
+                                                <th width="8%">Sale Price</th>
                                                 <th width="4%"></th>
                                             </tr>
                                         </thead>
@@ -413,13 +417,13 @@
                         <input type="number" class="form-control transport_cost text-center" name="items[${rowCount}][transport_cost]" value="${product.transport_cost || 0}" step="any" style="font-size: 12px;">
                         <small class="text-muted d-block mt-1">Transport</small>
                     </td>
-                     <td class="align-middle text-center">
-                        <input type="number" class="form-control sale_price text-center" name="items[${rowCount}][sale_price]" value="${product.price || 0}" step="any" style="font-size: 12px;">
-                        <small class="text-muted d-block mt-1">Sale Price</small>
-                    </td>
                     <td class="align-middle text-center">
                         <div class="form-control-plaintext local_unit_cost h6 mb-0 text-primary text-center pr-2" style="font-size: 12px; font-weight: bold;">0.00</div>
                         <small class="text-muted d-block mt-1">Local Unit Cost</small>
+                    </td>
+                     <td class="align-middle text-center">
+                        <input type="number" class="form-control sale_price text-center" name="items[${rowCount}][sale_price]" value="${product.price || 0}" step="any" style="font-size: 12px;">
+                        <small class="text-muted d-block mt-1">Sale Price</small>
                     </td>
                     <td class="align-middle text-center">
                         <button type="button" class="btn btn-danger btn-sm remove_row"><i class="fas fa-trash"></i></button>
@@ -472,12 +476,12 @@
                         <small class="text-muted d-block mt-1">Transport</small>
                     </td>
                     <td class="align-middle text-center">
-                        <input type="number" class="form-control sale_price text-center" name="items[${rowCount}][sale_price]" placeholder="0.00" step="any" style="font-size: 12px;">
-                        <small class="text-muted d-block mt-1">Sale Price</small>
-                    </td>
-                    <td class="align-middle text-center">
                         <div class="form-control-plaintext local_unit_cost h6 mb-0 text-primary text-center pr-2" style="font-size: 12px; font-weight: bold;">0.00</div>
                         <small class="text-muted d-block mt-1">Local Unit Cost</small>
+                    </td>
+                    <td class="align-middle text-center">
+                        <input type="number" class="form-control sale_price text-center" name="items[${rowCount}][sale_price]" placeholder="0.00" step="any" style="font-size: 12px;">
+                        <small class="text-muted d-block mt-1">Sale Price</small>
                     </td>
                     <td class="align-middle text-center">
                         <button type="button" class="btn btn-danger btn-sm remove_row"><i class="fas fa-trash"></i></button>
@@ -534,31 +538,26 @@
 
         function calculateGrandTotal() {
             let vendorTotal = 0;
-            let totalTax = 0;
-            let totalTransport = 0;
+            let systemTotal = 0;
             
             $('#product_table tbody tr').each(function() {
                  let row = $(this);
                  let qty = parseFloat(row.find('.qty').val()) || 0;
                  let vendorCost = parseFloat(row.find('.unit_cost').val()) || 0;
                  
-                 // Get tax and transport for this row
+                 // Get per-unit costs
+                 let raw = parseFloat(row.find('.raw_material_cost').val()) || 0;
                  let tax = parseFloat(row.find('.tax_cost').val()) || 0;
                  let transport = parseFloat(row.find('.transport_cost').val()) || 0;
                  
+                 let localUnitCost = raw + tax + transport;
+                 
                  vendorTotal += qty * vendorCost;
-                 totalTax += tax;
-                 totalTransport += transport;
+                 systemTotal += localUnitCost * qty;
             });
 
             $('#vendor_grand_total').text(currentVendorIcon + vendorTotal.toFixed(2));
-            
-            // System total = (Vendor Total × Currency Rate) + Total Tax + Total Transport
-            let rate = parseFloat(currentVendorRate) || 1;
-            let systemTotal = (vendorTotal * rate) + totalTax + totalTransport;
-            
             $('#grand_total_display').text(systemIcon + systemTotal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}));
-            
             $('#total_amount_hidden').val(systemTotal.toFixed(2)); 
         }
 
@@ -589,14 +588,14 @@
                     let rowTransport = (globalTransport * ratio);
                     let rowTax = (globalTax * ratio);
 
-                    // Base raw material cost = (vendor cost * rate) + distributed material
-                    // Material is still treated as per-unit for this specific label/calc if requested, 
-                    // but let's keep everything consistent: Raw Cost (Per Unit), Tax/Transport (Row Totals)
+                    // Base raw material cost = (vendor cost * rate) + (distributed material / qty)
                     let baseRaw = (cost * currentVendorRate) + (rowMaterial / qty);
+                    let unitTransport = (rowTransport / qty);
+                    let unitTax = (rowTax / qty);
                     
                     row.find('.raw_material_cost').val(baseRaw.toFixed(2));
-                    row.find('.transport_cost').val(rowTransport.toFixed(2));
-                    row.find('.tax_cost').val(rowTax.toFixed(2));
+                    row.find('.transport_cost').val(unitTransport.toFixed(2));
+                    row.find('.tax_cost').val(unitTax.toFixed(2));
                     
                     calculateLocalUnitCost(row);
                     calculateRowTotal(row);

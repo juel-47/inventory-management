@@ -60,6 +60,7 @@ class PurchaseController extends Controller
             'items.*.product_id' => 'required',
             'items.*.qty' => 'required|numeric|min:1',
             'items.*.unit_cost' => 'required|numeric|min:0',
+            'invoice_attachment' => 'nullable|file|mimes:jpeg,png,jpg,pdf,xlsx,xls|max:5120', // Max 5MB
         ]);
 
         DB::beginTransaction();
@@ -76,6 +77,15 @@ class PurchaseController extends Controller
             $purchase->tax = $request->tax ?? 0;
             $purchase->total_amount = 0; // Will calculate
             $purchase->status = 1;
+
+            // Handle Invoice Attachment Upload
+            if ($request->hasFile('invoice_attachment')) {
+                $file = $request->file('invoice_attachment');
+                $filename = 'invoice_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                $path = $file->storeAs('attachments/purchases', $filename, 'public');
+                $purchase->invoice_attachment = $path;
+            }
+
             $purchase->save();
 
             // Calculate costs in System Currency (Input is Vendor Currency)
@@ -92,11 +102,11 @@ class PurchaseController extends Controller
                 $tax = ($item['tax_cost'] ?? 0);
                 $transport = ($item['transport_cost'] ?? 0);
                 
-                // Landed cost (per unit) = rawMaterial + (tax total / qty) + (transport total / qty)
+                // Landed cost (per unit) = rawMaterial + tax + transport
                 $itemUnitCost = $rawMaterial + $tax + $transport;
                 
-                // Subtotal = (Raw Material * Qty) + Tax Total + Transport Total
-                $subTotal = ($rawMaterial * $qty) + $tax + $transport;
+                // Subtotal = (Raw Material + Tax + Transport) * Qty
+                $subTotal = $itemUnitCost * $qty;
                 $totalAmount += $subTotal;
 
                 // Create Detail
@@ -139,8 +149,10 @@ class PurchaseController extends Controller
                 $product->save();
                 
                 // Update main stock
-                $product->increment('qty', $item['qty']);
+                // REDUNDANT - Handled by InventoryStock
+                // $product->increment('qty', $item['qty']);
                 
+                // Update Stock (Variants)
                 // Update Stock (Variants)
                 if($vInfo && is_array($vInfo)) {
                     $processedVariants = [];
@@ -153,27 +165,149 @@ class PurchaseController extends Controller
                                     ->where('name', $variantName)
                                     ->first();
                         if($pVariant && !in_array($pVariant->id, $processedVariants)) {
-                            $pVariant->increment('qty', $variantQty);
+                            // REDUNDANT - Handled by InventoryStock
+                            // $pVariant->increment('qty', $variantQty);
                             $processedVariants[] = $pVariant->id;
+
+                            // INV PLANE: InventoryStock
+                            $stock = \App\Models\InventoryStock::firstOrCreate([
+                                'product_id' => $item['product_id'],
+                                'variant_id' => $pVariant->id,
+                                'outlet_id' => 1 // Default
+                            ]);
+                            $stock->increment('quantity', $variantQty);
+
+                            // INV PLANE: StockLedger
+                            \App\Models\StockLedger::create([
+                                'product_id' => $item['product_id'],
+                                'variant_id' => $pVariant->id,
+                                'outlet_id' => 1,
+                                'reference_type' => 'purchase',
+                                'reference_id' => $purchase->id,
+                                'in_qty' => $variantQty,
+                                'out_qty' => 0,
+                                'balance_qty' => $stock->quantity, // Post-increment
+                                'date' => $request->date
+                            ]);
+                            
+                            // INV PLANE: Update Detail variant_id
+                            $detail->variant_id = $pVariant->id;
+                            $detail->save();
                         }
                     } else {
                         // Handle "New Aggregated Format" {"Name": Qty, "Name2": Qty}
                         foreach($vInfo as $vName => $vQty) {
-                            // Robust cleaning for legacy booking data
-                            $cleanName = preg_replace('/Color:\s*/i', '', $vName);
-                            $cleanName = preg_replace('/Size:\s*/i', '', $cleanName);
-                            $cleanName = preg_replace('/\s*-\s*/', ' ', $cleanName);
-                            $cleanName = trim($cleanName);
-
+                            // 1. Try Exact Match
                             $pVariant = \App\Models\ProductVariant::where('product_id', $item['product_id'])
-                                        ->where('name', $cleanName)
+                                        ->where('name', trim($vName))
                                         ->first();
-                            if($pVariant && !in_array($pVariant->id, $processedVariants)) {
-                                $pVariant->increment('qty', $vQty);
-                                $processedVariants[] = $pVariant->id;
+
+                            // 2. Try Cleaning Prefixes (Color:, Size:)
+                            if (!$pVariant) {
+                                $cleanName = preg_replace('/(Color|Size):\s*/i', '', $vName);
+                                $cleanName = trim($cleanName);
+                                
+                                if ($cleanName !== $vName) {
+                                     $pVariant = \App\Models\ProductVariant::where('product_id', $item['product_id'])
+                                            ->where('name', $cleanName)
+                                            ->first();
+                                }
+                            }
+
+                            // 3. Try Legacy Cleanup (Hyphens to Spaces) - Only if still not found
+                            if (!$pVariant && isset($cleanName)) {
+                                 $cleanNameLegacy = preg_replace('/\s*-\s*/', ' ', $cleanName);
+                                 $cleanNameLegacy = trim($cleanNameLegacy);
+                                 
+                                 if ($cleanNameLegacy !== $cleanName) {
+                                     $pVariant = \App\Models\ProductVariant::where('product_id', $item['product_id'])
+                                            ->where('name', $cleanNameLegacy)
+                                            ->first();
+                                 }
+                            }
+                            
+                            if($pVariant) {
+                                // REDUNDANT - Handled by InventoryStock
+                                // $pVariant->increment('qty', $vQty);
+                                
+                                // INV PLANE: InventoryStock
+                                $stock = \App\Models\InventoryStock::firstOrCreate([
+                                    'product_id' => $item['product_id'],
+                                    'variant_id' => $pVariant->id,
+                                    'outlet_id' => 1 // Default
+                                ]);
+                                $stock->increment('quantity', $vQty);
+    
+                                // INV PLANE: StockLedger
+                                \App\Models\StockLedger::create([
+                                    'product_id' => $item['product_id'],
+                                    'variant_id' => $pVariant->id,
+                                    'outlet_id' => 1,
+                                    'reference_type' => 'purchase',
+                                    'reference_id' => $purchase->id,
+                                    'in_qty' => $vQty,
+                                    'out_qty' => 0,
+                                    'balance_qty' => $stock->quantity, // Post-increment
+                                    'date' => $request->date
+                                ]);
+
+                                // Note: PurchaseDetail structure assumes one variant per line often, 
+                                // but if aggregated, we might have issues linking single detail to multiple variant ledgers.
+                                // For now, we update logic, but ideal structure is 1 line = 1 variant.
+                                // If detail->variant_id is single, we can only set one. 
+                                // Assuming simplest case: likely one variant dominant or split lines.
+                                // We will update variant_id if it's the first one found, for trace.
+                                if(!$detail->variant_id) {
+                                    $detail->variant_id = $pVariant->id;
+                                    $detail->save();
+                                }
+                            } else {
+                                // Fallback: If variant not found by name, assign to main product stock (No Variant)
+                                // This ensures stock is not lost if name matching fails
+                                $stock = \App\Models\InventoryStock::firstOrCreate([
+                                    'product_id' => $item['product_id'],
+                                    'variant_id' => null,
+                                    'outlet_id' => 1
+                                ]);
+                                $stock->increment('quantity', $vQty);
+
+                                // Ledger Fallback
+                                \App\Models\StockLedger::create([
+                                    'product_id' => $item['product_id'],
+                                    'variant_id' => null,
+                                    'outlet_id' => 1,
+                                    'reference_type' => 'purchase',
+                                    'reference_id' => $purchase->id,
+                                    'in_qty' => $vQty,
+                                    'out_qty' => 0,
+                                    'balance_qty' => $stock->quantity,
+                                    'date' => $request->date
+                                ]);
                             }
                         }
                     }
+                } else {
+                    // No Variant Info - Product Level Stock Logic
+                    // INV PLANE: InventoryStock (No Variant)
+                    $stock = \App\Models\InventoryStock::firstOrCreate([
+                        'product_id' => $item['product_id'],
+                        'variant_id' => null,
+                        'outlet_id' => 1 // Default
+                    ]);
+                    $stock->increment('quantity', $item['qty']);
+
+                    // INV PLANE: StockLedger
+                    \App\Models\StockLedger::create([
+                        'product_id' => $item['product_id'],
+                        'variant_id' => null,
+                        'outlet_id' => 1,
+                        'reference_type' => 'purchase',
+                        'reference_id' => $purchase->id,
+                        'in_qty' => $item['qty'],
+                        'out_qty' => 0,
+                        'balance_qty' => $stock->quantity,
+                        'date' => $request->date
+                    ]);
                 }
             }
 
@@ -183,7 +317,7 @@ class PurchaseController extends Controller
 
             // Automate Booking Completion
             if($purchase->booking_id) {
-                \App\Models\Booking::where('id', $purchase->booking_id)->update(['status' => 'completed']);
+                \App\Models\Booking::where('id', $purchase->booking_id)->update(['status' => 'complete']);
             }
 
             DB::commit();
@@ -212,18 +346,47 @@ class PurchaseController extends Controller
      */
     public function destroy(string $id)
     {
-        $purchase = Purchase::findOrFail($id);
-        
-        // Revert Stock? 
-        // If we allow delete, we should decrement stock.
-        foreach($purchase->details as $detail){
-             $product = Product::find($detail->product_id);
-             if($product){
-                 $product->decrement('qty', $detail->qty);
-             }
+        try {
+            DB::beginTransaction();
+
+            $purchase = Purchase::with('details')->findOrFail($id);
+
+            // Revert Stock
+            foreach ($purchase->details as $detail) {
+                // Decrement InventoryStock
+                $variant_id = $detail->variant_id;
+                
+                $stock = \App\Models\InventoryStock::where('product_id', $detail->product_id)
+                            ->where('variant_id', $variant_id)
+                            ->first();
+
+                if ($stock) {
+                    $stock->decrement('quantity', $detail->qty);
+                    
+                    // Add Ledger Entry for Reversal
+                    \App\Models\StockLedger::create([
+                        'product_id' => $detail->product_id,
+                        'variant_id' => $variant_id,
+                        'outlet_id' => 1,
+                        'reference_type' => 'purchase_delete',
+                        'reference_id' => $purchase->id,
+                        'in_qty' => 0,
+                        'out_qty' => $detail->qty, // Out because we are reversing a purchase (in)
+                        'balance_qty' => $stock->quantity,
+                        'date' => date('Y-m-d') 
+                    ]);
+                }
+            }
+
+            $purchase->delete();
+
+            DB::commit();
+
+            return response(['status' => 'success', 'message' => 'Purchase Deleted and Stock Reverted Successfully!']);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response(['status' => 'error', 'message' => 'Something went wrong: ' . $e->getMessage()]);
         }
-        
-        $purchase->delete();
-        return response(['status' => 'success', 'message' => 'Deleted Successfully!']);
     }
 }

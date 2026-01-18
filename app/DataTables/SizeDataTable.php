@@ -80,10 +80,10 @@ class SizeDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-            Column::make('id'),
-            Column::make('name'),
-            Column::make('status'),
-            Column::computed('action')
+            // Column::make('id'),
+            Column::make('name')->title('Size Name')->addClass('text-center'),
+            Column::make('status')->title('Status')->addClass('text-center'),
+            Column::computed('action')->title('Action')->addClass('text-center')
                 ->exportable(false)
                 ->printable(false)
                 ->width(260)

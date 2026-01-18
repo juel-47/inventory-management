@@ -36,51 +36,49 @@
             <!-- Bookings -->
             @role('Admin')
             <li class="nav-item dropdown {{ setActive(['admin.bookings.*']) }}">
-                <a href="#" data-toggle="dropdown" class="nav-link has-dropdown"><i class="fas fa-book"></i><span>Bookings</span></a>
+                <a href="#" data-toggle="dropdown" class="nav-link has-dropdown"><i class="fas fa-book"></i><span>Order Place</span></a>
                 <ul class="dropdown-menu">
-                    <li class="{{ setActive(['admin.bookings.*']) }}"><a class="nav-link" href="{{ route('admin.bookings.index') }}">All Bookings</a></li>
+                    <li class="{{ setActive(['admin.bookings.*']) }}"><a class="nav-link" href="{{ route('admin.bookings.index') }}">All Order Place</a></li>
                 </ul>
             </li>
 
             <!-- Purchases -->
             <li class="nav-item dropdown {{ setActive(['admin.purchases.*']) }}">
-                <a href="#" data-toggle="dropdown" class="nav-link has-dropdown"><i class="fas fa-shopping-cart"></i><span>Purchases</span></a>
+                <a href="#" data-toggle="dropdown" class="nav-link has-dropdown"><i class="fas fa-shopping-cart"></i><span>Order Recive</span></a>
                 <ul class="dropdown-menu">
-                    <li class="{{ setActive(['admin.purchases.index']) }}"><a class="nav-link" href="{{ route('admin.purchases.index') }}">All Purchases</a></li>
+                    <li class="{{ setActive(['admin.purchases.index']) }}"><a class="nav-link" href="{{ route('admin.purchases.index') }}">All Order Recive</a></li>
                     <li class="{{ setActive(['admin.purchases.create']) }}"><a class="nav-link" href="{{ route('admin.purchases.create') }}">Create New</a></li>
                 </ul>
             </li>
             @endrole
 
             <!-- Sales -->
-            @role('Admin')
-            <li class="nav-item dropdown {{ setActive(['admin.sales.*']) }}">
-                <a href="#" data-toggle="dropdown" class="nav-link has-dropdown"><i class="fas fa-money-bill-wave"></i><span>Sales</span></a>
-                <ul class="dropdown-menu">
-                    <li class="{{ setActive(['admin.sales.index']) }}"><a class="nav-link" href="{{ route('admin.sales.index') }}">All Sales</a></li>
-                    <li class="{{ setActive(['admin.sales.create']) }}"><a class="nav-link" href="{{ route('admin.sales.create') }}">Create New</a></li>
-                </ul>
-            </li>
-            @endrole
+
 
              <!-- Product Requests -->
+             <!-- Product Requests -->
+             @canany(['Manage Product Requests', 'Create Product Requests', 'View Product Requests'])
              <li class="nav-item dropdown {{ setActive(['admin.product-requests.*']) }}">
-                <a href="#" data-toggle="dropdown" class="nav-link has-dropdown"><i class="fas fa-box-open"></i><span>Requests</span></a>
+                <a href="#" data-toggle="dropdown" class="nav-link has-dropdown"><i class="fas fa-box-open"></i><span>Outlet Request</span></a>
                 <ul class="dropdown-menu">
-                    <li class="{{ setActive(['admin.product-requests.index']) }}"><a class="nav-link" href="{{ route('admin.product-requests.index') }}">All Requests</a></li>
-                    @if(auth()->user()->hasRole('Outlet User'))
+                    @canany(['Manage Product Requests', 'View Product Requests'])
+                    <li class="{{ setActive(['admin.product-requests.index']) }}"><a class="nav-link" href="{{ route('admin.product-requests.index') }}">All Outlet Request</a></li>
+                    @endcanany
+                    
+                    @can('Create Product Requests')
                     <li class="{{ setActive(['admin.product-requests.create']) }}"><a class="nav-link" href="{{ route('admin.product-requests.create') }}">Create New</a></li>
-                    @endif
+                    @endcan
                 </ul>
             </li>
+            @endcanany
 
             <!-- Reports -->
             @role('Admin')
             <li class="nav-item dropdown {{ setActive(['admin.reports.*']) }}">
                 <a href="#" data-toggle="dropdown" class="nav-link has-dropdown"><i class="fas fa-chart-line"></i><span>Reports</span></a>
                 <ul class="dropdown-menu">
-                    <li class="{{ setActive(['admin.reports.index']) }}"><a class="nav-link" href="{{ route('admin.reports.index') }}">Dashboard</a></li>
-                    <li class="{{ setActive(['admin.reports.stock']) }}"><a class="nav-link" href="{{ route('admin.reports.stock') }}">Stock Report</a></li>
+                    <li class="{{ setActive(['admin.reports.index']) }}"><a class="nav-link" href="{{ route('admin.reports.index') }}">All Reports</a></li>
+                    <li class="{{ setActive(['admin.reports.stock']) }}"><a class="nav-link" href="{{ route('admin.reports.stock') }}">Stock Reports</a></li>
                     <li class="{{ setActive(['admin.reports.purchase']) }}"><a class="nav-link" href="{{ route('admin.reports.purchase') }}">Purchase History</a></li>
                     <li class="{{ setActive(['admin.reports.product-purchase-history']) }}"><a class="nav-link" href="{{ route('admin.reports.product-purchase-history') }}">Product Tracking</a></li>
                     <li class="{{ setActive(['admin.reports.low-stock']) }}"><a class="nav-link" href="{{ route('admin.reports.low-stock') }}">Low Stock Alert</a></li>

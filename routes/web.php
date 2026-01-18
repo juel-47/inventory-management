@@ -95,10 +95,10 @@ Route::group(['middleware' => ['auth', 'verified', 'check.permission'], 'prefix'
         Route::get('reports/low-stock', 'lowStockReport')->name('reports.low-stock');
         Route::get('reports/profit-loss', 'profitLossReport')->name('reports.profit-loss');
         Route::get('low-stock-check', 'lowStockCheck')->name('low-stock-check'); // AJAX endpoint
+        Route::post('low-stock-mark-read', 'markNotificationsRead')->name('low-stock-mark-read');
+        Route::get('notifications/all', 'allNotifications')->name('notifications.all');
     });
 
-    /** Sales Routes */
-    Route::resource('sales', \App\Http\Controllers\Backend\SaleController::class);
 
     /** Product Request Routes */
     Route::put('product-requests/update-status/{id}', [\App\Http\Controllers\Backend\ProductRequestController::class, 'updateStatus'])->name('product-requests.update-status');
@@ -107,6 +107,12 @@ Route::group(['middleware' => ['auth', 'verified', 'check.permission'], 'prefix'
     // Settings
     Route::get('settings', [\App\Http\Controllers\Backend\SettingController::class, 'index'])->name('settings.index');
     Route::put('settings', [\App\Http\Controllers\Backend\SettingController::class, 'update'])->name('settings.update');
+
+    /** Inventory Plane Routes */
+    Route::get('issues/get-request-items', [\App\Http\Controllers\Backend\IssueController::class, 'getRequestItems'])->name('issues.get-request-items');
+    Route::resource('issues', \App\Http\Controllers\Backend\IssueController::class);
+    Route::get('stock-ledger', [\App\Http\Controllers\Backend\StockLedgerController::class, 'index'])->name('stock-ledger.index');
+    Route::get('inventory-reports', [\App\Http\Controllers\Backend\InventoryReportController::class, 'index'])->name('inventory-reports.index');
 
 });
 

@@ -1,1 +1,5 @@
 /* Custom CSS */
+
+body.layout-3 .navbar{
+    margin: 16px;
+}

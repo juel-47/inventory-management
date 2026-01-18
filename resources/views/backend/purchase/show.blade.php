@@ -3,10 +3,10 @@
 @section('content')
     <section class="section">
         <div class="section-header">
-            <h1>Purchase Details</h1>
+            <h1>Order Receive Details</h1>
             <div class="section-header-breadcrumb">
                 <div class="breadcrumb-item active"><a href="{{ route('admin.dashboard') }}">Dashboard</a></div>
-                <div class="breadcrumb-item"><a href="{{ route('admin.purchases.index') }}">Purchases</a></div>
+                <div class="breadcrumb-item"><a href="{{ route('admin.purchases.index') }}">Order Receive</a></div>
                 <div class="breadcrumb-item">Invoice</div>
             </div>
         </div>
@@ -99,6 +99,15 @@
                                         <div class="section-title">Note</div>
                                         <p class="section-lead">{{ $purchase->note }}</p>
                                     @endif
+
+                                    @if($purchase->invoice_attachment)
+                                        <div class="section-title">Attachment</div>
+                                        <div class="section-lead mt-1">
+                                            <a href="{{ asset('storage/' . $purchase->invoice_attachment) }}" target="_blank" class="btn btn-info btn-sm">
+                                                <i class="fas fa-file-download mr-1"></i> View Invoice Attachment
+                                            </a>
+                                        </div>
+                                    @endif
                                 </div>
                                 <div class="col-lg-4 text-right">
                                     <div class="invoice-detail-item">
@@ -144,9 +153,9 @@
                     </div>
                 </div>
                 <hr>
-                <div class="text-md-right">
+                {{-- <div class="text-md-right">
                      <button class="btn btn-warning btn-icon icon-left" onclick="window.print()"><i class="fas fa-print"></i> Print</button>
-                </div>
+                </div> --}}
             </div>
         </div>
     </section>

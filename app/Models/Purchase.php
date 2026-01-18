@@ -19,7 +19,8 @@ class Purchase extends Model
         'booking_id',
         'material_cost',
         'transport_cost',
-        'tax'
+        'tax',
+        'invoice_attachment'
     ];
 
     public function vendor()

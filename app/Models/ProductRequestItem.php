@@ -12,6 +12,7 @@ class ProductRequestItem extends Model
     protected $fillable = [
         'product_request_id',
         'product_id',
+        'variant_id',
         'qty',
         'unit_price',
         'subtotal'
@@ -25,5 +26,10 @@ class ProductRequestItem extends Model
     public function product()
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function variant()
+    {
+        return $this->belongsTo(ProductVariant::class, 'variant_id');
     }
 }

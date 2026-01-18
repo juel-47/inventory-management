@@ -16,6 +16,7 @@
         align-items: center;
         display: flex;
         height: 100%;
+        margin-left: auto;
     }
     .navbar.main-navbar .navbar-nav .nav-item {
         height: 100%;
@@ -63,38 +64,58 @@
 
     /* Mobile Responsive Tweaks */
     @media (max-width: 991.98px) {
+        .navbar.main-navbar {
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            /* justify-content: space-between !important; */
+            padding: 0 15px !important;
+        }
+        
         .navbar.main-navbar .navbar-nav {
-            flex-direction: column;
-            align-items: flex-start;
-            width: 100%;
+            display: none !important; /* The main items are hidden on mobile anyway by d-none d-lg-flex */
         }
-        .collapse.navbar-collapse {
-            background: #6777ef; /* Match navbar color */
-            padding: 10px;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            width: 100%;
-            z-index: 1000;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        
+        .navbar.main-navbar .navbar-right {
+            margin-left: auto !important;
+            display: flex !important;
+            flex-direction: row !important;
+            /* align-items: center !important; */
         }
-        .navbar.main-navbar .navbar-nav .nav-item {
-            width: 100%;
+
+        .navbar.main-navbar .navbar-right .dropdown {
+            margin-left: 10px;
         }
-        .navbar.main-navbar .navbar-nav .nav-item .nav-link {
-            flex-direction: row; /* Horizontal on mobile list */
-            justify-content: flex-start;
-            padding: 10px;
+        
+        /* Sidebar toggle on the left */
+        .navbar.main-navbar [data-toggle="sidebar"] {
+            margin-right: auto;
         }
-        .navbar.main-navbar .navbar-nav .nav-item .nav-link i {
-            margin-right: 15px !important;
-            margin-bottom: 0;
-            font-size: 20px;
+    }
+
+    /* Desktop Centering Fix - V3 */
+    @media (min-width: 992px) {
+        .navbar.main-navbar {
+            display: flex !important;
+            /* justify-content: center !important; */
+            position: relative;
         }
-        .navbar.main-navbar .navbar-nav .nav-item .nav-link span {
-            font-size: 16px;
+        
+        .navbar.main-navbar .navbar-nav.mx-auto {
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+            display: flex !important;
+            /* justify-content: center; */
         }
-        /* Hide Profile in Collapse if shown separately, or adjust */
+        
+        .navbar.main-navbar .navbar-right {
+            position: absolute !important;
+            right: -10px;
+            top: 0;
+            height: 100%;
+            display: flex !important;
+            /* align-items: center; */
+        }
     }
 </style>
 <nav class="navbar navbar-expand-lg main-navbar">
@@ -137,65 +158,74 @@
             </li>
             @endcanany
 
-             <!-- Bookings -->
-            @role('Admin')
-            <li class="nav-item dropdown {{ setActive(['admin.bookings.*']) }}">
-                <a href="#" data-toggle="dropdown" class="nav-link has-dropdown"><i class="fas fa-book"></i><span>Bookings</span></a>
+            <!-- Inventory Plane -->
+            @can('Manage Inventory')
+             <li class="nav-item dropdown {{ setActive(['admin.issues.*', 'admin.stock-ledger.index', 'admin.inventory-reports.index']) }}">
+                <a href="#" data-toggle="dropdown" class="nav-link has-dropdown"><i class="fas fa-warehouse"></i><span>Inventory</span></a>
                 <ul class="dropdown-menu">
-                    <li class="{{ setActive(['admin.bookings.*']) }}"><a class="nav-link" href="{{ route('admin.bookings.index') }}">All Bookings</a></li>
+                    <li class="{{ setActive(['admin.inventory-reports.index']) }}"><a class="nav-link" href="{{ route('admin.inventory-reports.index') }}">Current Stock</a></li>
+                    <li class="{{ setActive(['admin.issues.index']) }}"><a class="nav-link" href="{{ route('admin.issues.index') }}">Stock Issues</a></li>
+                    <li class="{{ setActive(['admin.stock-ledger.index']) }}"><a class="nav-link" href="{{ route('admin.stock-ledger.index') }}">Stock Ledger</a></li>
                 </ul>
             </li>
+            @endcan  
+
+             <!-- Bookings -->
+            @can('Manage Order Place')
+            <li class="nav-item dropdown {{ setActive(['admin.bookings.*']) }}">
+                <a href="#" data-toggle="dropdown" class="nav-link has-dropdown"><i class="fas fa-book"></i><span>Order Place</span></a>
+                <ul class="dropdown-menu">
+                    <li class="{{ setActive(['admin.bookings.*']) }}"><a class="nav-link" href="{{ route('admin.bookings.index') }}">All Order Place</a></li>
+                </ul>
+            </li>
+            @endcan
 
             <!-- Purchases -->
+            @can('Manage Order Receive')
             <li class="nav-item dropdown {{ setActive(['admin.purchases.*']) }}">
-                <a href="#" data-toggle="dropdown" class="nav-link has-dropdown"><i class="fas fa-shopping-cart"></i><span>Purchases</span></a>
+                <a href="#" data-toggle="dropdown" class="nav-link has-dropdown"><i class="fas fa-shopping-cart"></i><span>Order Receive</span></a>
                 <ul class="dropdown-menu">
-                    <li class="{{ setActive(['admin.purchases.index']) }}"><a class="nav-link" href="{{ route('admin.purchases.index') }}">All Purchases</a></li>
+                    <li class="{{ setActive(['admin.purchases.index']) }}"><a class="nav-link" href="{{ route('admin.purchases.index') }}">All Order Receive</a></li>
                     <li class="{{ setActive(['admin.purchases.create']) }}"><a class="nav-link" href="{{ route('admin.purchases.create') }}">Create New</a></li>
                 </ul>
             </li>
-            @endrole
+            @endcan
             
-            <!-- Sales -->
-            @role('Admin')
-            <li class="nav-item dropdown {{ setActive(['admin.sales.*']) }}">
-                <a href="#" data-toggle="dropdown" class="nav-link has-dropdown"><i class="fas fa-money-bill-wave"></i><span>Sales</span></a>
-                <ul class="dropdown-menu">
-                    <li class="{{ setActive(['admin.sales.index']) }}"><a class="nav-link" href="{{ route('admin.sales.index') }}">All Sales</a></li>
-                    <li class="{{ setActive(['admin.sales.create']) }}"><a class="nav-link" href="{{ route('admin.sales.create') }}">Create New</a></li>
-                </ul>
-            </li>
-            @endrole
 
+            @canany(['Manage Product Requests', 'Create Product Requests', 'View Product Requests'])
              <!-- Product Requests -->
              <li class="nav-item dropdown {{ setActive(['admin.product-requests.*']) }}">
-                <a href="#" data-toggle="dropdown" class="nav-link has-dropdown"><i class="fas fa-box-open"></i><span>Requests</span></a>
+                <a href="#" data-toggle="dropdown" class="nav-link has-dropdown"><i class="fas fa-box-open"></i><span>Outlet Request</span></a>
                 <ul class="dropdown-menu">
-                    <li class="{{ setActive(['admin.product-requests.index']) }}"><a class="nav-link" href="{{ route('admin.product-requests.index') }}">All Requests</a></li>
-                    @if(auth()->user()->hasRole('Outlet User'))
+                    @canany(['Manage Product Requests', 'View Product Requests'])
+                    <li class="{{ setActive(['admin.product-requests.index']) }}"><a class="nav-link" href="{{ route('admin.product-requests.index') }}">All Outlet Request</a></li>
+                    @endcanany
+
+                    @can('Create Product Requests')
                     <li class="{{ setActive(['admin.product-requests.create']) }}"><a class="nav-link" href="{{ route('admin.product-requests.create') }}">Create New</a></li>
-                    @endif
+                    @endcan
                 </ul>
             </li>
+            @endcanany
 
              <!-- Reports -->
-             @role('Admin')
+             @can('Manage Reports')
              <li class="nav-item dropdown {{ setActive(['admin.reports.*']) }}">
                  <a href="#" data-toggle="dropdown" class="nav-link has-dropdown"><i class="fas fa-chart-line"></i><span>Reports</span></a>
                  <ul class="dropdown-menu">
-                     <li class="{{ setActive(['admin.reports.index']) }}"><a class="nav-link" href="{{ route('admin.reports.index') }}">Dashboard</a></li>
-                     <li class="{{ setActive(['admin.reports.stock']) }}"><a class="nav-link" href="{{ route('admin.reports.stock') }}">Stock Report</a></li>
+                     <li class="{{ setActive(['admin.reports.index']) }}"><a class="nav-link" href="{{ route('admin.reports.index') }}">All Reports</a></li>
+                     <li class="{{ setActive(['admin.reports.stock']) }}"><a class="nav-link" href="{{ route('admin.reports.stock') }}">Stock Reports</a></li>
                      <li class="{{ setActive(['admin.reports.purchase']) }}"><a class="nav-link" href="{{ route('admin.reports.purchase') }}">Purchase History</a></li>
                      <li class="{{ setActive(['admin.reports.product-purchase-history']) }}"><a class="nav-link" href="{{ route('admin.reports.product-purchase-history') }}">Product Tracking</a></li>
                      <li class="{{ setActive(['admin.reports.low-stock']) }}"><a class="nav-link" href="{{ route('admin.reports.low-stock') }}">Low Stock Alert</a></li>
                      <li class="{{ setActive(['admin.reports.profit-loss']) }}"><a class="nav-link" href="{{ route('admin.reports.profit-loss') }}">Profit & Loss</a></li>
                  </ul>
              </li>
-             @endrole
+             @endcan
 
             <!-- More (Brands, Vendors, Settings) -->
         <!-- Brands -->
-        @role('Admin')
+        @can('Manage Brands')
         <li class="nav-item dropdown {{ setActive(['admin.brand.*']) }}">
             <a href="#" data-toggle="dropdown" class="nav-link has-dropdown"><i class="fas fa-tag"></i><span>Brands</span></a>
             <ul class="dropdown-menu">
@@ -203,7 +233,7 @@
                 <li class="{{ setActive(['admin.brand.create']) }}"><a class="nav-link" href="{{ route('admin.brand.create') }}">Add Brand</a></li>
             </ul>
         </li>
-        @endrole
+        @endcan
 
         <!-- Vendors -->
         @can('Manage Vendors')
@@ -231,6 +261,28 @@
         </ul>
 
     <ul class="navbar-nav navbar-right">
+      @role('Admin')
+      <li class="dropdown dropdown-list-toggle">
+        <a href="#" data-toggle="dropdown" class="nav-link notification-toggle nav-link-lg" id="low-stock-count-toggle">
+            <i class="fas fa-bell" style="font-size: 20px;"></i>
+            <span class="badge badge-danger" id="low-stock-count-badge" style="display: none; position: absolute; top: 5px; right: 5px; font-size: 12px; padding: 4px 7px; border-radius: 50%;">0</span>
+        </a>
+        <div class="dropdown-menu dropdown-list dropdown-menu-right" style="width: 350px;">
+            <div class="dropdown-header" style="font-size: 14px; padding: 15px;">Notifications
+                <div class="float-right">
+                    <a href="javascript:void(0)" onclick="markAllAsRead()" style="text-transform: none; font-weight: normal; margin-right: 10px;">Mark all read</a>
+                    <a href="{{ route('admin.notifications.all') }}">View All</a>
+                </div>
+            </div>
+            <div class="dropdown-list-content dropdown-list-icons" id="low-stock-list" style="overflow-y: auto; max-height: 400px;">
+                <!-- Dynamic Items will be injected here -->
+                <div class="dropdown-item dropdown-item-unread text-center py-4">
+                    No new notifications
+                </div>
+            </div>
+        </div>
+      </li>
+      @endrole
       <li class="dropdown"><a href="#" data-toggle="dropdown" class="nav-link dropdown-toggle nav-link-lg nav-link-user">
         <img alt="image" height="30px" src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}" class="rounded-circle mr-1">
         <div class="d-sm-none d-lg-inline-block">Hi, {{ Auth::user()->name }} </div></a>

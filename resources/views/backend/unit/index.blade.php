@@ -21,7 +21,7 @@
                                     Create New</a>
                             </div>
                         </div>
-                        <div class="card-body">
+                        <div class="table-responsive card-body">
                             {{ $dataTable->table() }}
                         </div>
                     </div>

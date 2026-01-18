@@ -16,7 +16,7 @@
                                 <a href="{{ route('admin.sub-category.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Create New</a>
                             </div>
                         </div>
-                        <div class="card-body">
+                        <div class="table-responsive card-body">
                             {{ $dataTable->table() }}
                         </div>
                     </div>

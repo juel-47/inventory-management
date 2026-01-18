@@ -295,6 +295,15 @@
 
     @stack('scripts')
 
+    {{-- Suppress third-party checkout popup errors --}}
+    <script>
+        window.addEventListener('unhandledrejection', function(event) {
+            if (event.reason && event.reason.message && event.reason.message.includes('No checkout popup config found')) {
+                event.preventDefault();
+                // Silently ignore this error from unused payment library
+            }
+        });
+    </script>
 </body>
 
 </html>

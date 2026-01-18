@@ -129,8 +129,8 @@
                             
                         </div>
                     </div>
-                    <div class="card-body">
-                        <canvas id="salesChart" height="158"></canvas>
+                    <div class="card-body" style="min-height: 250px;">
+                        <canvas id="salesChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -139,8 +139,8 @@
                     <div class="card-header">
                         <h4>Request Status Info</h4>
                     </div>
-                    <div class="card-body">
-                        <canvas id="statusChart" height="158"></canvas>
+                    <div class="card-body" style="min-height: 300px;">
+                        <canvas id="statusChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -217,83 +217,120 @@
     <script>
         "use strict";
 
-        var currencyIcon = "{{  $settings->currency_icon ?? '' }}";
-        var salesCtx = document.getElementById("salesChart").getContext('2d');
-        var salesChart = new Chart(salesCtx, {
-            type: 'line',
-            data: {
-                labels: {!! json_encode($issueLabels) !!},
-                datasets: [{
-                    label: 'Issues',
-                    data: {!! json_encode($issueData) !!},
-                    borderWidth: 2,
-                    backgroundColor: 'rgba(63,82,227,.8)',
-                    borderColor: 'transparent',
-                    pointBorderWidth: 0,
-                    pointRadius: 3.5,
-                    pointBackgroundColor: 'transparent',
-                    pointHoverBackgroundColor: 'rgba(63,82,227,.8)',
-                }]
-            },
-            options: {
-                legend: {
-                    display: false
-                },
-                tooltips: {
-                    callbacks: {
-                        label: function(tooltipItem, data) {
-                            return tooltipItem.yLabel.toLocaleString();
-                        }
-                    }
-                },
-                scales: {
-                    yAxes: [{
-                        gridLines: {
-                            drawBorder: false,
-                            color: '#f2f2f2',
+        document.addEventListener('DOMContentLoaded', function() {
+            var currencyIcon = "{{  $settings->currency_icon ?? '' }}";
+            
+            // Monthly Issues Statistics Chart
+            var salesCtx = document.getElementById("salesChart");
+            if (salesCtx) {
+                var issueLabels = {!! json_encode($issueLabels) !!};
+                var issueData = {!! json_encode($issueData) !!};
+                
+                salesCtx = salesCtx.getContext('2d');
+                var salesChart = new Chart(salesCtx, {
+                    type: 'line',
+                    data: {
+                        labels: issueLabels,
+                        datasets: [{
+                            label: 'Issues',
+                            data: issueData,
+                            borderWidth: 2,
+                            backgroundColor: 'rgba(63,82,227,.8)',
+                            borderColor: 'rgba(63,82,227,1)',
+                            pointBorderWidth: 0,
+                            pointRadius: 3.5,
+                            pointBackgroundColor: 'rgba(63,82,227,1)',
+                            pointHoverBackgroundColor: 'rgba(63,82,227,.8)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.parsed.y.toLocaleString() + ' Issues';
+                                    }
+                                }
+                            }
                         },
-                        ticks: {
-                            beginAtZero: true,
-                            stepSize: 1, // Issues are integers
-                            callback: function(value, index, values) {
-                                return value;
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1,
+                                    callback: function(value) {
+                                        return value;
+                                    }
+                                },
+                                grid: {
+                                    drawBorder: false,
+                                    color: '#f2f2f2',
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false,
+                                }
+                            }
+                        },
+                    }
+                });
+            }
+
+            // Request Status Info Chart
+            var statusCtx = document.getElementById("statusChart");
+            if (statusCtx) {
+                var statusData = {!! json_encode($statusData) !!};
+                
+                // Check if we have valid data
+                var hasData = statusData && statusData.length > 0 && statusData.some(val => val > 0);
+                
+                if (!hasData) {
+                    // Display a message instead of chart
+                    var parentDiv = statusCtx.parentElement;
+                    parentDiv.innerHTML = '<div class="text-center py-5"><i class="fas fa-chart-pie fa-3x text-muted mb-3"></i><p class="text-muted mb-1"><strong>No Request Data Yet</strong></p><p class="text-muted small">This chart will populate once outlets create requests</p></div>';
+                } else {
+                    statusCtx = statusCtx.getContext('2d');
+                    var statusChart = new Chart(statusCtx, {
+                        type: 'doughnut',
+                        data: {
+                            datasets: [{
+                                data: statusData,
+                                backgroundColor: [
+                                    '#ffa426', // Pending - Warning
+                                    '#6777ef', // Approved - Primary/Info
+                                    '#fc544b', // Rejected - Danger
+                                ],
+                                borderWidth: 0
+                            }],
+                            labels: [
+                                'Pending',
+                                'Approved',
+                                'Rejected'
+                            ],
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        padding: 15,
+                                        usePointStyle: true
+                                    }
+                                }
                             }
                         }
-                    }],
-                    xAxes: [{
-                        gridLines: {
-                            display: false,
-                            tickMarkLength: 15,
-                        }
-                    }]
-                },
-            }
-        });
-
-        var statusCtx = document.getElementById("statusChart").getContext('2d');
-        var statusChart = new Chart(statusCtx, {
-            type: 'doughnut',
-            data: {
-                datasets: [{
-                    data: {!! json_encode($statusData) !!},
-                    backgroundColor: [
-                        '#ffa426', // Pending - Warning
-                        '#6777ef', // Approved - Primary/Info
-                        '#fc544b', // Rejected - Danger
-                    ],
-                    label: 'Dataset 1'
-                }],
-                labels: [
-                    'Pending',
-                    'Approved',
-                    'Rejected'
-                ],
-            },
-            options: {
-                responsive: true,
-                legend: {
-                    position: 'bottom',
-                },
+                    });
+                }
             }
         });
     </script>

@@ -16,6 +16,8 @@ use App\Models\ChildCategory;
 use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\BookingNotification;
 
 class BookingController extends Controller
 {
@@ -111,6 +113,14 @@ class BookingController extends Controller
                 // Store the entire array of variants and quantities
                 $booking->variant_info = $variantsData; 
                 $booking->save();
+
+                // Send email to vendor after response (non-blocking)
+                $vendor = Vendor::find($request->vendor_id);
+                if($vendor && $vendor->email) {
+                    dispatch(function () use ($booking, $vendor) {
+                        Mail::to($vendor->email)->send(new BookingNotification($booking));
+                    })->afterResponse();
+                }
             }
 
         } else {
@@ -122,6 +132,14 @@ class BookingController extends Controller
             $booking->qty = $request->qty;
             $booking->variant_info = $request->variant_info; 
             $booking->save();
+
+            // Send email to vendor after response (non-blocking)
+            $vendor = Vendor::find($request->vendor_id);
+            if($vendor && $vendor->email) {
+                dispatch(function () use ($booking, $vendor) {
+                    Mail::to($vendor->email)->send(new BookingNotification($booking));
+                })->afterResponse();
+            }
         }
         
         // $product->save(); // Already incremented? increment() saves immediately. Remove this if increment() saves. Yes it does.

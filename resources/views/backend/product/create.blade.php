@@ -91,7 +91,7 @@
                                              value="{{ old('price') }}">
                                      </div>
                                     <div class="form-group col-md-4">
-                                        <label>Self Number</label>
+                                        <label>Shelve Number</label>
                                         <input type="text" class="form-control" name="self_number"
                                             value="{{ old('self_number') }}">
                                     </div>

@@ -169,10 +169,13 @@
                                         <label class="font-weight-bold small text-muted text-uppercase">Change Status</label>
                                         <select name="status" class="form-control select2">
                                             <option value="pending" {{ $productRequest->status == 'pending' ? 'selected' : '' }}>Pending</option>
-                                            <option value="approved" {{ $productRequest->status == 'approved' ? 'selected' : '' }}>Approve</option>
-                                            <option value="shipped" {{ $productRequest->status == 'shipped' ? 'selected' : '' }}>Shipped / Dispatched</option>
+                                            <option value="approved" {{ $productRequest->status == 'approved' ? 'selected' : '' }}>Approve (<code>create issue</code>)</option>
+                                             @if($productRequest->status == 'completed')
+                                                <option value="completed" selected>Completed</option>
+                                            @endif
+                                            {{-- <option value="shipped" {{ $productRequest->status == 'shipped' ? 'selected' : '' }}>Shipped / Dispatched</option>
                                             <option value="completed" {{ $productRequest->status == 'completed' ? 'selected' : '' }}>Completed</option>
-                                            <option value="rejected" {{ $productRequest->status == 'rejected' ? 'selected' : '' }}>Reject</option>
+                                            <option value="rejected" {{ $productRequest->status == 'rejected' ? 'selected' : '' }}>Reject</option> --}}
                                         </select>
                                     </div>
 

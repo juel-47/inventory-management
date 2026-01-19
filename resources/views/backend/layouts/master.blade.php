@@ -90,10 +90,10 @@
                 @yield('content')
             </div>
             <footer class="main-footer">
-                <div class="footer-left">
-                    Copyright &copy; {{ now()->year }}
-                    {{-- <div class="bullet" ></div> <a target="_blank" href="https://inoodex.com/">Developed By Inoodex</a> --}}
+                <div class="footer-left items-center">
+                    <div class="bullet text-center" ></div> <a target="_blank" class="text-center" href="https://inoodex.com/">Concept and designed by shahadat</a>
                 </div>
+                <span>Copyright &copy; {{ now()->year }}</span> 
                 <div class="footer-right">
                     <div class="bullet"></div> <a target="_blank" href="https://inoodex.com/">Developed By Inoodex</a>
                 </div>

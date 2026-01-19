@@ -61,7 +61,7 @@
 
                                 <div class="form-group mt-4">
                                     <label class="font-weight-bold text-muted text-uppercase small">Note / Reference</label>
-                                    <textarea name="note" class="form-control" rows="3" placeholder="Enter reason for issue or reference number..." required></textarea>
+                                    <textarea name="note" class="form-control" rows="3" placeholder="Enter reason for issue or reference number..."></textarea>
                                 </div>
                             </div>
 

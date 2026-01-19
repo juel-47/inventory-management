@@ -83,7 +83,8 @@
             "order": [[0, "desc"]],
             "columnDefs": [
                 { "sortable": false, "targets": [7] }
-            ]
+            ],
+            "order": [[0, "desc"]]
         });
     </script>
 @endpush

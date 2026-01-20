@@ -23,6 +23,14 @@
                                         <h4 class="text-primary"><i class="fas fa-box-open mr-2"></i>Issue Items</h4>
                                         <div class="d-flex align-items-center" style="gap: 15px;">
                                             <div style="width: 250px;">
+                                                <select class="form-control select2" name="outlet_id" id="outlet_select" required>
+                                                    <option value="" disabled selected>Select Outlet...</option>
+                                                    @foreach($outletUsers as $outlet)
+                                                        <option value="{{ $outlet->id }}">{{ $outlet->name }} ({{ $outlet->outlet_name ?? 'N/A' }})</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            <div style="width: 250px;">
                                                 <select class="form-control select2" id="import_request_select" data-placeholder="Import from Request...">
                                                     <option value=""></option>
                                                     @foreach($productRequests as $pr)
@@ -140,10 +148,16 @@
                     url: "{{ route('admin.issues.get-request-items') }}",
                     method: "GET",
                     data: { request_id: requestId },
-                    success: function(items) {
+                    success: function(data) {
+                        const items = data.items;
                         Swal.close();
                         $('#issue_items_body').empty();
                         $('#product_request_id_hidden').val(requestId);
+                        
+                        // Auto-select the outlet user
+                        if (data.user_id) {
+                            $('#outlet_select').val(data.user_id).trigger('change');
+                        }
                         rowCount = 0;
 
                         // Group by product so we can use the bulk entry UI

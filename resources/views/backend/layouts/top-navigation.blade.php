@@ -24,33 +24,37 @@
                 <a href="#" data-toggle="dropdown" class="nav-link has-dropdown"><i class="fas fa-box"></i><span>Products</span></a>
                 <ul class="dropdown-menu">
                     <li class="{{ setActive(['admin.products.*']) }}"><a class="nav-link" href="{{ route('admin.products.index') }}">All Products</a></li>
-                    @role('Admin')
+                    @can('Manage Products')
                     <li class="{{ setActive(['admin.units.*']) }}"><a class="nav-link" href="{{ route('admin.units.index') }}">Units</a></li>
                     <li class="{{ setActive(['admin.colors.*']) }}"><a class="nav-link" href="{{ route('admin.colors.index') }}">Colors</a></li>
                     <li class="{{ setActive(['admin.sizes.*']) }}"><a class="nav-link" href="{{ route('admin.sizes.index') }}">Sizes</a></li>
-                    @endrole
+                    @endcan
                 </ul>
             </li>
             @endcanany
 
-            <!-- Bookings -->
-            @role('Admin')
+            <!-- Bookings & Purchases -->
+            @canany(['Manage Order Place', 'Manage Order Receive'])
+            @can('Manage Order Place')
             <li class="nav-item dropdown {{ setActive(['admin.bookings.*']) }}">
                 <a href="#" data-toggle="dropdown" class="nav-link has-dropdown"><i class="fas fa-book"></i><span>Order Place</span></a>
                 <ul class="dropdown-menu">
                     <li class="{{ setActive(['admin.bookings.*']) }}"><a class="nav-link" href="{{ route('admin.bookings.index') }}">All Order Place</a></li>
                 </ul>
             </li>
+            @endcan
 
+            @can('Manage Order Receive')
             <!-- Purchases -->
             <li class="nav-item dropdown {{ setActive(['admin.purchases.*']) }}">
-                <a href="#" data-toggle="dropdown" class="nav-link has-dropdown"><i class="fas fa-shopping-cart"></i><span>Order Recive</span></a>
+                <a href="#" data-toggle="dropdown" class="nav-link has-dropdown"><i class="fas fa-shopping-cart"></i><span>Order Receive</span></a>
                 <ul class="dropdown-menu">
-                    <li class="{{ setActive(['admin.purchases.index']) }}"><a class="nav-link" href="{{ route('admin.purchases.index') }}">All Order Recive</a></li>
+                    <li class="{{ setActive(['admin.purchases.index']) }}"><a class="nav-link" href="{{ route('admin.purchases.index') }}">All Order Receive</a></li>
                     <li class="{{ setActive(['admin.purchases.create']) }}"><a class="nav-link" href="{{ route('admin.purchases.create') }}">Create New</a></li>
                 </ul>
             </li>
-            @endrole
+            @endcan
+            @endcanany
 
             <!-- Sales -->
 
@@ -73,7 +77,7 @@
             @endcanany
 
             <!-- Reports -->
-            @role('Admin')
+            @can('Manage Reports')
             <li class="nav-item dropdown {{ setActive(['admin.reports.*']) }}">
                 <a href="#" data-toggle="dropdown" class="nav-link has-dropdown"><i class="fas fa-chart-line"></i><span>Reports</span></a>
                 <ul class="dropdown-menu">
@@ -85,22 +89,24 @@
                     <li class="{{ setActive(['admin.reports.profit-loss']) }}"><a class="nav-link" href="{{ route('admin.reports.profit-loss') }}">Profit & Loss</a></li>
                 </ul>
             </li>
-            @endrole
+            @endcan
 
             <!-- More (Brands, Vendors, Settings) -->
              <li class="nav-item dropdown {{ setActive(['admin.brand.*', 'admin.vendor.*', 'admin.permission.*', 'admin.role.*', 'admin.users.*', 'admin.settings.*']) }}">
                 <a href="#" data-toggle="dropdown" class="nav-link has-dropdown"><i class="fas fa-ellipsis-h"></i><span>More</span></a>
                 <ul class="dropdown-menu">
-                    @role('Admin')
+                    @canany(['Manage Brands', 'Manage Vendors'])
                         <li class="dropdown-title">Brands & Vendors</li>
+                        @can('Manage Brands')
                         <li class="{{ setActive(['admin.brand.*']) }}"><a class="nav-link" href="{{ route('admin.brand.index') }}">Brands</a></li>
+                        @endcan
                         
                         @can('Manage Vendors')
                         <li class="{{ setActive(['admin.vendor.*']) }}"><a class="nav-link" href="{{ route('admin.vendor.index') }}">Vendors</a></li>
                         @endcan
                         
                         <li class="dropdown-divider"></li>
-                    @endrole
+                    @endcanany
 
                     @can('Administration')
                         <li class="dropdown-title">Administration</li>

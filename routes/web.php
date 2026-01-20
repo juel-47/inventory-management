@@ -1,11 +1,12 @@
 <?php
 
 use App\Http\Controllers\Backend\BrandController;
-use App\Http\Controllers\ProfileController;
+// use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Backend\CategoryController;
 use App\Http\Controllers\Backend\SubCategoryController;
 use App\Http\Controllers\Backend\ChildCategoryController;
 use App\Http\Controllers\Backend\PermissionController;
+use App\Http\Controllers\Backend\ProfileController;
 use App\Http\Controllers\Backend\RolesController;
 use App\Http\Controllers\Backend\UserController;
 use App\Http\Controllers\Backend\VendorController;
@@ -19,11 +20,11 @@ Route::get('/', function () {
 //     return view('backend.dashboard');
 // })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
+// Route::middleware('auth')->group(function () {
+//     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+//     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+//     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+// });
 
 
 Route::group(['middleware' => ['auth', 'verified', 'check.permission'], 'prefix' => 'admin', 'as' => 'admin.'], function () {
@@ -59,8 +60,8 @@ Route::group(['middleware' => ['auth', 'verified', 'check.permission'], 'prefix'
     Route::resource('vendor', VendorController::class);
 
     /** Unit Routes */
-     Route::put('units/change-status', [\App\Http\Controllers\Backend\UnitController::class, 'changeStatus'])->name('units.change-status');
-     Route::resource('units', \App\Http\Controllers\Backend\UnitController::class);
+    Route::put('units/change-status', [\App\Http\Controllers\Backend\UnitController::class, 'changeStatus'])->name('units.change-status');
+    Route::resource('units', \App\Http\Controllers\Backend\UnitController::class);
 
     /** Color Routes */
     Route::put('colors/change-status', [\App\Http\Controllers\Backend\ColorController::class, 'changeStatus'])->name('colors.change-status');
@@ -103,17 +104,25 @@ Route::group(['middleware' => ['auth', 'verified', 'check.permission'], 'prefix'
     /** Product Request Routes */
     Route::put('product-requests/update-status/{id}', [\App\Http\Controllers\Backend\ProductRequestController::class, 'updateStatus'])->name('product-requests.update-status');
     Route::resource('product-requests', \App\Http\Controllers\Backend\ProductRequestController::class);
-    
+
     // Settings
     Route::get('settings', [\App\Http\Controllers\Backend\SettingController::class, 'index'])->name('settings.index');
     Route::put('settings', [\App\Http\Controllers\Backend\SettingController::class, 'update'])->name('settings.update');
 
     /** Inventory Plane Routes */
     Route::get('issues/get-request-items', [\App\Http\Controllers\Backend\IssueController::class, 'getRequestItems'])->name('issues.get-request-items');
+    Route::get('issues/{id}/view-invoice', [\App\Http\Controllers\Backend\IssueController::class, 'viewInvoice'])->name('issues.view-invoice');
+    Route::get('issues/{id}/invoice', [\App\Http\Controllers\Backend\IssueController::class, 'downloadInvoice'])->name('issues.download-invoice');
     Route::resource('issues', \App\Http\Controllers\Backend\IssueController::class);
     Route::get('stock-ledger', [\App\Http\Controllers\Backend\StockLedgerController::class, 'index'])->name('stock-ledger.index');
     Route::get('inventory-reports', [\App\Http\Controllers\Backend\InventoryReportController::class, 'index'])->name('inventory-reports.index');
 
+    /** profile routes */
+    Route::controller(ProfileController::class)->group(function () {
+        Route::get('/profile', 'index')->name('profile');
+        Route::post('/profile/update', 'updateProfile')->name('profile.update');
+        Route::post('/profile/update/password', 'updatePassword')->name('password.update');
+    });
 });
 
 require __DIR__ . '/auth.php';

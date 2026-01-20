@@ -76,7 +76,7 @@ Vendor
                                 </div>
 
                                 <div class="form-group col-md-3">
-                                    <label>Currency Rate (1 {{ $settings->base_currency_name }} = ?)</label>
+                                    <label>Local Currency Rate</label>
                                     <input type="number" step="0.0001" class="form-control" name="currency_rate" value="{{ $vendor->currency_rate }}">
                                 </div>
                              </div>

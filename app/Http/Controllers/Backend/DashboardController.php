@@ -15,9 +15,10 @@ class DashboardController extends Controller
 {
     public function index()
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        if ($user->hasRole('Admin')) {
+        if ($user->can('Manage Reports')) {
             // Admin Global Stats
             $totalProducts = Product::where('status', 1)->count();
             $totalIssues = Issue::count();
@@ -68,7 +69,7 @@ class DashboardController extends Controller
             $myTotalRequests = ProductRequest::where('user_id', $user->id)->count();
             $myPendingRequests = ProductRequest::where('user_id', $user->id)->where('status', 'pending')->count();
             $myTotalSpent = ProductRequest::where('user_id', $user->id)
-                ->where('status', 'approved') // Or however we define 'charged'
+                ->whereIn('status', ['approved', 'completed', 'complete']) 
                 ->sum('total_amount');
             
             $recentRequests = ProductRequest::where('user_id', $user->id)->orderBy('id', 'desc')->take(5)->get();

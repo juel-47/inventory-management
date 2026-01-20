@@ -24,6 +24,7 @@ class Product extends Model
         'long_description',
         'purchase_price',
         'price',
+        'outlet_price',
         'barcode',
         'status',
         'self_number',

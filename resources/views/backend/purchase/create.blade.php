@@ -84,6 +84,7 @@
                                                 <th width="7%">Transport</th>
                                                 <th width="8%">Local Unit Cost</th>
                                                 <th width="8%">Sale Price</th>
+                                                <th width="8%">Outlet Price</th>
                                                 <th width="4%"></th>
                                             </tr>
                                         </thead>
@@ -265,6 +266,7 @@
                     row.find('.transport_cost').val(product.transport_cost || 0);
                       // Set sale price (editable)
                     row.find('.sale_price').val(product.price || 0);
+                    row.find('.outlet_price').val(product.outlet_price || 0);
                     // Handle Variants
                     let variantHtml = '';
                     if(product.variants && product.variants.length > 0) {
@@ -421,9 +423,13 @@
                         <div class="form-control-plaintext local_unit_cost h6 mb-0 text-primary text-center pr-2" style="font-size: 12px; font-weight: bold;">0.00</div>
                         <small class="text-muted d-block mt-1">Local Unit Cost</small>
                     </td>
-                     <td class="align-middle text-center">
+                    <td class="align-middle text-center">
                         <input type="number" class="form-control sale_price text-center" name="items[${rowCount}][sale_price]" value="${product.price || 0}" step="any" style="font-size: 12px;">
                         <small class="text-muted d-block mt-1">Sale Price</small>
+                    </td>
+                    <td class="align-middle text-center">
+                        <input type="number" class="form-control outlet_price text-center" name="items[${rowCount}][outlet_price]" value="${product.outlet_price || 0}" step="any" style="font-size: 12px;">
+                        <small class="text-muted d-block mt-1">Outlet Price</small>
                     </td>
                     <td class="align-middle text-center">
                         <button type="button" class="btn btn-danger btn-sm remove_row"><i class="fas fa-trash"></i></button>
@@ -480,8 +486,11 @@
                         <small class="text-muted d-block mt-1">Local Unit Cost</small>
                     </td>
                     <td class="align-middle text-center">
-                        <input type="number" class="form-control sale_price text-center" name="items[${rowCount}][sale_price]" placeholder="0.00" step="any" style="font-size: 12px;">
                         <small class="text-muted d-block mt-1">Sale Price</small>
+                    </td>
+                    <td class="align-middle text-center">
+                        <input type="number" class="form-control outlet_price text-center" name="items[${rowCount}][outlet_price]" placeholder="0.00" step="any" style="font-size: 12px;">
+                        <small class="text-muted d-block mt-1">Outlet Price</small>
                     </td>
                     <td class="align-middle text-center">
                         <button type="button" class="btn btn-danger btn-sm remove_row"><i class="fas fa-trash"></i></button>

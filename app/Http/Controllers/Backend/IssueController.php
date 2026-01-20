@@ -35,8 +35,9 @@ class IssueController extends Controller
             ->get();
 
         $requestId = $request->query('request_id');
+        $outletUsers = \App\Models\User::role('Outlet User')->get();
             
-        return view('backend.issue.create', compact('products', 'productRequests', 'requestId'));
+        return view('backend.issue.create', compact('products', 'productRequests', 'requestId', 'outletUsers'));
     }
 
     public function getRequestItems(Request $request)
@@ -64,7 +65,10 @@ class IssueController extends Controller
             ];
         });
 
-        return response()->json($items);
+        return response()->json([
+            'items' => $items,
+            'user_id' => $productRequest->user_id
+        ]);
     }
 
     public function store(Request $request)
@@ -73,6 +77,7 @@ class IssueController extends Controller
             'items' => 'required|array',
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.quantity' => 'required|numeric|min:1',
+            'outlet_id' => 'required|exists:users,id',
             'note' => 'nullable|string',
         ]);
 
@@ -80,7 +85,7 @@ class IssueController extends Controller
             $issue = Issue::create([
                 'issue_no' => 'ISS-' . strtoupper(uniqid()),
                 'product_request_id' => $request->product_request_id,
-                'outlet_id' => 1, // Default outlet for now
+                'outlet_id' => $request->outlet_id,
                 'status' => 'confirmed',
                 'total_qty' => collect($request->items)->sum('quantity'),
                 'note' => $request->note,
@@ -131,6 +136,13 @@ class IssueController extends Controller
                     'date' => now()
                 ]);
             }
+            
+            // Generate PDF Invoice - DEFERRED: User wants to generate only on download
+            // try {
+            //     $this->generateInvoice($issue);
+            // } catch (\Exception $e) {
+            //     \Illuminate\Support\Facades\Log::error('Invoice Generation Failed: ' . $e->getMessage());
+            // }
         });
 
         return redirect()->route('admin.issues.index')->with('success', 'Stock Issued Successfully!');
@@ -140,5 +152,47 @@ class IssueController extends Controller
     {
         $issue = Issue::with(['items.product', 'items.variant.color', 'items.variant.size'])->findOrFail($id);
         return view('backend.issue.show', compact('issue'));
+    }
+
+    public function generateInvoice(Issue $issue)
+    {
+         $issue->load(['items.product', 'items.variant.color', 'items.variant.size', 'outlet', 'productRequest']);
+         $settings = \App\Models\GeneralSetting::first();
+         
+         // Using app('dompdf.wrapper') helper to avoid facade alias issues
+         $pdf = app('dompdf.wrapper')->loadView('backend.pdf.issue-invoice', compact('issue', 'settings'));
+         $fileName = 'issue_invoice_' . $issue->issue_no . '.pdf';
+         $path = 'invoices/' . $fileName;
+         
+         \Illuminate\Support\Facades\Storage::disk('public')->put($path, $pdf->output());
+         
+         $issue->update(['invoice_path' => $path]);
+    }
+
+    public function viewInvoice($id)
+    {
+        $issue = Issue::with(['items.product', 'items.variant.color', 'items.variant.size', 'outlet', 'productRequest'])->findOrFail($id);
+        $settings = \App\Models\GeneralSetting::first();
+        
+        // Return HTML view for preview
+        return view('backend.pdf.issue-invoice', compact('issue', 'settings'));
+    }
+
+    public function downloadInvoice($id)
+    {
+        $issue = Issue::findOrFail($id);
+        
+        if (!$issue->invoice_path || !\Illuminate\Support\Facades\Storage::disk('public')->exists($issue->invoice_path)) {
+            // Try to regenerate if missing
+             try {
+                $this->generateInvoice($issue);
+                // Reload to get new path
+                $issue->refresh();
+            } catch (\Exception $e) {
+                return back()->with('error', 'Invoice not found and could not be generated.');
+            }
+        }
+        
+        return \Illuminate\Support\Facades\Storage::disk('public')->download($issue->invoice_path);
     }
 }

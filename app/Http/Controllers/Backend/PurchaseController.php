@@ -141,9 +141,12 @@ class PurchaseController extends Controller
                 $product->tax = $tax;
                 $product->transport_cost = $transport;
                 
-                // Update sale price if provided
-                if(isset($item['sale_price']) && $item['sale_price'] > 0) {
+                if(isset($item['sale_price'])) {
                     $product->price = $item['sale_price'];
+                }
+                
+                if(isset($item['outlet_price'])) {
+                    $product->outlet_price = $item['outlet_price'];
                 }
                 
                 $product->save();

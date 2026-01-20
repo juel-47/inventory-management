@@ -45,6 +45,8 @@
                                                 </td>
                                                 <td>
                                                     <a href="{{ route('admin.issues.show', $issue->id) }}" class="btn btn-info btn-sm"><i class="fas fa-eye"></i> View</a>
+                                                    <a href="{{ route('admin.issues.view-invoice', $issue->id) }}" target="_blank" class="btn btn-warning btn-sm"><i class="fas fa-file-invoice"></i> View Invoice</a>
+                                                    <a href="{{ route('admin.issues.download-invoice', $issue->id) }}" class="btn btn-primary btn-sm"><i class="fas fa-download"></i> Download</a>
                                                 </td>
                                             </tr>
                                         @endforeach

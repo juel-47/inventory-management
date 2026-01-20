@@ -55,7 +55,7 @@
                                                 <td>{{ $request->created_at->format('d M, Y') }}</td>
                                                 <td>
                                                     <a href="{{ route('admin.product-requests.show', $request->id) }}" class="btn btn-primary btn-sm"><i class="fas fa-eye"></i></a>
-                                                    @if($request->status == 'pending' || Auth::user()->hasRole('Admin'))
+                                                    @if($request->status == 'pending' || Auth::user()->can('Manage Product Requests'))
                                                         <a href="{{ route('admin.product-requests.destroy', $request->id) }}" class="btn btn-danger btn-sm delete-item"><i class="fas fa-trash"></i></a>
                                                     @endif
                                                 </td>

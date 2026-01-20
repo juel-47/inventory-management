@@ -7,7 +7,7 @@
         </div>
 
         <div class="row">
-            @if(Auth::user()->hasRole('Admin'))
+            @if(Auth::user()->can('Manage Reports'))
                 {{-- Admin Stats --}}
                 <div class="col-lg-3 col-md-6 col-sm-6 col-12">
                     <div class="card card-statistic-1 shadow-sm">
@@ -119,7 +119,7 @@
             @endif
         </div>
 
-        @if(Auth::user()->hasRole('Admin'))
+        @if(Auth::user()->can('Manage Reports'))
         <div class="row">
             <div class="col-lg-8 col-md-12 col-12 col-sm-12">
                 <div class="card">
@@ -160,7 +160,7 @@
                                 <thead class="bg-whitesmoke">
                                     <tr>
                                         <th class="pl-4">Request No</th>
-                                        @if(Auth::user()->hasRole('Admin'))
+                                        @if(Auth::user()->can('Manage Reports'))
                                         <th>Requester</th>
                                         @endif
                                          <th>Date</th>
@@ -174,7 +174,7 @@
                                     @forelse($recentRequests as $request)
                                         <tr>
                                             <td class="pl-4 font-weight-bold">{{ $request->request_no }}</td>
-                                            @if(Auth::user()->hasRole('Admin'))
+                                            @if(Auth::user()->can('Manage Reports'))
                                             <td>{{ $request->user->name }}</td>
                                             @endif
                                              <td>{{ $request->created_at->format('d M, Y') }}</td>
@@ -213,7 +213,7 @@
 @endsection
 
 @push('scripts')
-@if(Auth::user()->hasRole('Admin'))
+@if(Auth::user()->can('Manage Reports'))
     <script>
         "use strict";
 

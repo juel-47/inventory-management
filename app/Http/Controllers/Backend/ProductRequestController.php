@@ -30,9 +30,8 @@ class ProductRequestController extends Controller implements HasMiddleware
     {
         $query = ProductRequest::with(['user'])->orderBy('id', 'desc');
         
-        // If the user is not an admin, they should only see their own requests.
-        // Assuming 'admin' role or permissions. For now, let's filter by user_id if not a super user.
-        if (!Auth::user()->hasRole('Admin')) {
+        // If the user cannot manage requests, they only see their own.
+        if (!Auth::user()->can('Manage Product Requests')) {
             $query->where('user_id', Auth::id());
         }
 
@@ -45,15 +44,14 @@ class ProductRequestController extends Controller implements HasMiddleware
      */
     public function create()
     {
-        // Only Outlet Users (or specific permission) can create requests. 
-        // Admin usually doesn't request from themselves.
-        if (!Auth::user()->can('Create Product Requests') && !Auth::user()->hasRole('Outlet User')) {
-            abort(403, 'Only Outlet users can create product requests.');
+        // Only users with 'Create Product Requests' permission can create
+        if (!Auth::user()->can('Create Product Requests') && !Auth::user()->can('Manage Product Requests')) {
+             abort(403, 'You do not have permission to create product requests.');
         }
 
         $products = Product::where('status', 1)
             ->with(['variants.inventoryStocks', 'inventoryStocks'])
-            ->select('id', 'name', 'sku', 'qty', 'price', 'thumb_image')
+            ->select('id', 'name', 'sku', 'qty', 'price', 'outlet_price', 'thumb_image')
             ->get();
         return view('backend.product-request.create', compact('products'));
     }
@@ -63,7 +61,7 @@ class ProductRequestController extends Controller implements HasMiddleware
      */
     public function store(Request $request)
     {
-        if (!Auth::user()->can('Create Product Requests') && !Auth::user()->hasRole('Outlet User')) {
+        if (!Auth::user()->can('Create Product Requests') && !Auth::user()->can('Manage Product Requests')) {
             abort(403);
         }
 
@@ -89,7 +87,14 @@ class ProductRequestController extends Controller implements HasMiddleware
 
             foreach ($request->items as $item) {
                 $product = Product::findOrFail($item['product_id']);
-                $subtotal = $item['qty'] * $product->price;
+                // Determine price based on user role/permission
+                $unitPrice = $product->price;
+                // If user is NOT a manager (i.e. is an outlet user), use outlet price
+                if(!Auth::user()->can('Manage Product Requests')) {
+                    $unitPrice = $product->outlet_price > 0 ? $product->outlet_price : $product->price;
+                }
+
+                $subtotal = $item['qty'] * $unitPrice;
                 
                 $totalQty += $item['qty'];
                 $totalAmount += $subtotal;
@@ -99,7 +104,7 @@ class ProductRequestController extends Controller implements HasMiddleware
                     'product_id' => $item['product_id'],
                     'variant_id' => $item['variant_id'] ?? null,
                     'qty' => $item['qty'],
-                    'unit_price' => $product->price,
+                    'unit_price' => $unitPrice,
                     'subtotal' => $subtotal,
                 ]);
             }
@@ -127,8 +132,17 @@ class ProductRequestController extends Controller implements HasMiddleware
         $productRequest = ProductRequest::with(['user', 'items.product', 'items.variant.color', 'items.variant.size'])->findOrFail($id);
         
         // Authorization check
-        if (!Auth::user()->hasRole('Admin') && $productRequest->user_id !== Auth::id()) {
+        if (!Auth::user()->can('Manage Product Requests') && $productRequest->user_id !== Auth::id()) {
             abort(403);
+        }
+
+        // Fetch Current Stock for each item based on the REQUESTER'S Outlet ID (which is user_id)
+        foreach($productRequest->items as $item) {
+             $stock = \App\Models\InventoryStock::where('product_id', $item->product_id)
+                ->where('variant_id', $item->variant_id)
+                ->where('outlet_id', $productRequest->user_id)
+                ->first();
+             $item->current_stock = $stock ? $stock->quantity : 0;
         }
 
         return view('backend.product-request.show', compact('productRequest'));
@@ -137,12 +151,15 @@ class ProductRequestController extends Controller implements HasMiddleware
     /**
      * Update the status of the request.
      */
+    /**
+     * Update the status of the request.
+     */
     public function updateStatus(Request $request, $id)
     {
         $productRequest = ProductRequest::findOrFail($id);
         
-        // Only Admin can update status
-        if (!Auth::user()->hasRole('Admin')) {
+        // Only Admin/Manager can update status
+        if (!Auth::user()->can('Manage Product Requests')) {
             abort(403);
         }
 
@@ -175,8 +192,8 @@ class ProductRequestController extends Controller implements HasMiddleware
     {
         $productRequest = ProductRequest::findOrFail($id);
         
-        // Authorization
-        if (!Auth::user()->hasRole('Admin') && ($productRequest->user_id !== Auth::id() || $productRequest->status !== 'pending')) {
+        // Authorization: Manager can delete anything, User can only delete own pending requests
+        if (!Auth::user()->can('Manage Product Requests') && ($productRequest->user_id !== Auth::id() || $productRequest->status !== 'pending')) {
              return response(['status' => 'error', 'message' => 'Unauthorized or request already processed']);
         }
 

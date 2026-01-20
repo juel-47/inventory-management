@@ -78,6 +78,7 @@ class ProductController extends Controller implements HasMiddleware
         $product->long_description = $request->long_description;
         $product->purchase_price = $request->purchase_price ?? 0;
         $product->price = $request->price ?? 0;
+        $product->outlet_price = $request->outlet_price ?? 0;
         $product->barcode = $request->barcode;
         $product->status = $request->status;
         $product->self_number = $request->self_number;
@@ -159,6 +160,7 @@ class ProductController extends Controller implements HasMiddleware
         $product->long_description = $request->long_description;
         $product->purchase_price = $request->purchase_price ?? 0;
         $product->price = $request->price ?? 0;
+        $product->outlet_price = $request->outlet_price ?? 0;
         $product->barcode = $request->barcode;
         $product->status = $request->status;
         $product->self_number = $request->self_number;

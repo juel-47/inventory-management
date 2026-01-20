@@ -37,15 +37,23 @@ class CheckPermission
             return 'View Product Stock';
         }
 
+        // Allow ProductRequestController to handle its own granular permissions
+        if (str_contains($action, 'ProductRequestController')) {
+            return null;
+        }
+
         $map = [
             'Manage Categories' => ['CategoryController', 'SubCategoryController', 'ChildCategoryController'],
-            'Manage Products' => ['ProductController', 'BrandController', 'SizeController', 'ColorController', 'ReviewController'],
-            'Manage Orders' => ['OrderController', 'OrderStatusController'],
-            'Manage Brands' =>['BrandController'],
+            'Manage Products' => ['ProductController', 'BrandController', 'SizeController', 'ColorController', 'ReviewController', 'UnitController'],
+            'Manage Brands' => ['BrandController'],
             'Manage Vendors' => ['VendorController'],
-            'Manage Website' => ['SliderController', 'BranchController', 'CreatePageController', 'PageController', 'OrderStatusController'],
-            'Administration' => ['UserController', 'RolesController', 'PermissionController'],
-            'Manage Setting & More' => ['FooterInfoController', 'FooterSocialController'],
+            'Administration' => ['UserController', 'RolesController', 'PermissionController', 'SettingController'],
+            'Manage Inventory' => ['IssueController', 'StockLedgerController', 'InventoryReportController'],
+            'Manage Order Place' => ['BookingController'],
+            'Manage Order Receive' => ['PurchaseController'],
+            'Manage Product Requests' => [],
+            'Manage Reports' => ['ReportController'],
+            'Manage Notification' => ['NotificationController'],
         ];
 
         foreach ($map as $permission => $controllers) {

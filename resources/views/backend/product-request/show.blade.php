@@ -35,6 +35,7 @@
                                             <th class="text-center" width="5%">#</th>
                                             <th class="text-center" width="10%">Image</th>
                                             <th>Product Details</th>
+                                            <th class="text-center">Current Stock</th>
                                             <th class="text-center">Qty</th>
                                             <th class="text-right">Local Unit Price</th>
                                             <th class="text-right">Local Total Price</th>
@@ -69,6 +70,9 @@
                                                     @endif
                                                 </td>
                                                 <td class="text-center align-middle">
+                                                    <span class="badge badge-info px-3">{{ $item->current_stock ?? 0 }}</span>
+                                                </td>
+                                                <td class="text-center align-middle">
                                                     <span class="badge badge-light px-3">{{ $item->qty }}</span>
                                                 </td>
                                                 <td class="text-right align-middle font-weight-bold text-muted">
@@ -82,7 +86,9 @@
                                     </tbody>
                                     <tfoot class="bg-whitesmoke">
                                         <tr>
-                                            <td colspan="5" class="text-right font-weight-bold text-muted text-uppercase small" style="vertical-align: middle;">Total Request Amount</td>
+                                    <tfoot class="bg-whitesmoke">
+                                        <tr>
+                                            <td colspan="6" class="text-right font-weight-bold text-muted text-uppercase small" style="vertical-align: middle;">Total Request Amount</td>
                                             <td class="text-right font-weight-bold h6 text-primary mb-0" style="vertical-align: middle;">
                                                 {!! formatConverted($productRequest->total_amount) !!}
                                             </td>
@@ -160,7 +166,7 @@
                             <h4><i class="fas fa-user-cog mr-2"></i>Actions</h4>
                         </div>
                         <div class="card-body">
-                            @if(Auth::user()->hasRole('Admin'))
+                            @if(Auth::user()->can('Manage Product Requests'))
                                 <form action="{{ route('admin.product-requests.update-status', $productRequest->id) }}" method="POST">
                                     @csrf
                                     @method('PUT')

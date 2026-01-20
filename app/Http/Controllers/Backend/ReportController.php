@@ -18,7 +18,7 @@ class ReportController extends Controller implements HasMiddleware
     public static function middleware(): array
     {
         return [
-            new Middleware('role:Admin'),
+            new Middleware('can:Manage Reports'),
         ];
     }
 
@@ -240,7 +240,9 @@ class ReportController extends Controller implements HasMiddleware
         }
 
         // 2. Fetch Pending Product Requests (Admin only)
-        if (auth()->user()->hasRole('Admin')) {
+        /** @var \App\Models\User $user */
+        $user = \Illuminate\Support\Facades\Auth::user();
+        if ($user && $user->can('Manage Product Requests')) {
             $pendingRequests = \App\Models\ProductRequest::with('user')
                 ->where('status', 'pending')
                 ->orderBy('id', 'desc')

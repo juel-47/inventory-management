@@ -16,12 +16,12 @@
                     <div class="card">
                         <div class="card-header">
                             <h4>All Products</h4>
-                            @role('Admin')
+                            @can('Manage Products')
                             <div class="card-header-action">
                                 <a href="{{ route('admin.products.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i>
                                     Create New</a>
                             </div>
-                            @endrole
+                            @endcan
                         </div>
                         <div class="table-responsive card-body">
                             {{ $dataTable->table() }}

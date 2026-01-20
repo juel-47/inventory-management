@@ -80,17 +80,22 @@
                                 </div>
 
                                <div class="row">
-                                    <div class="form-group col-md-4">
+                                    <div class="form-group col-md-3">
                                          <label>Purchase Price</label>
                                          <input type="number" class="form-control" name="purchase_price" step="any"
                                              value="{{ old('purchase_price') }}">
                                      </div>
-                                     <div class="form-group col-md-4">
+                                     <div class="form-group col-md-3">
                                          <label>Sale Price</label>
                                          <input type="number" class="form-control" name="price" step="any"
                                              value="{{ old('price') }}">
                                      </div>
-                                    <div class="form-group col-md-4">
+                                     <div class="form-group col-md-3">
+                                        <label>Outlet Price</label>
+                                        <input type="number" class="form-control" name="outlet_price" step="any"
+                                            value="{{ old('outlet_price') }}">
+                                    </div>
+                                    <div class="form-group col-md-3">
                                         <label>Shelve Number</label>
                                         <input type="text" class="form-control" name="self_number"
                                             value="{{ old('self_number') }}">

@@ -16,7 +16,9 @@ class ProductDataTable extends DataTable
     {
         return (new EloquentDataTable($query))
             ->addColumn('action', function ($query) {
-                if (!Auth::user()->hasRole('Admin')) {
+                /** @var \App\Models\User $user */
+                $user = Auth::user();
+                if (!$user->can('Manage Products')) {
                     return '';
                 }
                  $edit = '<a href="' . route('admin.products.edit', $query->id) . '" class="btn btn-primary"><i class="fas fa-edit"></i></a>';
@@ -27,7 +29,9 @@ class ProductDataTable extends DataTable
                  return $query->thumb_image ? '<img src="' . asset('storage/' . $query->thumb_image) . '" width="80px" class="img-thumbnail">' : '';
             })
             ->addColumn('status', function ($query) {
-                if (!Auth::user()->hasRole('Admin')) {
+                /** @var \App\Models\User $user */
+                $user = Auth::user();
+                if (!$user->can('Manage Products')) {
                     return $query->status ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-danger">Inactive</span>';
                 }
                 $checked = $query->status ? 'checked' : '';
@@ -44,6 +48,9 @@ class ProductDataTable extends DataTable
              })
              ->addColumn('purchase_price', function($query){
                 return formatConverted($query->purchase_price);
+             })
+             ->addColumn('outlet_price', function($query){
+                return formatConverted($query->outlet_price);
              })
             ->editColumn('qty', function($query) {
                 $stock = $query->inventory_stock;
@@ -78,6 +85,8 @@ class ProductDataTable extends DataTable
     public function getColumns(): array
     {
         $settings = getSettings();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
         $columns = [
             // Column::make('id'),
             Column::make('thumb_image')->title('Image'),
@@ -85,14 +94,23 @@ class ProductDataTable extends DataTable
             Column::make('category')->title('Category Name')->addClass('text-center'),
         ];
 
-        if (Auth::user()->can('Manage Purchases')) {
+        if ($user->can('Manage Purchases')) {
             $columns[] = Column::make('purchase_price')->title('Purchase Price')->addClass('text-center');
         }
 
-        $columns[] = Column::make('price')->title('Selling Price');
+        if ($user->can('Create Product Requests') && !$user->can('Manage Product Requests')) {
+            $columns[] = Column::make('outlet_price')->title('Price');
+        } else {
+            $columns[] = Column::make('price')->title('Selling Price');
+            // Admin sees both for management
+            if ($user->can('Manage Products')) {
+                 $columns[] = Column::make('outlet_price')->title('Outlet Price');
+            }
+        }
+
         $columns[] = Column::make('qty')->title('Qty');
 
-        if (Auth::user()->hasRole('Admin')) {
+        if ($user->can('Manage Products')) {
             $columns[] = Column::make('status');
             $columns[] = Column::computed('action')
                 ->exportable(false)

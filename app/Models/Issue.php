@@ -12,7 +12,8 @@ class Issue extends Model
         'outlet_id',
         'status',
         'total_qty',
-        'note'
+        'note',
+        'invoice_path'
     ];
 
     public function productRequest()

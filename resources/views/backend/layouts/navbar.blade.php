@@ -149,11 +149,11 @@
                 <a href="#" data-toggle="dropdown" class="nav-link has-dropdown"><i class="fas fa-box"></i><span>Products</span></a>
                 <ul class="dropdown-menu">
                     <li class="{{ setActive(['admin.products.*']) }}"><a class="nav-link" href="{{ route('admin.products.index') }}">All Products</a></li>
-                    @role('Admin')
+                    @can('Manage Products')
                     <li class="{{ setActive(['admin.units.*']) }}"><a class="nav-link" href="{{ route('admin.units.index') }}">Units</a></li>
                     <li class="{{ setActive(['admin.colors.*']) }}"><a class="nav-link" href="{{ route('admin.colors.index') }}">Colors</a></li>
                     <li class="{{ setActive(['admin.sizes.*']) }}"><a class="nav-link" href="{{ route('admin.sizes.index') }}">Sizes</a></li>
-                    @endrole
+                    @endcan
                 </ul>
             </li>
             @endcanany
@@ -192,13 +192,13 @@
             @endcan
             
 
-            @canany(['Manage Product Requests', 'Create Product Requests', 'View Product Requests'])
+             @canany(['Manage Product Requests', 'Create Product Requests', 'View Product Requests'])
              <!-- Product Requests -->
              <li class="nav-item dropdown {{ setActive(['admin.product-requests.*']) }}">
-                <a href="#" data-toggle="dropdown" class="nav-link has-dropdown"><i class="fas fa-box-open"></i><span>Outlet Request</span></a>
+                <a href="#" data-toggle="dropdown" class="nav-link has-dropdown"><i class="fas fa-box-open"></i><span>{{ Auth::user()->can('Manage Product Requests') ? 'Outlet Request' : 'Product Request' }}</span></a>
                 <ul class="dropdown-menu">
                     @canany(['Manage Product Requests', 'View Product Requests'])
-                    <li class="{{ setActive(['admin.product-requests.index']) }}"><a class="nav-link" href="{{ route('admin.product-requests.index') }}">All Outlet Request</a></li>
+                    <li class="{{ setActive(['admin.product-requests.index']) }}"><a class="nav-link" href="{{ route('admin.product-requests.index') }}">All {{ Auth::user()->can('Manage Product Requests') ? 'Requests' : 'Product Requests' }}</a></li>
                     @endcanany
 
                     @can('Create Product Requests')
@@ -261,7 +261,7 @@
         </ul>
 
     <ul class="navbar-nav navbar-right">
-      @role('Admin')
+      @can('Manage Notification')
       <li class="dropdown dropdown-list-toggle">
         <a href="#" data-toggle="dropdown" class="nav-link notification-toggle nav-link-lg" id="low-stock-count-toggle">
             <i class="fas fa-bell" style="font-size: 20px;"></i>
@@ -282,16 +282,16 @@
             </div>
         </div>
       </li>
-      @endrole
+      @endcan
       <li class="dropdown">
         <a href="#" data-toggle="dropdown" class="nav-link dropdown-toggle nav-link-lg nav-link-user">
         <img alt="image" height="30px" src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}" class="rounded-circle mr-1">
         {{-- <div class="d-sm-none d-lg-inline-block">Hi, {{ Auth::user()->name }} </div> --}}
     </a>
         <div class="dropdown-menu dropdown-menu-right">
-          {{-- <a href="{{ route('profile.edit') }}" class="dropdown-item has-icon">
+          <a href="{{ route('admin.profile') }}" class="dropdown-item has-icon">
             <i class="far fa-user"></i> Profile
-          </a> --}}
+          </a>
           <div class="dropdown-divider"></div>
            <!-- Authentication -->
            <form method="POST" action="{{ route('logout') }}">

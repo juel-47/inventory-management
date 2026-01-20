@@ -172,8 +172,14 @@
                 
                 variantList.empty();
                 
+            const isOutletUser = {{ Auth::user()->can('Create Product Requests') ? 'true' : 'false' }};
+
                 if (product) {
-                    row.find('.unit-price-display').text(parseFloat(product.price).toFixed(2));
+                    let displayPrice = parseFloat(product.price);
+                    if(isOutletUser && product.outlet_price > 0) {
+                        displayPrice = parseFloat(product.outlet_price);
+                    }
+                    row.find('.unit-price-display').text(displayPrice.toFixed(2));
 
                     // Update Image
                     if (product.thumb_image) {

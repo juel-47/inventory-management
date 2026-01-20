@@ -172,7 +172,7 @@
                 
                 variantList.empty();
                 
-            const isOutletUser = {{ Auth::user()->can('Create Product Requests') ? 'true' : 'false' }};
+            const isOutletUser = {{ Auth::user()->hasRole('Outlet User') ? 'true' : 'false' }};
 
                 if (product) {
                     let displayPrice = parseFloat(product.price);

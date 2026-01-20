@@ -98,7 +98,7 @@ class ProductDataTable extends DataTable
             $columns[] = Column::make('purchase_price')->title('Purchase Price')->addClass('text-center');
         }
 
-        if ($user->can('Create Product Requests') && !$user->can('Manage Product Requests')) {
+        if ($user->hasRole('Outlet User')) {
             $columns[] = Column::make('outlet_price')->title('Price');
         } else {
             $columns[] = Column::make('price')->title('Selling Price');

@@ -31,7 +31,9 @@ class ProductRequestController extends Controller implements HasMiddleware
         $query = ProductRequest::with(['user'])->orderBy('id', 'desc');
         
         // If the user cannot manage requests, they only see their own.
-        if (!Auth::user()->can('Manage Product Requests')) {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        if (!$user->can('Manage Product Requests')) {
             $query->where('user_id', Auth::id());
         }
 
@@ -45,7 +47,9 @@ class ProductRequestController extends Controller implements HasMiddleware
     public function create()
     {
         // Only users with 'Create Product Requests' permission can create
-        if (!Auth::user()->can('Create Product Requests') && !Auth::user()->can('Manage Product Requests')) {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        if (!$user->can('Create Product Requests') && !$user->can('Manage Product Requests')) {
              abort(403, 'You do not have permission to create product requests.');
         }
 
@@ -61,7 +65,9 @@ class ProductRequestController extends Controller implements HasMiddleware
      */
     public function store(Request $request)
     {
-        if (!Auth::user()->can('Create Product Requests') && !Auth::user()->can('Manage Product Requests')) {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        if (!$user->can('Create Product Requests') && !$user->can('Manage Product Requests')) {
             abort(403);
         }
 
@@ -88,9 +94,12 @@ class ProductRequestController extends Controller implements HasMiddleware
             foreach ($request->items as $item) {
                 $product = Product::findOrFail($item['product_id']);
                 // Determine price based on user role/permission
+                // If user is a manager (Admin) or standard staff (User), use regular price.
+                // If user is an Outlet User, use outlet price.
                 $unitPrice = $product->price;
-                // If user is NOT a manager (i.e. is an outlet user), use outlet price
-                if(!Auth::user()->can('Manage Product Requests')) {
+                /** @var \App\Models\User $user */
+                $user = Auth::user();
+                if($user->hasRole('Outlet User')) {
                     $unitPrice = $product->outlet_price > 0 ? $product->outlet_price : $product->price;
                 }
 
@@ -132,7 +141,9 @@ class ProductRequestController extends Controller implements HasMiddleware
         $productRequest = ProductRequest::with(['user', 'items.product', 'items.variant.color', 'items.variant.size'])->findOrFail($id);
         
         // Authorization check
-        if (!Auth::user()->can('Manage Product Requests') && $productRequest->user_id !== Auth::id()) {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        if (!$user->can('Manage Product Requests') && $productRequest->user_id !== Auth::id()) {
             abort(403);
         }
 
@@ -159,7 +170,9 @@ class ProductRequestController extends Controller implements HasMiddleware
         $productRequest = ProductRequest::findOrFail($id);
         
         // Only Admin/Manager can update status
-        if (!Auth::user()->can('Manage Product Requests')) {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        if (!$user->can('Manage Product Requests')) {
             abort(403);
         }
 
@@ -193,7 +206,9 @@ class ProductRequestController extends Controller implements HasMiddleware
         $productRequest = ProductRequest::findOrFail($id);
         
         // Authorization: Manager can delete anything, User can only delete own pending requests
-        if (!Auth::user()->can('Manage Product Requests') && ($productRequest->user_id !== Auth::id() || $productRequest->status !== 'pending')) {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        if (!$user->can('Manage Product Requests') && ($productRequest->user_id !== Auth::id() || $productRequest->status !== 'pending')) {
              return response(['status' => 'error', 'message' => 'Unauthorized or request already processed']);
         }
 

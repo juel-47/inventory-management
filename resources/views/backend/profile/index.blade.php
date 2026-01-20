@@ -47,8 +47,7 @@
                                         <input type="text" class="form-control" name="phone"
                                             value="{{ Auth::user()->phone }}">
                                     </div>
-                                    @can('Create Product Requests')
-                                    @if(!Auth::user()->can('Manage Product Requests'))
+                                    @role('Outlet User')
                                     <div class="form-group col-md-12 col-12">
                                         <label>Outlet Name</label>
                                         <input type="text" class="form-control" name="outlet_name"
@@ -58,9 +57,9 @@
                                         <label>Address</label>
                                         <textarea class="form-control" name="address" style="min-height: 80px;">{{ Auth::user()->address }}</textarea>
                                     </div>
-                                    @endif
-                                    @endcan
-                                    @if(!Auth::user()->can('Create Product Requests') && !Auth::user()->can('Manage Product Requests'))
+                                    @endrole
+
+                                    @role('User')
                                     <div class="form-group col-md-12 col-12">
                                         <label>Shop Name</label>
                                         <input type="text" class="form-control" name="outlet_name"
@@ -70,7 +69,7 @@
                                         <label>Address</label>
                                         <textarea class="form-control" name="address" style="min-height: 80px;">{{ Auth::user()->address }}</textarea>
                                     </div>
-                                    @endif
+                                    @endrole
                                     <div class="form-group  col-12">
                                         <label>Image</label>
                                         <input type="file" name="image" id="" class="form-control">

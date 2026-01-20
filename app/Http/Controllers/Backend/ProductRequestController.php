@@ -93,15 +93,8 @@ class ProductRequestController extends Controller implements HasMiddleware
 
             foreach ($request->items as $item) {
                 $product = Product::findOrFail($item['product_id']);
-                // Determine price based on user role/permission
-                // If user is a manager (Admin) or standard staff (User), use regular price.
-                // If user is an Outlet User, use outlet price.
-                $unitPrice = $product->price;
-                /** @var \App\Models\User $user */
-                $user = Auth::user();
-                if($user->hasRole('Outlet User')) {
-                    $unitPrice = $product->outlet_price > 0 ? $product->outlet_price : $product->price;
-                }
+                // Determine price: Use outlet_price if available, otherwise fallback to selling price.
+                $unitPrice = $product->outlet_price > 0 ? $product->outlet_price : $product->price;
 
                 $subtotal = $item['qty'] * $unitPrice;
                 

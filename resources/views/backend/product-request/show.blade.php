@@ -36,9 +36,10 @@
                                             <th class="text-center" width="10%">Image</th>
                                             <th>Product Details</th>
                                             <th class="text-center">Current Stock</th>
-                                            <th class="text-center">Qty</th>
-                                            <th class="text-right">Local Unit Price</th>
-                                            <th class="text-right">Local Total Price</th>
+                                            <th class="text-center" width="10%">Qty</th>
+                                            <th class="text-right">Outlet Price</th>
+                                            <th class="text-right">Sell Price</th>
+                                            <th class="text-right">Total Price</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -78,6 +79,9 @@
                                                 <td class="text-right align-middle font-weight-bold text-muted">
                                                     {!! formatConverted($item->unit_price) !!}
                                                 </td>
+                                                <td class="text-right align-middle font-weight-bold text-muted">
+                                                    {!! formatConverted($item->product->price) !!}
+                                                </td>
                                                 <td class="text-right align-middle font-weight-bold text-dark">
                                                     {!! formatConverted($item->subtotal) !!}
                                                 </td>
@@ -88,7 +92,7 @@
                                         <tr>
                                     <tfoot class="bg-whitesmoke">
                                         <tr>
-                                            <td colspan="6" class="text-right font-weight-bold text-muted text-uppercase small" style="vertical-align: middle;">Total Request Amount</td>
+                                            <td colspan="7" class="text-right font-weight-bold text-muted text-uppercase small" style="vertical-align: middle;">Total Request Amount</td>
                                             <td class="text-right font-weight-bold h6 text-primary mb-0" style="vertical-align: middle;">
                                                 {!! formatConverted($productRequest->total_amount) !!}
                                             </td>

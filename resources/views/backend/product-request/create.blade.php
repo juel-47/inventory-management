@@ -32,6 +32,7 @@
                                                             <tr>
                                                                 <th width="50%">Product Details</th>
                                                                  <th width="15%" class="text-right">Local Unit Price</th>
+                                                                 <th width="10%" class="text-center">Selling Price</th>
                                                                  <th width="10%" class="text-center">Total Qty</th>
                                                                  <th width="20%" class="text-right">Local Total Price</th>
                                                                 <th width="5%"></th>
@@ -122,8 +123,12 @@
                             </div>
                         </td>
                         <td class="text-right align-middle px-4">
-                            <div class="text-muted small mb-1 text-uppercase font-weight-bold">Price</div>
-                            <div class="unit-price-display font-weight-bold">0.00</div>
+                            <div class="text-muted small mb-1 text-uppercase font-weight-bold">Buying Price</div>
+                            <div class="outlet-price-display font-weight-bold">0.00</div>
+                        </td>
+                        <td class="text-right align-middle px-4">
+                            <div class="text-muted small mb-1 text-uppercase font-weight-bold">Selling Price</div>
+                            <div class="sell-price-display font-weight-bold">0.00</div>
                         </td>
                         <td class="text-center align-middle px-4">
                             <div class="text-muted small mb-1 text-uppercase font-weight-bold">Total Qty</div>
@@ -172,14 +177,12 @@
                 
                 variantList.empty();
                 
-            const isOutletUser = {{ Auth::user()->hasRole('Outlet User') ? 'true' : 'false' }};
-
                 if (product) {
-                    let displayPrice = parseFloat(product.price);
-                    if(isOutletUser && product.outlet_price > 0) {
-                        displayPrice = parseFloat(product.outlet_price);
-                    }
-                    row.find('.unit-price-display').text(displayPrice.toFixed(2));
+                    let outletPrice = parseFloat(product.outlet_price) > 0 ? parseFloat(product.outlet_price) : parseFloat(product.price);
+                    let sellPrice = parseFloat(product.price);
+
+                    row.find('.outlet-price-display').text(outletPrice.toFixed(2));
+                    row.find('.sell-price-display').text(sellPrice.toFixed(2));
 
                     // Update Image
                     if (product.thumb_image) {
@@ -249,7 +252,7 @@
                     totalQty += parseInt($(this).val()) || 0;
                 });
                 
-                const price = parseFloat(row.find('.unit-price-display').text()) || 0;
+                const price = parseFloat(row.find('.outlet-price-display').text()) || 0;
                 const totalAmount = totalQty * price;
                 
                 row.find('.row-qty-text').text(totalQty);

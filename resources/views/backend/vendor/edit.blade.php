@@ -25,7 +25,7 @@ Vendor
                             @csrf
                             @method('PUT')
                             <div class="form-group">
-                                <label>Shop Name</label>
+                                <label>Company Name</label>
                                 <input type="text" class="form-control" name="shop_name" value="{{ $vendor->shop_name }}">
                             </div>
 

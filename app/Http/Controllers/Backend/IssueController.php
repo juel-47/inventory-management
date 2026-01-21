@@ -3,16 +3,18 @@
 namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Models\GeneralSetting;
 use App\Models\Issue;
 use App\Models\IssueItem;
 use App\Models\InventoryStock;
-use App\Models\StockLedger;
 use App\Models\Product;
-use App\Models\ProductVariant;
-use Illuminate\Support\Facades\DB;
-
 use App\Models\ProductRequest;
+use App\Models\ProductVariant;
+use App\Models\StockLedger;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class IssueController extends Controller
 {
@@ -35,7 +37,7 @@ class IssueController extends Controller
             ->get();
 
         $requestId = $request->query('request_id');
-        $outletUsers = \App\Models\User::role('Outlet User')->get();
+        $outletUsers = User::role(['Outlet User', 'User'])->get();
             
         return view('backend.issue.create', compact('products', 'productRequests', 'requestId', 'outletUsers'));
     }
@@ -157,14 +159,14 @@ class IssueController extends Controller
     public function generateInvoice(Issue $issue)
     {
          $issue->load(['items.product', 'items.variant.color', 'items.variant.size', 'outlet', 'productRequest']);
-         $settings = \App\Models\GeneralSetting::first();
+         $settings = GeneralSetting::first();
          
          // Using app('dompdf.wrapper') helper to avoid facade alias issues
          $pdf = app('dompdf.wrapper')->loadView('backend.pdf.issue-invoice', compact('issue', 'settings'));
          $fileName = 'issue_invoice_' . $issue->issue_no . '.pdf';
          $path = 'invoices/' . $fileName;
          
-         \Illuminate\Support\Facades\Storage::disk('public')->put($path, $pdf->output());
+         Storage::disk('public')->put($path, $pdf->output());
          
          $issue->update(['invoice_path' => $path]);
     }
@@ -172,7 +174,7 @@ class IssueController extends Controller
     public function viewInvoice($id)
     {
         $issue = Issue::with(['items.product', 'items.variant.color', 'items.variant.size', 'outlet', 'productRequest'])->findOrFail($id);
-        $settings = \App\Models\GeneralSetting::first();
+        $settings = GeneralSetting::first();
         
         // Return HTML view for preview
         return view('backend.pdf.issue-invoice', compact('issue', 'settings'));
@@ -182,7 +184,7 @@ class IssueController extends Controller
     {
         $issue = Issue::findOrFail($id);
         
-        if (!$issue->invoice_path || !\Illuminate\Support\Facades\Storage::disk('public')->exists($issue->invoice_path)) {
+        if (!$issue->invoice_path || !Storage::disk('public')->exists($issue->invoice_path)) {
             // Try to regenerate if missing
              try {
                 $this->generateInvoice($issue);
@@ -193,6 +195,6 @@ class IssueController extends Controller
             }
         }
         
-        return \Illuminate\Support\Facades\Storage::disk('public')->download($issue->invoice_path);
+        return Storage::disk('public')->download($issue->invoice_path);
     }
 }

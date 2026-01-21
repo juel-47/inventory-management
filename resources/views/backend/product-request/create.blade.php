@@ -31,7 +31,7 @@
                                                         <thead class="bg-whitesmoke text-uppercase small font-weight-bold">
                                                             <tr>
                                                                 <th width="50%">Product Details</th>
-                                                                 <th width="15%" class="text-right">Local Unit Price</th>
+                                                                 <th width="15%" class="text-right">Buying Price</th>
                                                                  <th width="10%" class="text-center">Selling Price</th>
                                                                  <th width="10%" class="text-center">Total Qty</th>
                                                                  <th width="20%" class="text-right">Local Total Price</th>
@@ -123,19 +123,15 @@
                             </div>
                         </td>
                         <td class="text-right align-middle px-4">
-                            <div class="text-muted small mb-1 text-uppercase font-weight-bold">Buying Price</div>
                             <div class="outlet-price-display font-weight-bold">0.00</div>
                         </td>
                         <td class="text-right align-middle px-4">
-                            <div class="text-muted small mb-1 text-uppercase font-weight-bold">Selling Price</div>
                             <div class="sell-price-display font-weight-bold">0.00</div>
                         </td>
                         <td class="text-center align-middle px-4">
-                            <div class="text-muted small mb-1 text-uppercase font-weight-bold">Total Qty</div>
                             <div class="row-qty-text font-weight-bold h6 mb-0">0</div>
                         </td>
                         <td class="text-right align-middle px-4">
-                            <div class="text-muted small mb-1 text-uppercase font-weight-bold">Subtotal</div>
                             <div class="row-total-text font-weight-bold h6 mb-0 text-primary">0.00</div>
                         </td>
                         <td class="text-center align-middle pr-4">

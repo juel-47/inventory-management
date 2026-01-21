@@ -11,34 +11,45 @@
         </div>
 
         <div class="section-body">
-            <div class="row">
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-header">
-                            <h4>All Products</h4>
-                            @can('Manage Products')
-                            <div class="card-header-action">
-                                <a href="{{ route('admin.products.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i>
-                                    Create New</a>
+            <div class="row mb-4 justify-content-center">
+                <div class="col-12 col-md-8 col-lg-6">
+                    <form id="search-form">
+                        <div class="input-group" style="border-radius: 25px; overflow: hidden; background-color: #e7eaed; border: 1px solid #d1d3e2;">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text border-0 pl-3 pr-2" style="background-color: transparent;">
+                                    <i class="fas fa-search text-secondary"></i>
+                                </span>
                             </div>
-                            @endcan
+                            <input type="text" class="form-control search-input border-0 pl-1" name="search" placeholder="Type to search products..." value="{{ request('search') }}" style="height: 45px; background-color: transparent; color: #444; font-weight: 500;" autocomplete="off">
                         </div>
-                        <div class="table-responsive card-body">
-                            {{ $dataTable->table() }}
-                        </div>
-                    </div>
+                    </form>
                 </div>
+                <div class="col-12 col-md-4 col-lg-3 text-md-right mt-3 mt-md-0">
+                    @can('Manage Products')
+                        <a href="{{ route('admin.products.create') }}" class="btn btn-primary btn-lg shadow-sm rounded-pill px-4">
+                            <i class="fas fa-plus mr-2"></i>Create New
+                        </a>
+                    @endcan
+                </div>
+            </div>
+
+            <div id="product-grid-container">
+                @include('backend.product.product_grid')
             </div>
         </div>
     </section>
 @endsection
 
 @push('scripts')
-    {{ $dataTable->scripts(attributes: ['type' => 'module']) }}
-
     <script>
         $(document).ready(function() {
-            $('body').on('click', '.change-status', function() {
+            // Prevent Enter key from submitting form
+            $('#search-form').on('submit', function(e) {
+                e.preventDefault();
+            });
+
+            // Status Change
+            $('body').on('change', '.change-status', function() {
                 let isChecked = $(this).is(':checked');
                 let id = $(this).data('id');
 
@@ -57,6 +68,56 @@
                     }
                 })
             })
+
+            // Auto Search
+            let timeout = null;
+            $('body').on('input', '.search-input', function() {
+                let search = $(this).val();
+                
+                // Clear existing timeout to debounce
+                clearTimeout(timeout);
+
+                // Set new timeout (500ms -> reduced to 300ms for snappier feel provided user types normally)
+                timeout = setTimeout(function() {
+                    let url = "{{ route('admin.products.index') }}";
+                    
+                    $.ajax({
+                        url: url,
+                        method: 'GET',
+                        data: { search: search },
+                        beforeSend: function() {
+                             // Show loader or opacity change
+                             $('#product-grid-container').css('opacity', '0.5');
+                        },
+                        success: function(response) {
+                            $('#product-grid-container').html(response);
+                            $('#product-grid-container').css('opacity', '1');
+                            
+                            // Update history API without reloading
+                            let newUrl = url + (search ? '?search=' + search : '');
+                            window.history.replaceState({path: newUrl}, '', newUrl);
+                        },
+                        error: function(xhr) {
+                            console.log(xhr);
+                            $('#product-grid-container').css('opacity', '1');
+                        }
+                    });
+                }, 300); 
+            });
+            
+            // Handle Pagination clicks via AJAX (Optional enhancement)
+             $('body').on('click', '.pagination a', function(e) {
+                e.preventDefault();
+                let url = $(this).attr('href');
+                window.history.pushState({path: url}, '', url);
+                
+                $.ajax({
+                    url: url,
+                    success: function(response) {
+                        $('#product-grid-container').html(response);
+                    }
+                });
+            });
         })
     </script>
 @endpush

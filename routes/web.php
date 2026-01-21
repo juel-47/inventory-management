@@ -1,20 +1,33 @@
 <?php
 
+use App\Http\Controllers\Backend\BookingController;
 use App\Http\Controllers\Backend\BrandController;
 // use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Backend\CategoryController;
 use App\Http\Controllers\Backend\SubCategoryController;
 use App\Http\Controllers\Backend\ChildCategoryController;
+use App\Http\Controllers\Backend\ColorController;
+use App\Http\Controllers\Backend\DashboardController;
+use App\Http\Controllers\Backend\InventoryReportController;
+use App\Http\Controllers\Backend\IssueController;
 use App\Http\Controllers\Backend\PermissionController;
+use App\Http\Controllers\Backend\ProductController;
+use App\Http\Controllers\Backend\ProductRequestController;
 use App\Http\Controllers\Backend\ProfileController;
+use App\Http\Controllers\Backend\PurchaseController;
+use App\Http\Controllers\Backend\ReportController;
 use App\Http\Controllers\Backend\RolesController;
+use App\Http\Controllers\Backend\SettingController;
+use App\Http\Controllers\Backend\SizeController;
+use App\Http\Controllers\Backend\StockLedgerController;
+use App\Http\Controllers\Backend\UnitController;
 use App\Http\Controllers\Backend\UserController;
 use App\Http\Controllers\Backend\VendorController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('auth/login');
-});
+})->middleware('guest');
 
 // Route::get('/dashboard', function () {
 //     return view('backend.dashboard');
@@ -28,7 +41,7 @@ Route::get('/', function () {
 
 
 Route::group(['middleware' => ['auth', 'verified', 'check.permission'], 'prefix' => 'admin', 'as' => 'admin.'], function () {
-    Route::get('/dashboard', [\App\Http\Controllers\Backend\DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('users', UserController::class);
     Route::put('users/change-status', [UserController::class, 'changeStatus'])->name('users.change-status');
     Route::resource('role', RolesController::class);
@@ -60,35 +73,35 @@ Route::group(['middleware' => ['auth', 'verified', 'check.permission'], 'prefix'
     Route::resource('vendor', VendorController::class);
 
     /** Unit Routes */
-    Route::put('units/change-status', [\App\Http\Controllers\Backend\UnitController::class, 'changeStatus'])->name('units.change-status');
-    Route::resource('units', \App\Http\Controllers\Backend\UnitController::class);
+    Route::put('units/change-status', [UnitController::class, 'changeStatus'])->name('units.change-status');
+    Route::resource('units', UnitController::class);
 
     /** Color Routes */
-    Route::put('colors/change-status', [\App\Http\Controllers\Backend\ColorController::class, 'changeStatus'])->name('colors.change-status');
-    Route::resource('colors', \App\Http\Controllers\Backend\ColorController::class);
+    Route::put('colors/change-status', [ColorController::class, 'changeStatus'])->name('colors.change-status');
+    Route::resource('colors', ColorController::class);
 
     /** Size Routes */
-    Route::put('sizes/change-status', [\App\Http\Controllers\Backend\SizeController::class, 'changeStatus'])->name('sizes.change-status');
-    Route::resource('sizes', \App\Http\Controllers\Backend\SizeController::class);
+    Route::put('sizes/change-status', [SizeController::class, 'changeStatus'])->name('sizes.change-status');
+    Route::resource('sizes', SizeController::class);
 
     /** Product Routes */
-    Route::put('products/change-status', [\App\Http\Controllers\Backend\ProductController::class, 'changeStatus'])->name('products.change-status');
-    Route::resource('products', \App\Http\Controllers\Backend\ProductController::class);
+    Route::put('products/change-status', [ProductController::class, 'changeStatus'])->name('products.change-status');
+    Route::resource('products', ProductController::class);
 
     /** Booking Routes */
-    Route::controller(\App\Http\Controllers\Backend\BookingController::class)->group(function () {
+    Route::controller(BookingController::class)->group(function () {
         Route::get('bookings/get-subcategories', 'getSubCategories')->name('bookings.get-subcategories');
         Route::get('bookings/get-childcategories', 'getChildCategories')->name('bookings.get-childcategories');
     });
-    Route::put('bookings/change-status', [\App\Http\Controllers\Backend\BookingController::class, 'changeStatus'])->name('bookings.change-status');
-    Route::resource('bookings', \App\Http\Controllers\Backend\BookingController::class);
+    Route::put('bookings/change-status', [BookingController::class, 'changeStatus'])->name('bookings.change-status');
+    Route::resource('bookings', BookingController::class);
 
     /** Purchase Routes */
-    Route::get('purchases/get-booking-details', [\App\Http\Controllers\Backend\PurchaseController::class, 'getBookingDetails'])->name('purchases.get-booking-details');
-    Route::resource('purchases', \App\Http\Controllers\Backend\PurchaseController::class);
+    Route::get('purchases/get-booking-details', [PurchaseController::class, 'getBookingDetails'])->name('purchases.get-booking-details');
+    Route::resource('purchases', PurchaseController::class);
 
     /** Report Routes */
-    Route::controller(\App\Http\Controllers\Backend\ReportController::class)->group(function () {
+    Route::controller(ReportController::class)->group(function () {
         Route::get('reports', 'index')->name('reports.index');
         Route::get('reports/stock', 'stockReport')->name('reports.stock');
         Route::get('reports/purchase', 'purchaseReport')->name('reports.purchase');
@@ -102,20 +115,20 @@ Route::group(['middleware' => ['auth', 'verified', 'check.permission'], 'prefix'
 
 
     /** Product Request Routes */
-    Route::put('product-requests/update-status/{id}', [\App\Http\Controllers\Backend\ProductRequestController::class, 'updateStatus'])->name('product-requests.update-status');
-    Route::resource('product-requests', \App\Http\Controllers\Backend\ProductRequestController::class);
+    Route::put('product-requests/update-status/{id}', [ProductRequestController::class, 'updateStatus'])->name('product-requests.update-status');
+    Route::resource('product-requests', ProductRequestController::class);
 
     // Settings
-    Route::get('settings', [\App\Http\Controllers\Backend\SettingController::class, 'index'])->name('settings.index');
-    Route::put('settings', [\App\Http\Controllers\Backend\SettingController::class, 'update'])->name('settings.update');
+    Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
+    Route::put('settings', [SettingController::class, 'update'])->name('settings.update');
 
     /** Inventory Plane Routes */
-    Route::get('issues/get-request-items', [\App\Http\Controllers\Backend\IssueController::class, 'getRequestItems'])->name('issues.get-request-items');
-    Route::get('issues/{id}/view-invoice', [\App\Http\Controllers\Backend\IssueController::class, 'viewInvoice'])->name('issues.view-invoice');
-    Route::get('issues/{id}/invoice', [\App\Http\Controllers\Backend\IssueController::class, 'downloadInvoice'])->name('issues.download-invoice');
-    Route::resource('issues', \App\Http\Controllers\Backend\IssueController::class);
-    Route::get('stock-ledger', [\App\Http\Controllers\Backend\StockLedgerController::class, 'index'])->name('stock-ledger.index');
-    Route::get('inventory-reports', [\App\Http\Controllers\Backend\InventoryReportController::class, 'index'])->name('inventory-reports.index');
+    Route::get('issues/get-request-items', [IssueController::class, 'getRequestItems'])->name('issues.get-request-items');
+    Route::get('issues/{id}/view-invoice', [IssueController::class, 'viewInvoice'])->name('issues.view-invoice');
+    Route::get('issues/{id}/invoice', [IssueController::class, 'downloadInvoice'])->name('issues.download-invoice');
+    Route::resource('issues', IssueController::class);
+    Route::get('stock-ledger', [StockLedgerController::class, 'index'])->name('stock-ledger.index');
+    Route::get('inventory-reports', [InventoryReportController::class, 'index'])->name('inventory-reports.index');
 
     /** profile routes */
     Route::controller(ProfileController::class)->group(function () {

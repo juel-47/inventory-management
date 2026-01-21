@@ -3,13 +3,17 @@
 namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
+use App\Models\Brand;
+use App\Models\Category;
+use App\Models\GeneralSetting;
 use App\Models\Product;
+use App\Models\ProductRequest;
 use App\Models\Purchase;
 use App\Models\PurchaseDetail;
-
+use App\Models\Vendor;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 
@@ -43,7 +47,7 @@ class ReportController extends Controller implements HasMiddleware
             ->count();
         
         // 2. Total Revenue: From completed Product Requests
-        $totalRevenue = \App\Models\ProductRequest::where('status', 'completed')->sum('total_amount');
+        $totalRevenue = ProductRequest::where('status', 'completed')->sum('total_amount');
         
         // 3. COGS: Estimated from ProductRequestItems for completed requests
         $totalCost = DB::table('product_request_items')
@@ -103,9 +107,9 @@ class ReportController extends Controller implements HasMiddleware
         });
         $potentialProfit = $potentialRevenue - $totalValue;
         
-        $categories = \App\Models\Category::where('status', 1)->get();
-        $brands = \App\Models\Brand::where('status', 1)->get();
-        $settings = \App\Models\GeneralSetting::first();
+        $categories = Category::where('status', 1)->get();
+        $brands = Brand::where('status', 1)->get();
+        $settings = GeneralSetting::first();
 
         if ($request->ajax()) {
             return response()->json([
@@ -141,7 +145,7 @@ class ReportController extends Controller implements HasMiddleware
         }
 
         $purchases = $query->orderBy('date', 'desc')->get();
-        $vendors = \App\Models\Vendor::where('status', 1)->get();
+        $vendors = Vendor::where('status', 1)->get();
 
         return view('backend.reports.purchase', compact('purchases', 'vendors'));
     }
@@ -241,9 +245,9 @@ class ReportController extends Controller implements HasMiddleware
 
         // 2. Fetch Pending Product Requests (Admin only)
         /** @var \App\Models\User $user */
-        $user = \Illuminate\Support\Facades\Auth::user();
+        $user = Auth::user();
         if ($user && $user->can('Manage Product Requests')) {
-            $pendingRequests = \App\Models\ProductRequest::with('user')
+            $pendingRequests = ProductRequest::with('user')
                 ->where('status', 'pending')
                 ->orderBy('id', 'desc')
                 ->take(20)
@@ -278,7 +282,7 @@ class ReportController extends Controller implements HasMiddleware
      */
     public function profitLossReport(Request $request)
     {
-        $revenueQuery = \App\Models\ProductRequest::where('status', 'completed');
+        $revenueQuery = ProductRequest::where('status', 'completed');
         $purchasesQuery = Purchase::query();
         
         if ($request->start_date) {

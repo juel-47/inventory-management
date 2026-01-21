@@ -3,9 +3,13 @@
 namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
+use App\Models\Booking;
+use App\Models\InventoryStock;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\Purchase;
 use App\Models\PurchaseDetail;
+use App\Models\StockLedger;
 use App\Models\Vendor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -34,7 +38,7 @@ class PurchaseController extends Controller
         $products = Product::where('status', 1)->with('variants.color', 'variants.size')->get(); 
         
         // Fetch Bookings (Only those not fully purchased? For now, only 'pending' bookings)
-        $bookings = \App\Models\Booking::with('product', 'vendor')
+        $bookings = Booking::with('product', 'vendor')
                     ->where('status', 'pending')
                     ->latest()
                     ->get();
@@ -43,7 +47,7 @@ class PurchaseController extends Controller
     }
 
     public function getBookingDetails(Request $request) {
-        $booking = \App\Models\Booking::with(['product', 'vendor', 'unit'])->findOrFail($request->id);
+        $booking = Booking::with(['product', 'vendor', 'unit'])->findOrFail($request->id);
         return response()->json($booking);
     }
 

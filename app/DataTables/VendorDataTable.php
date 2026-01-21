@@ -79,7 +79,7 @@ class VendorDataTable extends DataTable
     {
         return [
             Column::make('id'),
-            Column::make('shop_name'),
+            Column::make('shop_name')->title('Company Name'),
             Column::make('phone'),
             Column::make('email'),
             Column::make('address'),

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
+use App\Models\InventoryStock;
 use App\Models\Product;
 use App\Models\ProductRequest;
 use App\Models\ProductRequestItem;
@@ -11,7 +12,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Support\Str;
-
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
 
@@ -142,9 +142,9 @@ class ProductRequestController extends Controller implements HasMiddleware
 
         // Fetch Current Stock for each item based on the REQUESTER'S Outlet ID (which is user_id)
         foreach($productRequest->items as $item) {
-             $stock = \App\Models\InventoryStock::where('product_id', $item->product_id)
+             $stock = InventoryStock::where('product_id', $item->product_id)
                 ->where('variant_id', $item->variant_id)
-                ->where('outlet_id', $productRequest->user_id)
+                ->where('outlet_id', 1)
                 ->first();
              $item->current_stock = $stock ? $stock->quantity : 0;
         }

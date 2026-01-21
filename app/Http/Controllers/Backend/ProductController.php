@@ -38,9 +38,30 @@ class ProductController extends Controller implements HasMiddleware
     /**
      * Display a listing of the resource.
      */
-    public function index(ProductDataTable $dataTable)
+    public function index(Request $request)
     {
-        return $dataTable->render('backend.product.index');
+        $query = Product::with(['category', 'variants.color', 'variants.size', 'inventoryStocks'])->latest();
+
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('product_number', 'like', "%{$search}%")
+                  ->orWhere('self_number', 'like', "%{$search}%")
+                  ->orWhere('barcode', 'like', "%{$search}%")
+                  ->orWhereHas('category', function ($subQ) use ($search) {
+                      $subQ->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $products = $query->paginate(20)->withQueryString();
+
+        if ($request->ajax()) {
+            return view('backend.product.product_grid', compact('products'))->render();
+        }
+
+        return view('backend.product.index', compact('products'));
     }
 
     /**

@@ -5,9 +5,9 @@ body.layout-3 .navbar{
 }
 
 input[type="number"] {
-  -moz-appearance: textfield;   /* Firefox */
-  -webkit-appearance: none;     /* Chrome, Safari */
-  appearance: none;
+  -moz-appearance: textfield !important;   /* Firefox */
+  -webkit-appearance: none !important;     /* Chrome, Safari */
+  appearance: none !important;
 }
 
 /* Remove arrows in WebKit browsers */

@@ -3,7 +3,12 @@
 @section('content')
     <section class="section">
         <div class="section-header">
-            <h1><i class="fas fa-chart-pie mr-2 text-primary"></i>Stock  Report</h1>
+            <div>
+                <h1><i class="fas fa-chart-pie mr-2 text-primary"></i>Stock  Report</h1>
+                @if($settings)
+                    <small class="text-muted"><i class="fas fa-building mr-1"></i>{{ $settings->site_name ?? 'Inventory Management System' }} | {{ $settings->contact_email ?? '' }}</small>
+                @endif
+            </div>
             <div class="section-header-breadcrumb">
                 <div class="breadcrumb-item active"><a href="{{ route('admin.dashboard') }}">Dashboard</a></div>
                 <div class="breadcrumb-item"><a href="{{ route('admin.reports.index') }}">Reports</a></div>
@@ -126,9 +131,34 @@
                         <div class="card-header">
                             <h4>Detailed Stock List</h4>
                             <div class="card-header-action">
+                                <button class="btn btn-primary btn-sm" id="btn-export-excel">
+                                    <i class="fas fa-file-excel"></i> Export Excel
+                                </button>
+                                <button class="btn btn-primary btn-sm ml-1" id="btn-export-pdf">
+                                    <i class="fas fa-file-pdf"></i> Export PDF
+                                </button>
+                                <button class="btn btn-primary btn-sm ml-1" id="btn-print">
+                                    <i class="fas fa-print"></i> Print
+                                </button>
                             </div>
                         </div>
                         <div class="card-body">
+                            <!-- Export Header - Will be included in PDF/Excel/Print (Hidden from UI) -->
+                            <div class="export-header d-none" style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-left: 4px solid #007bff;">
+                                <div style="text-align: center; margin-bottom: 10px;">
+                                    <h3 style="margin: 0; color: #333;">{{ $settings->site_name ?? 'Inventory Management System' }}</h3>
+                                    @if($settings->contact_email)
+                                        <p style="margin: 5px 0; color: #666;"><strong>Email:</strong> {{ $settings->contact_email }}</p>
+                                    @endif
+                                    @if($settings->address)
+                                        <p style="margin: 5px 0; color: #666;"><strong>Address:</strong> {{ $settings->address }}</p>
+                                    @endif
+                                    <hr style="margin: 10px 0; border-top: 2px solid #007bff;">
+                                    <h4 style="margin: 10px 0; color: #007bff;">Stock Valuation Report</h4>
+                                    <p style="margin: 5px 0; color: #666; font-size: 14px;"><strong>Generated on:</strong> {{ date('F d, Y h:i A') }}</p>
+                                </div>
+                            </div>
+                            
                             <div class="table-responsive">
                                 <table class="table table-striped table-hover" id="table-stock">
                                     <thead>
@@ -164,12 +194,92 @@
 
 @push('scripts')
     <script>
+        // Prepare export header text
+        var exportHeader = '{{ $settings->site_name ?? "Inventory Management System" }}\n';
+        exportHeader += 'Email: {{ $settings->contact_email ?? "N/A" }}\n';
+        exportHeader += 'Address: {{ $settings->address ?? "N/A" }}\n';
+        exportHeader += '-------------------------------------------\n';
+        exportHeader += 'Stock Valuation Report\n';
+        exportHeader += 'Generated on: {{ date("F d, Y h:i A") }}\n';
+        exportHeader += '-------------------------------------------\n\n';
+
         var table = $("#table-stock").dataTable({
             dom: 'Bfrtip',
             buttons: [
-                'copy', 'csv', 'excel', 'pdf', 'print'
+                {
+                    extend: 'copy',
+                    messageTop: exportHeader
+                },
+                {
+                    extend: 'csv',
+                    messageTop: exportHeader
+                },
+                {
+                    extend: 'excel',
+                    messageTop: exportHeader,
+                    title: ''
+                },
+                {
+                    extend: 'pdf',
+                    messageTop: '',
+                    title: '',
+                    exportOptions: {
+                        format: {
+                            body: function (data, row, column, node) {
+                                // column 0 is the product info column which contains Image, Name and SKU
+                                if (column === 0) {
+                                    // Extract only the product name (font-weight-bold class)
+                                    var nameElement = $(node).find('.font-weight-bold');
+                                    if (nameElement.length > 0) {
+                                        return nameElement.text().trim();
+                                    }
+                                }
+                                return data;
+                            }
+                        }
+                    },
+                    customize: function(doc) {
+                        doc.content.splice(0, 0, {
+                            text: [
+                                { text: '{{ $settings->site_name ?? "Inventory Management System" }}\n', fontSize: 16, bold: true, alignment: 'center' },
+                                { text: 'Email: {{ $settings->contact_email ?? "N/A" }}\n', fontSize: 10, alignment: 'center' },
+                                { text: 'Address: {{ $settings->address ?? "N/A" }}\n\n', fontSize: 10, alignment: 'center' },
+                                { text: 'Stock Valuation Report\n', fontSize: 14, bold: true, alignment: 'center', color: '#007bff' },
+                                { text: 'Generated on: {{ date("F d, Y h:i A") }}\n\n', fontSize: 10, alignment: 'center' }
+                            ]
+                        });
+                    }
+                },
+                {
+                    extend: 'print',
+                    messageTop: function() {
+                        return $('.export-header').html();
+                    },
+                    title: ''
+                }
             ]
         });
+
+        // Hide default DataTables buttons (we'll use our custom styled buttons)
+        $('.dt-buttons').hide();
+
+        // Wire up custom export buttons
+        function initExportButtons() {
+            $('#btn-export-excel').off('click').on('click', function() {
+                table.DataTable().button('.buttons-excel').trigger();
+            });
+
+            $('#btn-export-pdf').off('click').on('click', function() {
+                table.DataTable().button('.buttons-pdf').trigger();
+            });
+
+            $('#btn-print').off('click').on('click', function() {
+                table.DataTable().button('.buttons-print').trigger();
+            });
+        }
+
+        // Initialize export buttons
+        initExportButtons();
 
         // AJAX Filter on Change
         $('select[name="category_id"], select[name="brand_id"]').on('change', function() {
@@ -207,9 +317,63 @@
                     table = $("#table-stock").dataTable({
                         dom: 'Bfrtip',
                         buttons: [
-                            'copy', 'csv', 'excel', 'pdf', 'print'
+                            {
+                                extend: 'copy',
+                                messageTop: exportHeader
+                            },
+                            {
+                                extend: 'csv',
+                                messageTop: exportHeader
+                            },
+                            {
+                                extend: 'excel',
+                                messageTop: exportHeader,
+                                title: ''
+                            },
+                            {
+                                extend: 'pdf',
+                                messageTop: '',
+                                title: '',
+                                exportOptions: {
+                                    format: {
+                                        body: function (data, row, column, node) {
+                                            // column 0 is the product info column which contains Image, Name and SKU
+                                            if (column === 0) {
+                                                // Extract only the product name (font-weight-bold class)
+                                                var nameElement = $(node).find('.font-weight-bold');
+                                                if (nameElement.length > 0) {
+                                                    return nameElement.text().trim();
+                                                }
+                                            }
+                                            return data;
+                                        }
+                                    }
+                                },
+                                customize: function(doc) {
+                                    doc.content.splice(0, 0, {
+                                        text: [
+                                            { text: '{{ $settings->site_name ?? "Inventory Management System" }}\n', fontSize: 16, bold: true, alignment: 'center' },
+                                            { text: 'Email: {{ $settings->contact_email ?? "N/A" }}\n', fontSize: 10, alignment: 'center' },
+                                            { text: 'Address: {{ $settings->address ?? "N/A" }}\n\n', fontSize: 10, alignment: 'center' },
+                                            { text: 'Stock Valuation Report\n', fontSize: 14, bold: true, alignment: 'center', color: '#007bff' },
+                                            { text: 'Generated on: {{ date("F d, Y h:i A") }}\n\n', fontSize: 10, alignment: 'center' }
+                                        ]
+                                    });
+                                }
+                            },
+                            {
+                                extend: 'print',
+                                messageTop: function() {
+                                    return $('.export-header').html();
+                                },
+                                title: ''
+                            }
                         ]
                     });
+                    
+                    // Hide default buttons and reinitialize custom export buttons
+                    $('.dt-buttons').hide();
+                    initExportButtons();
                 },
                 error: function(xhr) {
                     console.error(xhr);

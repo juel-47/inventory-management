@@ -77,8 +77,9 @@
 @push('scripts')
     <script>
         $("#table-1").dataTable({
+            "order": [[0, "desc"]],
             "columnDefs": [
-                { "sortable": false, "targets": [7] }
+                { "sortable": false, "targets": [7, 8] }
             ]
         });
     </script>

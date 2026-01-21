@@ -25,7 +25,7 @@ Vendor
                             @csrf
                             <div class="row">
                                 <div class="form-group col-md-6">
-                                <label>Shop Name</label>
+                                <label>Company Name</label>
                                 <input type="text" class="form-control" name="shop_name" value="">
                             </div>
 

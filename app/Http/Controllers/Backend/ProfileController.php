@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\File;
 
 class ProfileController extends Controller
 {
@@ -28,8 +29,8 @@ class ProfileController extends Controller
         $user = Auth::user();
 
         if ($request->hasFile('image')) {
-            if ($user->image && \Illuminate\Support\Facades\File::exists(public_path($user->image))) {
-                \Illuminate\Support\Facades\File::delete(public_path($user->image));
+            if ($user->image && File::exists(public_path($user->image))) {
+                File::delete(public_path($user->image));
             }
             $image = $request->file('image');
             $imageName = rand() . '_' . $image->getClientOriginalName();

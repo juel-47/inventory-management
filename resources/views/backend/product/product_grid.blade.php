@@ -101,7 +101,7 @@
 <div class="row mt-4 mb-5">
     <div class="col-12 text-center">
         <p class="text-muted mb-3" style="font-size: 14px; font-weight: 500;">
-            Showing <span class="text-dark font-weight-bold">{{ $products->firstItem() ?? 0 }}</span> 
+            Showing <span class="text-dark font-weight-bold">{{ $products->firstItem() ?? 0 }} - {{ $products->lastItem() ?? 0 }}</span> 
             of <span class="text-dark font-weight-bold">{{ $products->total() }}</span> products
         </p>
         <div class="d-flex justify-content-center custom-pagination">

@@ -144,23 +144,32 @@
 
                     {{-- Requester Info --}}
                     <div class="card mb-3">
-                         <div class="card-header">
-                            <h4>Requester</h4>
+                        <div class="card-header border-bottom">
+                            <h4>Requester Profile</h4>
                         </div>
                         <div class="card-body">
-                             <div class="d-flex align-items-center">
+                            <div class="d-flex align-items-center mb-4">
                                 <div class="avatar-item mr-3">
-                                    <img alt="image" src="https://ui-avatars.com/api/?name={{ urlencode($productRequest->user->name) }}&background=e3eaef&color=3c8dbc" class="rounded-circle" width="50">
+                                    <img alt="image" src="{{ $productRequest->user->image ? asset($productRequest->user->image) : 'https://ui-avatars.com/api/?name='.urlencode($productRequest->user->name).'&background=e3eaef&color=3c8dbc' }}" class="rounded-circle shadow-sm" width="60">
                                 </div>
                                 <div>
-                                    <div class="font-weight-bold text-dark">{{ $productRequest->user->name }}</div>
-                                    <div class="text-small text-muted">{{ $productRequest->user->email }}</div>
-                                    <div class="text-small text-muted">{{ $productRequest->user->role }}</div>
+                                    <div class="font-weight-bold text-dark h6 mb-0">{{ $productRequest->user->name }}</div>
                                 </div>
                             </div>
-                            <div class="mt-3 text-small text-muted">
-                                <i class="fas fa-phone mr-1"></i> {{ $productRequest->user->phone ?? 'N/A' }}
-                            </div>
+                            
+                            <dl class="row text-small mb-0">
+                                <dt class="col-sm-5 text-muted font-weight-normal">{{ $productRequest->user->hasRole('Outlet User') ? 'Outlet Name' : 'Shop Name' }}:</dt>
+                                <dd class="col-sm-7 font-weight-bold">{{ $productRequest->user->outlet_name ?? 'N/A' }}</dd>
+
+                                <dt class="col-sm-5 text-muted font-weight-normal">Email:</dt>
+                                <dd class="col-sm-7"><a href="mailto:{{ $productRequest->user->email }}">{{ $productRequest->user->email }}</a></dd>
+
+                                <dt class="col-sm-5 text-muted font-weight-normal">Phone:</dt>
+                                <dd class="col-sm-7">{{ $productRequest->user->phone ?? 'N/A' }}</dd>
+
+                                <dt class="col-sm-5 text-muted font-weight-normal">Address:</dt>
+                                <dd class="col-sm-7 text-muted">{{ $productRequest->user->address ?? 'No address provided' }}</dd>
+                            </dl>
                         </div>
                     </div>
 

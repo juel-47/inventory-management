@@ -35,7 +35,7 @@
                                     <tbody>
                                         @foreach ($ledgers as $ledger)
                                             <tr>
-                                                <td>{{ \Carbon\Carbon::parse($ledger->date)->format('Y-m-d H:i') }}</td>
+                                                <td>{{ \Carbon\Carbon::parse($ledger->date)->format('Y-m-d') }} {{ $ledger->created_at->format('h:i A') }}</td>
                                                 <td>{{ $ledger->product->name ?? 'Deleted' }}</td>
                                                 <td>{{ $ledger->variant ? $ledger->variant->name : '-' }}</td>
                                                 <td>{{ $ledger->reference_type }} #{{ $ledger->reference_id }}</td>

@@ -136,8 +136,8 @@ class ProductRequestController extends Controller implements HasMiddleware
         // Authorization check
         /** @var \App\Models\User $user */
         $user = Auth::user();
-        if (!$user->can('Manage Product Requests') && $productRequest->user_id !== Auth::id()) {
-            abort(403);
+        if (!$user->can('Manage Product Requests') && $productRequest->user_id != Auth::id()) {
+            abort(403, 'Unauthorized access to this product request.');
         }
 
         // Fetch Current Stock for each item based on the REQUESTER'S Outlet ID (which is user_id)
@@ -201,7 +201,7 @@ class ProductRequestController extends Controller implements HasMiddleware
         // Authorization: Manager can delete anything, User can only delete own pending requests
         /** @var \App\Models\User $user */
         $user = Auth::user();
-        if (!$user->can('Manage Product Requests') && ($productRequest->user_id !== Auth::id() || $productRequest->status !== 'pending')) {
+        if (!$user->can('Manage Product Requests') && ($productRequest->user_id != Auth::id() || $productRequest->status !== 'pending')) {
              return response(['status' => 'error', 'message' => 'Unauthorized or request already processed']);
         }
 

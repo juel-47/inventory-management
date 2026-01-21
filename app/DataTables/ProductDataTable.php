@@ -57,7 +57,7 @@ class ProductDataTable extends DataTable
                 $badgeClass = $stock > 0 ? 'badge-info' : 'badge-danger';
                 return '<span class="badge ' . $badgeClass . '">' . (float)$stock . '</span>';
             })
-            ->rawColumns(['action', 'status', 'thumb_image', 'price', 'purchase_price', 'qty'])
+            ->rawColumns(['action', 'status', 'thumb_image', 'price', 'purchase_price', 'outlet_price', 'qty'])
             ->setRowId('id');
     }
 
@@ -98,13 +98,14 @@ class ProductDataTable extends DataTable
             $columns[] = Column::make('purchase_price')->title('Purchase Price')->addClass('text-center');
         }
 
-        if ($user->hasRole('Outlet User')) {
-            $columns[] = Column::make('outlet_price')->title('Price');
+        if ($user->hasRole('Outlet User') || $user->hasRole('User')) {
+            $columns[] = Column::make('outlet_price')->title('Buying Price');
+            $columns[] = Column::make('price')->title('Selling Price');
         } else {
             $columns[] = Column::make('price')->title('Selling Price');
             // Admin sees both for management
             if ($user->can('Manage Products')) {
-                 $columns[] = Column::make('outlet_price')->title('Outlet Price');
+                 $columns[] = Column::make('outlet_price')->title('Outlet/Shop Price');
             }
         }
 

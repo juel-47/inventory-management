@@ -24,8 +24,9 @@
                                             <th>#</th>
                                             <th>Request No</th>
                                             <th>Requester</th>
+                                            <th>Outlet/Shop Name</th>
                                             <th>Total Qty</th>
-                                             <th>Base Total</th>
+                                             <th>Local Total Price</th>
                                             <th>Status</th>
                                             <th>Date</th>
                                             <th>Action</th>
@@ -37,6 +38,7 @@
                                                 <td>{{ $request->id }}</td>
                                                 <td>{{ $request->request_no }}</td>
                                                 <td>{{ $request->user->name }}</td>
+                                                <td>{{ $request->user->outlet_name ?? 'N/A' }}</td>
                                                 <td>{{ $request->total_qty }}</td>
                                                 <td>{!! formatConverted($request->total_amount) !!}</td>
                                                 <td>

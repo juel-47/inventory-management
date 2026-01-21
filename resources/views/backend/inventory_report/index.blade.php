@@ -23,6 +23,7 @@
                                 <table class="table table-striped" id="table-inventory">
                                     <thead>
                                         <tr>
+                                            <th width="80">Image</th>
                                             <th>Product Name</th>
                                             <th>Variant</th>
                                             <th>Item Number</th>
@@ -34,6 +35,13 @@
                                     <tbody>
                                         @foreach ($stocks as $stock)
                                             <tr>
+                                                <td>
+                                                    @if($stock->product && $stock->product->thumb_image)
+                                                        <img src="{{ asset('storage/'.$stock->product->thumb_image) }}" alt="" style="width: 45px; height: 45px; object-fit: cover; border-radius: 4px;">
+                                                    @else
+                                                        <div class="bg-light rounded d-flex align-items-center justify-content-center text-muted small" style="width: 45px; height: 45px;">N/A</div>
+                                                    @endif
+                                                </td>
                                                 <td>{{ $stock->product->name ?? 'N/A' }}</td>
                                                 <td>{{ $stock->variant ? $stock->variant->name : '-' }}</td>
                                                 <td>{{ $stock->product->product_number ?? '-' }}</td>

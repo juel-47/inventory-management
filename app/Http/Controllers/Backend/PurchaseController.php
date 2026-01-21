@@ -38,8 +38,15 @@ class PurchaseController extends Controller
         $products = Product::where('status', 1)->with('variants.color', 'variants.size')->get(); 
         
         // Fetch Bookings (Only those not fully purchased? For now, only 'pending' bookings)
-        $bookings = Booking::with('product', 'vendor')
+        $bookings = Booking::with('vendor')
                     ->where('status', 'pending')
+                    ->select(
+                        DB::raw('MIN(id) as id'),
+                        'booking_no', 
+                        'vendor_id', 
+                        DB::raw('count(product_id) as product_count')
+                    )
+                    ->groupBy('booking_no', 'vendor_id')
                     ->latest()
                     ->get();
 
@@ -48,7 +55,13 @@ class PurchaseController extends Controller
 
     public function getBookingDetails(Request $request) {
         $booking = Booking::with(['product', 'vendor', 'unit'])->findOrFail($request->id);
-        return response()->json($booking);
+        
+        // Fetch all products that share the same booking_no
+        $bookings = Booking::with(['product', 'vendor', 'unit'])
+                    ->where('booking_no', $booking->booking_no)
+                    ->get();
+                    
+        return response()->json($bookings);
     }
 
     /**
@@ -322,9 +335,12 @@ class PurchaseController extends Controller
             $purchase->total_amount = $totalAmount;
             $purchase->save();
 
-            // Automate Booking Completion
+            // Automate Booking Completion for the entire group
             if($purchase->booking_id) {
-                \App\Models\Booking::where('id', $purchase->booking_id)->update(['status' => 'complete']);
+                $targetBooking = \App\Models\Booking::find($purchase->booking_id);
+                if($targetBooking) {
+                    \App\Models\Booking::where('booking_no', $targetBooking->booking_no)->update(['status' => 'complete']);
+                }
             }
 
             DB::commit();

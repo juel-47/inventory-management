@@ -41,6 +41,48 @@
 @endsection
 
 @push('scripts')
+    <style>
+        /* Professional Pagination Styling - Enhanced for White Background */
+        .custom-pagination .pagination {
+            margin-bottom: 0;
+            gap: 6px;
+        }
+        .custom-pagination .page-item .page-link {
+            border: 1px solid #dfe3e8;
+            color: #454f5b;
+            padding: 10px 18px;
+            border-radius: 6px !important;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s ease-in-out;
+            background-color: #fff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05); /* Subtle border shadow */
+        }
+        .custom-pagination .page-item.active .page-link {
+            background-color: #6777ef;
+            border-color: #6777ef;
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(103, 119, 239, 0.25);
+        }
+        .custom-pagination .page-item .page-link:hover {
+            background-color: #f4f6f8;
+            color: #6777ef;
+            border-color: #6777ef;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+        }
+        .custom-pagination .page-item.disabled .page-link {
+            background-color: #f9fafb;
+            border-color: #e1e4e8;
+            color: #919eab;
+            box-shadow: none;
+        }
+        .custom-pagination .page-item:first-child .page-link,
+        .custom-pagination .page-item:last-child .page-link {
+            background-color: #f4f6f8;
+            font-weight: bold;
+        }
+    </style>
     <script>
         $(document).ready(function() {
             // Prevent Enter key from submitting form

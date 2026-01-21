@@ -3,6 +3,7 @@
 namespace App\DataTables;
 
 use App\Models\Booking;
+use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
 use Yajra\DataTables\Html\Button;
@@ -15,18 +16,22 @@ class BookingDataTable extends DataTable
     {
         return (new EloquentDataTable($query))
             ->addColumn('action', function ($query) {
-                $edit = '<a href="' . route('admin.bookings.edit', $query->id) . '" class="btn btn-primary"><i class="fas fa-edit"></i></a>';
-                $delete = '<a href="' . route('admin.bookings.destroy', $query->id) . '" class="btn btn-danger delete-item ml-2"><i class="fas fa-trash"></i></a>';
-                return $edit . $delete;
-            })
-            ->addColumn('product', function ($query) {
-                return $query->product->name ?? 'N/A';
+            $edit = '<a href="' . route('admin.bookings.edit', $query->id) . '" class="btn btn-primary"><i class="fas fa-edit"></i></a>';
+            $invoice = '<a href="' . route('admin.bookings.view-invoice', $query->id) . '" target="_blank" class="btn btn-warning ml-2" title="View Invoice"><i class="fas fa-file-invoice"></i></a>';
+            $download = '<a href="' . route('admin.bookings.download-pdf', $query->id) . '" class="btn btn-secondary ml-2" title="Download PDF"><i class="fas fa-download"></i></a>';
+            $delete = '<a href="' . route('admin.bookings.destroy', $query->id) . '" class="btn btn-danger delete-item ml-2" data-booking-no="' . $query->booking_no . '"><i class="fas fa-trash"></i></a>';
+            return $edit . $invoice . $download . $delete;
             })
             ->addColumn('vendor', function ($query) {
-                return $query->vendor->shop_name ?? 'N/A';
+                return $query->vendor_shop_name ?? 'N/A';
+            })
+            ->addColumn('product_count', function ($query) {
+                return '<span class="badge badge-info">' . $query->product_count . ' Items</span>';
+            })
+            ->addColumn('total_qty', function ($query) {
+                return '<strong>' . $query->total_qty . '</strong>';
             })
             ->addColumn('status', function ($query) {
-                // Determine current status. Default strict check.
                 $status = strtolower($query->status);
                 $options = [
                     'pending' => 'Pending',
@@ -35,7 +40,7 @@ class BookingDataTable extends DataTable
                     'missing' => 'Missing'
                 ];
                 
-                $html = '<select class="form-control change-status" data-id="' . $query->id . '" style="min-width: 100px;">';
+                $html = '<select class="form-control change-status" data-id="' . $query->id . '" data-booking-no="' . $query->booking_no . '" style="min-width: 100px;">';
                 foreach($options as $key => $label) {
                     $selected = $status === $key ? 'selected' : '';
                     $html .= '<option value="'.$key.'" '.$selected.'>'.$label.'</option>';
@@ -44,13 +49,24 @@ class BookingDataTable extends DataTable
                 
                 return $html;
             })
-            ->rawColumns(['action', 'status'])
+            ->rawColumns(['action', 'status', 'product_count', 'total_qty'])
             ->setRowId('id');
     }
 
     public function query(Booking $model)
     {
-        return $model->newQuery()->with(['product', 'vendor']);
+        return $model->newQuery()
+            ->join('vendors', 'bookings.vendor_id', '=', 'vendors.id')
+            ->select(
+                DB::raw('MIN(bookings.id) as id'),
+                'bookings.booking_no',
+                'bookings.vendor_id',
+                'bookings.status',
+                'vendors.shop_name as vendor_shop_name',
+                DB::raw('count(bookings.product_id) as product_count'),
+                DB::raw('sum(bookings.qty) as total_qty')
+            )
+            ->groupBy('bookings.booking_no', 'bookings.vendor_id', 'bookings.status', 'vendors.shop_name');
     }
 
     public function html(): HtmlBuilder
@@ -71,18 +87,17 @@ class BookingDataTable extends DataTable
 
     public function getColumns(): array
     {
-        $settings = getSettings();
         return [
             Column::make('id'),
             Column::make('booking_no')->title('Booking No'),
             Column::make('vendor')->title('Vendor'),
-            Column::make('product')->title('Product'),
-            Column::make('qty')->title('Qty'),
+            Column::computed('product_count')->title('Products'),
+            Column::computed('total_qty')->title('Total Qty'),
             Column::make('status'),
             Column::computed('action')
                 ->exportable(false)
                 ->printable(false)
-                ->width(120)
+                ->width(250)
                 ->addClass('text-center'),
         ];
     }

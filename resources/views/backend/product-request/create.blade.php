@@ -46,10 +46,6 @@
                                             </div>
                                         </div>
 
-                                        <div class="form-group mt-3">
-                                            <label class="font-weight-bold text-muted">Additional Notes</label>
-                                            <textarea name="note" class="form-control" rows="3" placeholder="Enter any specific requirements or notes here..."></textarea>
-                                        </div>
                                     </div>
 
                                     <div class="col-md-3">
@@ -58,6 +54,19 @@
                                                 <h4 class="mb-0 text-white">Summary</h4>
                                             </div>
                                             <div class="card-body bg-light">
+                                                @if(Auth::user()->can('Manage Product Requests'))
+                                                    <div class="form-group mb-4">
+                                                        <label class="font-weight-bold text-dark">Select Outlet / User</label>
+                                                        <select name="user_id" class="form-control select2" required>
+                                                            <option value="" disabled selected>Choose Outlet/User...</option>
+                                                            @foreach($users as $u)
+                                                                <option value="{{ $u->id }}">{{ $u->outlet_name ?? $u->name }} ({{ $u->name }})</option>
+                                                            @endforeach
+                                                        </select>
+                                                        <small class="form-text text-muted">Select which outlet this request is for.</small>
+                                                    </div>
+                                                    <hr>
+                                                @endif
                                                 <div class="d-flex justify-content-between mb-2">
                                                     <span class="text-muted">Total Products:</span>
                                                     <span id="total-items-count" class="font-weight-bold">0</span>

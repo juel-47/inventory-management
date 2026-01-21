@@ -4,29 +4,59 @@
     <section class="section">
         <div class="section-header">
             <h1>Order Place</h1>
+            <div class="section-header-breadcrumb">
+                <div class="breadcrumb-item active"><a href="{{ route('admin.dashboard') }}">Dashboard</a></div>
+                <div class="breadcrumb-item"><a href="{{ route('admin.bookings.index') }}">Order Place</a></div>
+                <div class="breadcrumb-item">Create</div>
+            </div>
         </div>
 
         <div class="section-body">
             <div class="row">
                 <div class="col-12">
-                    <div class="card">
-                        <div class="card-header">
-                            <h4>Create Order Place</h4>
-                            <div class="card-header-action">
-                                <a href="{{ route('admin.bookings.index') }}" class="btn btn-primary">Back</a>
+                    <form action="{{ route('admin.bookings.store') }}" method="POST" id="booking_form">
+                        @csrf
+                        
+                        <!-- Section 1: Vendor & Global Status -->
+                        <div class="card card-primary">
+                            <div class="card-header">
+                                <h4>General Information</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="form-group col-md-6">
+                                        <label class="font-weight-bold">Select Vendor <span class="text-danger">*</span></label>
+                                        <select class="form-control select2" name="vendor_id" required>
+                                            <option value="">-- Select Vendor --</option>
+                                            @foreach ($vendors as $vendor)
+                                                <option value="{{ $vendor->id }}">{{ $vendor->shop_name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label>Order Status <span class="text-danger">*</span></label>
+                                        <select class="form-control" name="status" required>
+                                            <option value="pending" selected>Pending</option>
+                                            <option value="complete">Complete</option>
+                                            <option value="cancelled">Cancelled</option>
+                                            <option value="missing">Missing</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div class="card-body">
-                            <form action="{{ route('admin.bookings.store') }}" method="POST">
-                                @csrf
-                                <div class="row mb-4">
-                                    <div class="col-12">
-                                        <div class="section-title mt-0">Categorization</div>
-                                    </div>
+
+                        <!-- Section 2: Category-wise Product Filtering -->
+                        <div class="card card-info shadow-none border">
+                            <div class="card-header bg-light">
+                                <h4 class="text-info">Search & Add Product</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="row mb-3">
                                     <div class="form-group col-md-4">
                                         <label>Category</label>
-                                        <select class="form-control select2" name="category_id" id="category_id">
-                                            <option value="">Select Category (Optional)</option>
+                                        <select class="form-control select2" id="category_filter">
+                                            <option value="">All Categories</option>
                                             @foreach ($categories as $category)
                                                 <option value="{{ $category->id }}">{{ $category->name }}</option>
                                             @endforeach
@@ -34,150 +64,98 @@
                                     </div>
                                     <div class="form-group col-md-4">
                                         <label>Sub Category</label>
-                                        <select class="form-control select2" name="sub_category_id" id="sub_category_id">
-                                            <option value="">Select Sub Category (Optional)</option>
+                                        <select class="form-control select2" id="sub_category_filter">
+                                            <option value="">Select Sub Category</option>
                                         </select>
                                     </div>
                                     <div class="form-group col-md-4">
                                         <label>Child Category</label>
-                                        <select class="form-control select2" name="child_category_id" id="child_category_id">
-                                            <option value="">Select Child Category (Optional)</option>
+                                        <select class="form-control select2" id="child_category_filter">
+                                            <option value="">Select Child Category</option>
                                         </select>
                                     </div>
                                 </div>
-
-                                <div class="row mb-4">
-                                    <div class="col-12">
-                                        <div class="section-title mt-0">General Information</div>
-                                    </div>
-                                    <div class="form-group col-md-6">
-                                        <label>Vendor</label>
-                                        <select class="form-control select2" name="vendor_id">
-                                            <option value="">Select Vendor</option>
-                                            @foreach ($vendors as $vendor)
-                                                <option value="{{ $vendor->id }}">{{ $vendor->shop_name }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    <div class="form-group col-md-6">
-                                        <label>Product</label>
-                                        <select class="form-control select2" name="product_id" id="product_id">
-                                            <option value="">Select Product</option>
+                                <div class="row align-items-end">
+                                    <div class="form-group col-md-9 mb-0">
+                                        <label class="font-weight-bold text-primary">Select Product</label>
+                                        <select class="form-control select2" id="product_selector">
+                                            <option value="">-- Search Product --</option>
                                             @foreach ($products as $product)
-                                                <option value="{{ $product->id }}">{{ $product->name }}</option>
+                                                <option value="{{ $product->id }}">{{ $product->name }} ({{ $product->product_number }})</option>
                                             @endforeach
                                         </select>
                                     </div>
-                                </div>
-
-                                <div class="row mb-4">
-                                    <div class="col-12">
-                                        <div class="section-title mt-0">Product Details (Read Only)</div>
-                                    </div>
-                                    <div class="form-group col-md-4">
-                                        <label>Product Name</label>
-                                        <input type="text" class="form-control bg-light" id="product_name" readonly>
-                                    </div>
-                                    <div class="form-group col-md-4">
-                                        <label>Product Number</label>
-                                        <input type="text" class="form-control bg-light" id="product_number" readonly>
-                                    </div>
-                                    <div class="form-group col-md-4">
-                                        <label>Product Category</label>
-                                        <input type="text" class="form-control bg-light" id="product_category" readonly>
-                                    </div>
-                                    <div class="form-group col-md-4">
-                                        <label>Product Image</label>
-                                        <br>
-                                        <img id="product_image" src="" alt="Product Image" style="width: 100px; display: none;">
+                                    <div class="col-md-3">
+                                        <button type="button" class="btn btn-info btn-block py-2 h-100" id="add_product_btn">
+                                            <i class="fas fa-cart-plus mr-1"></i> Add to Basket
+                                        </button>
                                     </div>
                                 </div>
-
-                                <div class="row mb-4">
-                                    <div class="col-12">
-                                        <div class="section-title mt-0">Variant, Unit & Qty</div>
-                                    </div>
-                                    <div class="col-12" id="variant_container" style="display: none;">
-                                        <table class="table table-sm table-bordered">
-                                            <thead class="bg-light">
-                                                <tr>
-                                                    <th width="60%">Variant</th>
-                                                    <th width="40%">Quantity</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="variant_table_body">
-                                                <!-- Variants will be injected here -->
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    <div class="form-group col-md-4">
-                                        <label class="font-weight-bold">Quantity</label>
-                                        <input type="number" class="form-control" name="qty" required>
-                                    </div>
-                                    <div class="form-group col-md-4">
-                                        <label>Unit</label>
-                                        <select class="form-control" name="unit_id" id="unit_select">
-                                            <option value="">Select Unit</option>
-                                            @foreach ($units as $unit)
-                                                <option value="{{ $unit->id }}">{{ $unit->name }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    <div class="form-group col-md-4">
-                                        <label>Barcode</label>
-                                        <input type="text" class="form-control" name="barcode" id="barcode">
-                                    </div>
-                                    
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-12">
-                                        <div class="form-group">
-                                            <label>Notes</label>
-                                            <textarea name="description" class="form-control" rows="4"></textarea>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-12">
-                                        <div class="card border">
-                                            <div class="card-header bg-whitesmoke">
-                                                <h4>Custom Fields</h4>
-                                                <div class="card-header-action">
-                                                    <button type="button" class="btn btn-sm btn-success" id="add-custom-field"><i class="fas fa-plus"></i> Add Field</button>
-                                                </div>
-                                            </div>
-                                            <div class="card-body" id="custom-fields-container">
-                                                <!-- Custom fields will participate here -->
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-12">
-                                        <div class="form-group">
-                                            <label>Status</label>
-                                            <select class="form-control" name="status">
-                                                <option value="pending">Pending</option>
-                                                <option value="complete">Complete</option>
-                                                <option value="cancelled">Cancelled</option>
-                                                <option value="missing">Missing</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="row mt-4">
-                                    <div class="col-12 text-right">
-                                        <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-save"></i> Create Booking</button>
-                                    </div>
-                                </div>
-
-                            </form>
+                            </div>
                         </div>
-                    </div>
+
+                        <!-- Section 3: Order Basket -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h4>Order Basket</h4>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-md mb-0 shadow-sm" id="basket_table">
+                                        <thead class="bg-whitesmoke text-uppercase small font-weight-bold">
+                                            <tr>
+                                                <th width="5%" class="text-center">Image</th>
+                                                <th width="30%">Product & SKU</th>
+                                                <th width="15%">Unit</th>
+                                                <th width="10%" class="text-center">Main Qty</th>
+                                                <th width="35%">Variants (Color/Size) & Qtys</th>
+                                                <th width="5%" class="text-center">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="basket_body">
+                                            <tr id="empty_basket_row">
+                                                <td colspan="6" class="text-center py-5 text-muted">
+                                                    <i class="fas fa-shopping-basket fa-3x mb-3 opacity-25"></i>
+                                                    <p>Your basket is empty. Use the search filters above to add products.</p>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        <!-- Section 4: Custom Fields -->
+                        <div class="card mt-3">
+                            <div class="card-header bg-whitesmoke d-flex justify-content-between align-items-center">
+                                <h4 class="mb-0">Custom Fields (Optional)</h4>
+                                <div class="card-header-action">
+                                    <button type="button" class="btn btn-sm btn-success" id="add-custom-field">
+                                        <i class="fas fa-plus"></i> Add Field
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body" id="custom-fields-container">
+                                <!-- Custom fields will appear here -->
+                            </div>
+                        </div>
+
+                        <!-- Section 3: Order Basket (Footer Moved Below Custom Fields) -->
+                            <div class="card-footer bg-whitesmoke mt-3 border rounded shadow-sm">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <div class="form-group mb-0">
+                                            <label>General Notes for this entire order</label>
+                                            <textarea name="description" class="form-control" rows="2" placeholder="Write any specific instructions for the vendor here..."></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 text-right d-flex flex-column justify-content-end">
+                                         <button type="submit" class="btn btn-primary btn-lg btn-block shadow-sm py-3">
+                                            <i class="fas fa-check-double mr-1"></i> Confirm & Place Order
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -185,283 +163,213 @@
 @endsection
 
 @push('scripts')
+    <style>
+        .variant-input-group { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; background: #f9f9f9; padding: 5px 10px; border-radius: 4px; border: 1px solid #eee; }
+        .variant-label { flex-grow: 1; font-size: 11px; font-weight: 600; color: #666; }
+        .variant-qty-input { width: 70px !important; height: 26px !important; text-align: center; border-radius: 3px !important; }
+        .basket-product-name { font-size: 14px; font-weight: 700; color: #333; margin-bottom: 0; }
+        .basket-product-sku { font-size: 11px; color: #888; text-transform: uppercase; }
+        #basket_table thead th { border-top: none; }
+    </style>
     <script>
         const products = @json($products);
-        let currentVendorRate = 1;
-        let currentVendorIcon = "{{ $settings->currency_icon }}";
-        let currentVendorName = "{{ $settings->currency_name }}";
+        const units = @json($units);
+        let rowCount = 0;
 
         $(document).ready(function() {
             
-            // Product Selection Logic
-            $('#product_id').on('change', function() {
-                let productId = $(this).val();
-                let product = products.find(p => p.id == productId);
-                
-                if (product) {
-                    $('#product_name').val(product.name);
-                    $('#product_number').val(product.product_number); 
-                    $('#product_category').val(product.category ? product.category.name : '');
-                    
-                    if (product.thumb_image) {
-                        $('#product_image').attr('src', "{{ asset('storage') }}/" + product.thumb_image).show();
-                    } else {
-                        $('#product_image').hide();
-                    }
-
-                    // Auto-select Category
-                    if(!$('#category_id').val() && product.category_id) {
-                         $('#category_id').val(product.category_id).trigger('change');
-                         
-                         setTimeout(function(){
-                              if(product.sub_category_id) {
-                                  $('#sub_category_id').val(product.sub_category_id).trigger('change');
-                                  
-                                  setTimeout(function(){
-                                      if(product.child_category_id) {
-                                          $('#child_category_id').val(product.child_category_id);
-                                      }
-                                  }, 800);
-                              }
-                         }, 800);
-                    }
-                    
-                    if(product.unit_id) {
-                         $('#unit_select').val(product.unit_id);
-                    }
-                    
-                    if(product.unit_id) {
-                         $('#unit_select').val(product.unit_id);
-                    }
-                    
-                    if(product.unit_id) {
-                         $('#unit_select').val(product.unit_id);
-                    }
-                    
-                    // Populate Variants (Simple Table)
-                    let hasVariants = false;
-                    let tableHtml = '';
-                    
-                    if(product.variants && product.variants.length > 0) {
-                         product.variants.forEach(v => {
-                             let colorName = v.color ? v.color.name : '';
-                             let sizeName = v.size ? v.size.name : '';
-                             let name = (colorName + ' ' + sizeName).trim() || 'Default';
-                             
-                             if(name) {
-                                 hasVariants = true;
-                                 let safeName = name.replace(/"/g, '&quot;');
-                                 
-                                 tableHtml += `
-                                    <tr>
-                                        <td class="align-middle">${name}</td>
-                                        <td>
-                                            <input type="number" class="form-control form-control-sm variant-qty" name="variant_quantities[${safeName}]" min="0" placeholder="0">
-                                        </td>
-                                    </tr>
-                                 `;
-                             }
-                         });
-                    }
-                    
-                    if(hasVariants) {
-                        $('#variant_table_body').html(tableHtml);
-                        $('#variant_container').show();
-                        // unlock main qty, but keep auto-calc
-                    } else {
-                        $('#variant_container').hide();
-                        $('#variant_table_body').empty();
-                    }
-
-                    // ensure booking barcode input is not auto-filled from product
-                    $('#barcode').val('');
-
-                } else {
-                     $('#product_name').val('');
-                     $('#product_number').val('');
-                     $('#product_category').val('');
-                     $('#product_image').hide();
-                     $('#variant_container').hide();
-                     $('#variant_table_body').empty();
-                     $('#barcode').val('');
-                }
-            });
-
-            // Listen for variant quantity changes
-            $(document).on('keyup change', '.variant-qty', function() {
-                let total = 0;
-                $('.variant-qty').each(function() {
-                    let val = parseInt($(this).val()) || 0;
-                    total += val;
-                });
-                
-                let currentQty = parseInt($('input[name="qty"]').val()) || 0;
-
-                if(total > 0) {
-                    // Only increase, don't decrease if user manually typed more
-                    if(total > currentQty) {
-                         $('input[name="qty"]').val(total);
-                    }
-                    $('input[name="qty"]').attr('min', total);
-                } else {
-                    $('input[name="qty"]').removeAttr('min');
-                }
-            });
-
-
-            // Vendor Currency Logic
-            $('select[name="vendor_id"]').on('change', function() {
-                let vendorId = $(this).val();
-                if (vendorId) {
-                    $.ajax({
-                        url: "{{ route('admin.vendor.get-details') }}",
-                        method: 'GET',
-                        data: { id: vendorId },
-                        success: function(data) {
-                            currentVendorRate = data.currency_rate;
-                            currentVendorIcon = data.currency_icon;
-                            currentVendorName = data.currency_name;
-                            recalculateAllPrices();
-                        }
-                    });
-                } else {
-                    currentVendorRate = 1;
-                    currentVendorIcon = '{{ $settings->currency_icon }}';
-                    currentVendorName = '{{ $settings->currency_name }}';
-                    recalculateAllPrices();
-                }
-            });
-
-            $('input[name="qty"]').on('keyup change', function() {
-                // Pricing recalculation removed
-            });
-
-            function recalculateAllPrices() {
-                // Pricing recalculation removed
-            }
-            
-            // Filter products client-side by selected category/subcategory/child
-            function filterProductsBySelectedCategory() {
-                let categoryId = $('#category_id').val();
-                let subCategoryId = $('#sub_category_id').val();
-                let childCategoryId = $('#child_category_id').val();
-
-                let html = '<option value="">Select Product</option>';
-                products.forEach(function(p) {
-                    if(!categoryId) {
-                        html += `<option value="${p.id}">${p.name}</option>`;
-                        return;
-                    }
-
-                    if(childCategoryId && p.child_category_id && p.child_category_id == childCategoryId) {
-                        html += `<option value="${p.id}">${p.name}</option>`;
-                        return;
-                    }
-                    if(subCategoryId && p.sub_category_id && p.sub_category_id == subCategoryId) {
-                        html += `<option value="${p.id}">${p.name}</option>`;
-                        return;
-                    }
-                    if(p.category_id && p.category_id == categoryId) {
-                        html += `<option value="${p.id}">${p.name}</option>`;
-                        return;
-                    }
-                });
-
-                $('#product_id').html(html);
-                $('#product_id').val('').trigger('change');
-                // Clear product detail fields when filter applied
-                $('#product_name').val('');
-                $('#product_number').val('');
-                $('#product_category').val('');
-                $('#product_image').hide();
-                $('#variant_container').hide();
-                $('#variant_table_body').empty();
-                $('#barcode').val('');
-            }
-            
-            // Category Change - Load Subcategories
-            $('#category_id').on('change', function() {
+            // --- Cascading Filter Logic ---
+            $('#category_filter').on('change', function() {
                 let categoryId = $(this).val();
-                $('#sub_category_id').html('<option value="">Select Sub Category (Optional)</option>');
-                $('#child_category_id').html('<option value="">Select Child Category (Optional)</option>');
+                $('#sub_category_filter').html('<option value="">Select Sub Category</option>');
+                $('#child_category_filter').html('<option value="">Select Child Category</option>');
                 
-                if(categoryId) {
+                if (categoryId) {
                     $.ajax({
                         url: "{{ route('admin.bookings.get-subcategories') }}",
                         method: 'GET',
                         data: { id: categoryId },
                         success: function(data) {
-                            let html = '<option value="">Select Sub Category (Optional)</option>';
-                            data.forEach(function(subCategory) {
-                                html += `<option value="${subCategory.id}">${subCategory.name}</option>`;
-                            });
-                            $('#sub_category_id').html(html);
-                        },
-                        error: function() {
-                            console.log('Error loading subcategories');
+                            let html = '<option value="">All Sub Categories</option>';
+                            data.forEach(sub => html += `<option value="${sub.id}">${sub.name}</option>`);
+                            $('#sub_category_filter').html(html);
                         }
                     });
-                    // filter products for this category client-side
-                    filterProductsBySelectedCategory();
                 }
+                filterProductDropdown();
             });
-            
-            // SubCategory Change - Load Child Categories
-            $('#sub_category_id').on('change', function() {
+
+            $('#sub_category_filter').on('change', function() {
                 let subCategoryId = $(this).val();
-                $('#child_category_id').html('<option value="">Select Child Category (Optional)</option>');
+                $('#child_category_filter').html('<option value="">Select Child Category</option>');
                 
-                if(subCategoryId) {
+                if (subCategoryId) {
                     $.ajax({
                         url: "{{ route('admin.bookings.get-childcategories') }}",
                         method: 'GET',
                         data: { id: subCategoryId },
                         success: function(data) {
-                            let html = '<option value="">Select Child Category (Optional)</option>';
-                            data.forEach(function(childCategory) {
-                                html += `<option value="${childCategory.id}">${childCategory.name}</option>`;
-                            });
-                            $('#child_category_id').html(html);
-                        },
-                        error: function() {
-                            console.log('Error loading child categories');
+                            let html = '<option value="">All Child Categories</option>';
+                            data.forEach(child => html += `<option value="${child.id}">${child.name}</option>`);
+                            $('#child_category_filter').html(html);
                         }
                     });
-                    // filter products for this subcategory
-                    filterProductsBySelectedCategory();
+                }
+                filterProductDropdown();
+            });
+
+            $('#child_category_filter').on('change', filterProductDropdown);
+
+            function filterProductDropdown() {
+                let cat = $('#category_filter').val();
+                let sub = $('#sub_category_filter').val();
+                let child = $('#child_category_filter').val();
+
+                let html = '<option value="">-- Search Product --</option>';
+                products.forEach(p => {
+                    let match = true;
+                    if(cat && p.category_id != cat) match = false;
+                    if(sub && p.sub_category_id != sub) match = false;
+                    if(child && p.child_category_id != child) match = false;
+
+                    if(match) {
+                        html += `<option value="${p.id}">${p.name} (${p.product_number})</option>`;
+                    }
+                });
+                $('#product_selector').html(html).trigger('change');
+            }
+
+            // --- Basket Logic ---
+            $('#add_product_btn').on('click', function() {
+                let productId = $('#product_selector').val();
+                if(!productId) {
+                    toastr.warning('Please select a product first.');
+                    return;
+                }
+
+                let product = products.find(p => p.id == productId);
+                if(product) {
+                    addProductRow(product);
+                    $('#product_selector').val('').trigger('change');
                 }
             });
 
-            // Child category manual change should also filter products
-            $('#child_category_id').on('change', function() {
-                filterProductsBySelectedCategory();
+            function addProductRow(product) {
+                $('#empty_basket_row').hide();
+                
+                let imageHtml = product.thumb_image 
+                    ? `<img src="{{ asset('storage') }}/${product.thumb_image}" class="rounded border shadow-sm" style="width: 50px; height: 50px; object-fit: cover;">`
+                    : `<div class="bg-light rounded border d-flex align-items-center justify-content-center text-muted tiny" style="width: 50px; height: 50px;">NO IMG</div>`;
+
+                let variantHtml = '<div class="row">';
+                let hasVariants = false;
+                
+                if(product.variants && product.variants.length > 0) {
+                    product.variants.forEach(v => {
+                        let colorName = v.color ? v.color.name : '';
+                        let sizeName = v.size ? v.size.name : '';
+                        let name = (colorName + ' ' + sizeName).trim() || 'Default';
+                        if(name) {
+                            hasVariants = true;
+                            let safeName = name.replace(/"/g, '&quot;');
+                            variantHtml += `
+                                <div class="col-12">
+                                    <div class="variant-input-group">
+                                        <span class="variant-label" title="${name}">${name}</span>
+                                        <input type="number" class="form-control form-control-sm variant-qty" 
+                                               name="items[${rowCount}][variant_quantities][${safeName}]" 
+                                               data-row="${rowCount}" value="0" min="0">
+                                    </div>
+                                </div>`;
+                        }
+                    });
+                }
+                variantHtml += '</div>';
+
+                if(!hasVariants) variantHtml = '<span class="text-muted italic small ml-2">No variants available for this item</span>';
+
+                let rowHtml = `
+                    <tr id="row_${rowCount}" class="basket-row">
+                        <td class="text-center align-middle">${imageHtml}</td>
+                        <td class="align-middle">
+                            <input type="hidden" name="items[${rowCount}][product_id]" value="${product.id}">
+                            <p class="basket-product-name">${product.name}</p>
+                            <span class="basket-product-sku">#${product.product_number || 'UNKNOWN'}</span>
+                        </td>
+                        <td class="align-middle">
+                            <select class="form-control select2-basic" name="items[${rowCount}][unit_id]">
+                                <option value="">Select Unit</option>
+                                ${units.map(u => `<option value="${u.id}" ${product.unit_id == u.id ? 'selected' : ''}>${u.name}</option>`).join('')}
+                            </select>
+                        </td>
+                        <td class="align-middle text-center">
+                            <input type="number" class="form-control main-qty font-weight-bold" name="items[${rowCount}][qty]" 
+                                   id="qty_${rowCount}" value="1" min="1" required style="text-align:center;">
+                        </td>
+                        <td class="align-middle">
+                            ${variantHtml}
+                        </td>
+                        <td class="text-center align-middle">
+                            <button type="button" class="btn btn-outline-danger btn-sm remove-row border-0" data-id="${rowCount}">
+                                <i class="fas fa-times-circle fa-lg"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+
+                $('#basket_body').append(rowHtml);
+                rowCount++;
+            }
+
+            $(document).on('click', '.remove-row', function() {
+                let id = $(this).data('id');
+                $(`#row_${id}`).remove();
+                if($('.basket-row').length === 0) {
+                    $('#empty_basket_row').show();
+                }
             });
-            
-            // Custom Fields
+
+            $(document).on('input', '.variant-qty', function() {
+                let rowId = $(this).data('row');
+                let row = $(`#row_${rowId}`);
+                let total = 0;
+                
+                row.find('.variant-qty').each(function() {
+                    total += parseInt($(this).val()) || 0;
+                });
+
+                if(total > 0) {
+                   row.find('.main-qty').val(total).attr('min', total);
+                } else {
+                    row.find('.main-qty').attr('min', 1);
+                }
+            });
+
+            // --- Custom Fields Logic ---
             let fieldCount = 0;
-            $('#add-custom-field').on('click', function(){
+            $('#add-custom-field').on('click', function() {
                 let html = `
                     <div class="row mb-2" id="custom-field-${fieldCount}">
                         <div class="col-md-5">
-                            <input type="text" name="custom_fields[${fieldCount}][key]" class="form-control" placeholder="Field Name">
+                            <input type="text" name="custom_fields[${fieldCount}][key]" class="form-control" placeholder="Field Name (e.g. Fabric)">
                         </div>
                         <div class="col-md-5">
-                            <input type="text" name="custom_fields[${fieldCount}][value]" class="form-control" placeholder="Value">
+                            <input type="text" name="custom_fields[${fieldCount}][value]" class="form-control" placeholder="Value (e.g. Cotton)">
                         </div>
                         <div class="col-md-2">
-                            <button type="button" class="btn btn-danger btn-icon" onclick="$('#custom-field-${fieldCount}').remove()"><i class="fas fa-trash"></i></button>
+                            <button type="button" class="btn btn-danger btn-block" onclick="$('#custom-field-${fieldCount}').remove()">
+                                <i class="fas fa-trash"></i>
+                            </button>
                         </div>
-                    </div>
-                `;
+                    </div>`;
                 $('#custom-fields-container').append(html);
                 fieldCount++;
             });
 
-            // Prevent form submit on barcode scan Enter
-            $('#barcode').on('keypress', function(e) {
-                if (e.which == 13) {
+            $('#booking_form').on('submit', function(e) {
+                if($('.basket-row').length === 0) {
                     e.preventDefault();
-                    return false;
+                    toastr.error('Product basket must contain at least one item.', 'Basket Empty');
                 }
             });
         });

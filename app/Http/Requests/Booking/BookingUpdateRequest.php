@@ -23,18 +23,12 @@ class BookingUpdateRequest extends FormRequest
     {
         return [
             'vendor_id' => ['required', 'integer'],
-            'product_id' => ['required', 'integer'],
-            'category_id' => ['nullable', 'integer', 'exists:categories,id'],
-            'sub_category_id' => ['nullable', 'integer', 'exists:sub_categories,id'],
-            'child_category_id' => ['nullable', 'integer', 'exists:child_categories,id'],
-            'qty' => ['required', 'integer', 'min:1'],
-            'unit_price' => ['nullable', 'numeric'],
-            'sale_price' => ['nullable', 'numeric'],
-            'extra_cost' => ['nullable', 'numeric'],
-            'min_inventory_qty' => ['nullable', 'integer'],
-            'min_sale_qty' => ['nullable', 'integer'],
-            'min_purchase_price' => ['nullable', 'numeric'],
-            'status' => ['required', 'in:pending,complete,cancelled'],
+            'items' => ['required', 'array', 'min:1'],
+            'items.*.product_id' => ['required', 'integer', 'exists:products,id'],
+            'items.*.qty' => ['required', 'integer', 'min:1'],
+            'items.*.unit_id' => ['nullable', 'integer', 'exists:units,id'],
+            'status' => ['required', 'in:pending,complete,cancelled,missing'],
+            'description' => ['nullable', 'string'],
         ];
     }
 }

@@ -210,9 +210,6 @@ class ReportController extends Controller implements HasMiddleware
         return response()->json(['status' => 'success']);
     }
 
-    /**
-     * Helper to gather notification data
-     */
     private function getNotificationData()
     {
         $notifications = [];
@@ -223,8 +220,8 @@ class ReportController extends Controller implements HasMiddleware
         $lowStockProducts = Product::where('status', 1)
             ->withSum('inventoryStocks', 'quantity')
             ->havingRaw('inventory_stocks_sum_quantity <= 100 OR inventory_stocks_sum_quantity IS NULL')
-            ->orderBy('inventory_stocks_sum_quantity', 'asc')
-            ->take(20) // More for the full page
+            ->orderBy('updated_at', 'desc') // Fetch by recent update
+            ->take(15)
             ->get();
 
         foreach ($lowStockProducts as $product) {
@@ -236,10 +233,12 @@ class ReportController extends Controller implements HasMiddleware
                 'title' => $product->name,
                 'desc' => ($product->inventory_stocks_sum_quantity ?? 0) . ' in stock',
                 'time' => $product->updated_at->diffForHumans(),
+                'timestamp' => $product->updated_at->timestamp, // For sorting
                 'url' => route('admin.reports.low-stock'),
                 'icon' => 'fas fa-exclamation-triangle',
-                'class' => ($product->inventory_stocks_sum_quantity == 0) ? 'bg-danger' : 'bg-warning',
-                'is_unread' => $isUnread
+                'class' => ($product->inventory_stocks_sum_quantity <= 0) ? 'bg-danger' : 'bg-warning',
+                'is_unread' => $isUnread,
+                'is_out_of_stock' => ($product->inventory_stocks_sum_quantity <= 0)
             ];
         }
 
@@ -249,8 +248,8 @@ class ReportController extends Controller implements HasMiddleware
         if ($user && $user->can('Manage Product Requests')) {
             $pendingRequests = ProductRequest::with('user')
                 ->where('status', 'pending')
-                ->orderBy('id', 'desc')
-                ->take(20)
+                ->orderBy('created_at', 'desc')
+                ->take(15)
                 ->get();
 
             foreach ($pendingRequests as $req) {
@@ -263,17 +262,24 @@ class ReportController extends Controller implements HasMiddleware
                     'title' => 'New Request: ' . $req->request_no,
                     'desc' => 'From ' . $userName . ' (Qty: ' . $req->total_qty . ')',
                     'time' => $req->created_at->diffForHumans(),
+                    'timestamp' => $req->created_at->timestamp, // For sorting
                     'url' => route('admin.product-requests.index'),
                     'icon' => 'fas fa-box-open',
                     'class' => 'bg-info',
-                    'is_unread' => $isUnread
+                    'is_unread' => $isUnread,
+                    'is_out_of_stock' => false
                 ];
             }
         }
 
+        // Sort merged notifications by timestamp descending (Latest First)
+        usort($notifications, function($a, $b) {
+            return $b['timestamp'] <=> $a['timestamp'];
+        });
+
         return [
             'count' => $unreadCount,
-            'notifications' => $notifications
+            'notifications' => array_slice($notifications, 0, 20) // Limit to top 20
         ];
     }
 

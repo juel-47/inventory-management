@@ -23,6 +23,7 @@
                                     <thead>
                                         <tr>
                                             <th>Date</th>
+                                            <th width="80">Image</th>
                                             <th>Product</th>
                                             <th>Variant</th>
                                             <th>Reference</th>
@@ -36,6 +37,13 @@
                                         @foreach ($ledgers as $ledger)
                                             <tr>
                                                 <td>{{ \Carbon\Carbon::parse($ledger->date)->format('Y-m-d') }} {{ $ledger->created_at->format('h:i A') }}</td>
+                                                <td>
+                                                    @if($ledger->product && $ledger->product->thumb_image)
+                                                        <img src="{{ asset('storage/'.$ledger->product->thumb_image) }}" alt="" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">
+                                                    @else
+                                                        <div class="bg-light rounded d-flex align-items-center justify-content-center text-muted small" style="width: 40px; height: 40px;">N/A</div>
+                                                    @endif
+                                                </td>
                                                 <td>{{ $ledger->product->name ?? 'Deleted' }}</td>
                                                 <td>{{ $ledger->variant ? $ledger->variant->name : '-' }}</td>
                                                 <td>{{ $ledger->reference_type }} #{{ $ledger->reference_id }}</td>

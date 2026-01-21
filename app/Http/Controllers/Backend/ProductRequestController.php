@@ -57,7 +57,13 @@ class ProductRequestController extends Controller implements HasMiddleware
             ->with(['variants.inventoryStocks', 'inventoryStocks'])
             ->select('id', 'name', 'sku', 'qty', 'price', 'outlet_price', 'thumb_image')
             ->get();
-        return view('backend.product-request.create', compact('products'));
+        
+        $users = [];
+        if ($user->can('Manage Product Requests')) {
+            $users = \App\Models\User::where('status', 1)->orderBy('name', 'asc')->get();
+        }
+
+        return view('backend.product-request.create', compact('products', 'users'));
     }
 
     /**
@@ -82,7 +88,14 @@ class ProductRequestController extends Controller implements HasMiddleware
         try {
             $productRequest = new ProductRequest();
             $productRequest->request_no = 'REQ-' . strtoupper(Str::random(10));
-            $productRequest->user_id = Auth::id();
+            
+            // Assign user_id: use input if admin provided it, otherwise use Auth::id()
+            if ($user->can('Manage Product Requests') && $request->has('user_id')) {
+                $productRequest->user_id = $request->user_id;
+            } else {
+                $productRequest->user_id = Auth::id();
+            }
+
             $productRequest->status = 'pending';
             $productRequest->note = $request->note;
             $productRequest->total_qty = 0; 
@@ -116,12 +129,12 @@ class ProductRequestController extends Controller implements HasMiddleware
             $productRequest->save();
 
             DB::commit();
-            Toastr::success('Product Request Submitted Successfully!', 'Success');
+            toastr()->success('Product Request created successfully!');
             return redirect()->route('admin.product-requests.index');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Toastr::error('Error: ' . $e->getMessage(), 'Error');
+            toastr()->error('Something went wrong: ' . $e->getMessage());
             return redirect()->back();
         }
     }
@@ -182,11 +195,11 @@ class ProductRequestController extends Controller implements HasMiddleware
             ]);
             
             DB::commit();
-            Toastr::success('Request status updated successfully!', 'Success');
+            toastr()->success('Product Request updated successfully!');
             return redirect()->back();
         } catch (\Exception $e) {
             DB::rollBack();
-            Toastr::error('Something went wrong: ' . $e->getMessage(), 'Error');
+            toastr()->error('Something went wrong: ' . $e->getMessage());
             return redirect()->back();
         }
     }

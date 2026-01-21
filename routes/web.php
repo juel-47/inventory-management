@@ -92,6 +92,8 @@ Route::group(['middleware' => ['auth', 'verified', 'check.permission'], 'prefix'
     Route::controller(BookingController::class)->group(function () {
         Route::get('bookings/get-subcategories', 'getSubCategories')->name('bookings.get-subcategories');
         Route::get('bookings/get-childcategories', 'getChildCategories')->name('bookings.get-childcategories');
+        Route::get('bookings/view-invoice/{id}', 'viewInvoice')->name('bookings.view-invoice');
+        Route::get('bookings/download-pdf/{id}', 'downloadPdf')->name('bookings.download-pdf');
     });
     Route::put('bookings/change-status', [BookingController::class, 'changeStatus'])->name('bookings.change-status');
     Route::resource('bookings', BookingController::class);

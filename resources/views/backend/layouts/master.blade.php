@@ -178,10 +178,12 @@
                 event.preventDefault();
 
                 let deletUrl = $(this).attr('href');
+                let bookingNo = $(this).data('booking-no');
+                let message = bookingNo ? `This will delete the entire order group (${bookingNo})!` : "You won't be able to revert this!";
 
                 Swal.fire({
                     title: "Are you sure?",
-                    text: "You won't be able to revert this!",
+                    text: message,
                     icon: "warning",
                     showCancelButton: true,
                     confirmButtonColor: "#3085d6",
@@ -194,6 +196,10 @@
                         $.ajax({
                             type: 'DELETE',
                             url: deletUrl,
+                            data: {
+                                _token: "{{ csrf_token() }}",
+                                booking_no: bookingNo
+                            },
                             success: function(data) {
                                 if (data.status == 'success') {
                                     Swal.fire(
@@ -215,6 +221,34 @@
                                 console.log(error);
                             }
                         });
+                    }
+                });
+            });
+
+            // Status Change for grouped bookings
+            $('body').on('change', '.change-status', function() {
+                let status = $(this).val();
+                let id = $(this).data('id');
+                let bookingNo = $(this).data('booking-no');
+
+                $.ajax({
+                    method: 'GET',
+                    url: "{{ route('admin.bookings.change-status') }}",
+                    data: {
+                        status: status,
+                        id: id,
+                        booking_no: bookingNo
+                    },
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            toastr.success(response.message);
+                        } else {
+                            toastr.error(response.message || 'Error updating status');
+                        }
+                    },
+                    error: function(error) {
+                        console.log(error);
+                        toastr.error('Failed to update status');
                     }
                 });
             });
@@ -245,22 +279,26 @@
                     let listHtml = '';
                     if (data.notifications && data.notifications.length > 0) {
                         data.notifications.forEach(function(item) {
-                            let unreadStyle = item.is_unread ? 'background-color: #f8f9fa; border-left: 4px solid #6777ef;' : '';
+                            let unreadStyle = item.is_unread ? 'background-color: #f0f3ff; border-left: 4px solid #6777ef;' : '';
+                            if (item.is_out_of_stock && item.is_unread) {
+                                unreadStyle = 'background-color: #fff5f5; border-left: 4px solid #fc544b;';
+                            }
+
                             listHtml += `
-                                <a href="${item.url}" class="dropdown-item" style="padding: 15px; ${unreadStyle}">
-                                    <div class="dropdown-item-icon ${item.class} text-white" style="width: 45px; height: 45px; line-height: 45px; font-size: 18px;">
+                                <a href="${item.url}" class="dropdown-item" style="padding: 12px 15px; display: flex; align-items: flex-start; border-bottom: 1px solid #f9f9f9; ${unreadStyle}">
+                                    <div class="dropdown-item-icon ${item.class} text-white" style="width: 40px; height: 40px; min-width: 40px; line-height: 40px; font-size: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
                                         <i class="${item.icon}"></i>
                                     </div>
-                                    <div class="dropdown-item-desc" style="padding-left: 15px;">
-                                        <b style="font-size: 15px;">${item.title}</b>
-                                        <p class="mb-0" style="font-size: 13px;">${item.desc}</p>
-                                        <div class="time text-primary" style="margin-top: 5px;">${item.time}</div>
+                                    <div class="dropdown-item-desc" style="padding-left: 15px; flex-grow: 1;">
+                                        <div style="font-weight: 700; font-size: 14px; color: #34395e; line-height: 1.2;">${item.title}</div>
+                                        <div class="text-muted" style="font-size: 12px; margin-top: 2px;">${item.desc}</div>
+                                        <div class="time text-primary" style="font-size: 11px; margin-top: 4px; font-weight: 600;">${item.time}</div>
                                     </div>
                                 </a>
                             `;
                         });
                     } else {
-                        listHtml = '<div class="dropdown-item text-center py-4">No new notifications</div>';
+                        listHtml = '<div class="dropdown-item text-center py-4 text-muted">No new notifications</div>';
                     }
                     $('#low-stock-list').html(listHtml);
                 },
@@ -280,16 +318,17 @@
                 success: function() {
                     $('#low-stock-count-badge').hide();
                     $('#low-stock-count-toggle i').removeClass('shake');
-                    // Refresh the list to show them as "read" (no background)
+                    // Refresh the list to show them as "read"
                     checkLowStock();
                 }
             });
         }
 
         $(document).ready(function() {
+            // Initial check
             checkLowStock();
-            // Auto-refresh every 5 minutes
-            setInterval(checkLowStock, 300000);
+            // Auto-refresh every 10 minutes (600,000ms)
+            setInterval(checkLowStock, 600000);
         });
     </script>
 

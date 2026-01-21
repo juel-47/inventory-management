@@ -75,17 +75,17 @@
                                         <thead class="bg-light text-center">
                                             <tr>
                                                 <th width="4%">Image</th>
-                                                <th width="18%">Product Details</th>
-                                                <th width="7%" id="vendor_unit_cost_header">unit cost (Vendor)</th>
-                                                <th width="7%">Qty</th>
-                                                <th width="12%" id="vendor_subtotal_header">Total purchase price (Vendor)</th>
-                                                <th width="7%">Raw Cost</th>
-                                                <th width="7%">Tax</th>
-                                                <th width="7%">Transport</th>
-                                                <th width="8%">Local Unit Cost</th>
-                                                <th width="8%">Sale Price</th>
-                                                <th width="8%">Outlet Price</th>
-                                                <th width="4%"></th>
+                                                <th width="22%">Product Details</th>
+                                                <th width="8%" id="vendor_unit_cost_header">Cost (Vendor)</th>
+                                                <th width="6%">Qty</th>
+                                                <th width="10%" id="vendor_subtotal_header">Total (Vendor)</th>
+                                                <th width="8%">Raw Cost</th>
+                                                <th width="8%">Tax</th>
+                                                <th width="8%">Transport</th>
+                                                <th width="9%">Local Unit Cost</th>
+                                                <th width="7%">Sale Price</th>
+                                                <th width="7%">Outlet Price</th>
+                                                <th width="3%"></th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -188,12 +188,17 @@
                         url: "{{ route('admin.purchases.get-booking-details') }}",
                         method: 'GET',
                         data: { id: bookingId },
-                        success: function(booking) {
-                            if(booking.vendor_id) {
-                                $('#vendor_select').val(booking.vendor_id).trigger('change');
+                        success: function(bookings) {
+                            if(bookings.length > 0 && bookings[0].vendor_id) {
+                                $('#vendor_select').val(bookings[0].vendor_id).trigger('change');
                             }
-                            addBookingRow(booking);
-                            Toastr.success('Booking data imported.', 'Loaded');
+                            
+                            // bookings is an array
+                            bookings.forEach(booking => {
+                                addBookingRow(booking);
+                            });
+
+                            toastr.success(bookings.length + ' item(s) imported from Order Place.', 'Loaded');
                         }
                     });
                 } else {
@@ -275,7 +280,7 @@
                             let colorName = v.color ? v.color.name : '';
                             let sizeName = v.size ? v.size.name : '';
                             let name = (colorName + ' ' + sizeName).trim() || 'Default';
-                            variantHtml += `<tr><td class="p-1">${name}</td><td class="p-1" width="60"><input type="number" class="form-control variant-qty-input p-0 text-center" data-key="${name}" value="0" min="0" style="height: 25px; font-size: 12px;"></td></tr>`;
+                            variantHtml += `<tr><td class="p-1">${name}</td><td class="p-1" width="60"><input type="number" class="form-control form-control-sm variant-qty-input p-0 text-center" data-key="${name}" value="0" min="0" style="height: 22px; font-size: 11px;"></td></tr>`;
                         });
                         variantHtml += '</tbody></table></div>';
                     }
@@ -353,17 +358,22 @@
                  variantInput = JSON.stringify(booking.variant_info);
                  let variants = booking.variant_info['variant'] ? {[booking.variant_info['variant']]: booking.qty} : booking.variant_info;
 
-                 variantHtml += '<div class="mt-2"><table class="table table-sm table-bordered mb-0" style="font-size: 12px; background: white;">';
-                 variantHtml += '<tbody>';
+                 variantHtml += '<div class="mt-2 bg-light rounded p-2" style="font-size: 11px;">';
                  for (const [key, qty] of Object.entries(variants)) {
                      hasVariants = true;
                      let cleanKey = key.replace(/Color:\s*/gi, '')
                                        .replace(/Size:\s*/gi, '')
                                        .replace(/\s*-\s*/g, ' ')
                                        .trim();
-                     variantHtml += `<tr><td class="p-1">${cleanKey}</td><td class="p-1" width="60"><input type="number" class="form-control variant-qty-input p-0 text-center" data-key="${cleanKey}" value="${qty}" min="0" style="height: 25px; font-size: 12px;"></td></tr>`;
+                     variantHtml += `
+                        <div class="d-flex justify-content-between align-items-center mb-1 last:mb-0">
+                            <span class="text-dark font-weight-500">${cleanKey}</span>
+                            <input type="number" class="form-control form-control-sm variant-qty-input p-0 text-center" 
+                                   data-key="${cleanKey}" value="${qty}" min="0" 
+                                   style="height: 20px; width: 50px; font-size: 11px; border: 1px solid #ced4da;">
+                        </div>`;
                  }
-                 variantHtml += '</tbody></table></div>';
+                 variantHtml += '</div>';
              }
 
              if(!hasVariants) { variantHtml = ''; variantInput = ''; }
@@ -375,7 +385,7 @@
              // Build product info display
              let productInfo = `<strong>${product.name}</strong>`;
              if(product.product_number) productInfo += `<br><small class="text-muted">Item #: ${product.product_number}</small>`;
-             if(product.category && product.category.name) productInfo += `<br><small class="text-muted">Category: ${product.category.name}</small>`;
+             // if(product.category && product.category.name) productInfo += `<br><small class="text-muted">Category: ${product.category.name}</small>`; // Simplified to reduce height
 
              if(booking.vendor && booking.vendor.currency_rate) {
                  currentVendorRate = booking.vendor.currency_rate;
@@ -389,55 +399,51 @@
                 <tr data-row-id="${rowId}" class="main-row">
                     <td class="align-middle text-center">${imageHtml}</td>
                     <td class="align-middle product_select_col">
-                        <select class="form-control product_select select2" name="items[${rowCount}][product_id]" required>
+                        <select class="form-control form-control-sm product_select select2" name="items[${rowCount}][product_id]" required>
                             <option value="${product.id}" selected>${product.name}</option>
                             ${products.map(p => p.id != product.id ? `<option value="${p.id}">${p.name}</option>` : '').join('')}
                         </select>
-                        <div class="product-info mt-2" style="font-size: 13px; color: #666;">${productInfo}</div>
+                        <div class="product-info mt-1" style="font-size: 12px; line-height: 1.3; color: #666;">${productInfo}</div>
                         <div class="variant-container">${variantHtml}</div>
                         <input type="hidden" class="variant_info_hidden" name="items[${rowCount}][variant_info]" value='${variantInput}'>
                     </td>
                     <td class="align-middle text-center">
-                        <input type="number" class="form-control unit_cost text-center" name="items[${rowCount}][unit_cost]" step="any" value="${booking.unit_price}" required style="font-size: 12px;">
-                        <small class="text-muted d-block mt-1">Sys: <span class="unit_cost_system">${systemIcon}0.00</span></small>
+                        <input type="number" class="form-control form-control-sm unit_cost text-center" name="items[${rowCount}][unit_cost]" step="any" value="${booking.unit_price}" required>
+                        <small class="text-muted d-block mt-1">Sys: <span class="unit_cost_system text-primary" style="font-weight: 600;">${systemIcon}0.00</span></small>
                     </td>
                     <td class="align-middle text-center">
-                        <input type="number" class="form-control qty text-center" name="items[${rowCount}][qty]" value="${booking.qty}" min="1" required style="font-weight: bold; font-size: 12px;">
+                        <input type="number" class="form-control form-control-sm qty text-center" name="items[${rowCount}][qty]" value="${booking.qty}" min="1" required style="font-weight: bold;">
                     </td>
                     <td class="align-middle text-right">
-                        <input type="text" class="form-control-plaintext subtotal h6 mb-0 text-dark text-right pr-2" readonly value="0.00" style="font-size: 12px;">
+                        <input type="text" class="form-control-plaintext form-control-sm subtotal mb-0 text-dark text-right font-weight-bold pr-2" readonly value="0.00">
                     </td>
                     <td class="align-middle text-center">
-                        <input type="number" class="form-control raw_material_cost text-center" name="items[${rowCount}][raw_material_cost]" value="${product.raw_material_cost || 0}" step="any" style="font-size: 12px;">
-                        <small class="text-muted d-block mt-1">Raw Cost</small>
+                        <input type="number" class="form-control form-control-sm raw_material_cost text-center" name="items[${rowCount}][raw_material_cost]" value="${product.raw_material_cost || 0}" step="any">
                     </td>
                     <td class="align-middle text-center">
-                        <input type="number" class="form-control tax_cost text-center" name="items[${rowCount}][tax_cost]" value="${product.tax || 0}" step="any" style="font-size: 12px;">
-                        <small class="text-muted d-block mt-1">Tax</small>
+                        <input type="number" class="form-control form-control-sm tax_cost text-center" name="items[${rowCount}][tax_cost]" value="${product.tax || 0}" step="any">
                     </td>
                     <td class="align-middle text-center">
-                        <input type="number" class="form-control transport_cost text-center" name="items[${rowCount}][transport_cost]" value="${product.transport_cost || 0}" step="any" style="font-size: 12px;">
-                        <small class="text-muted d-block mt-1">Transport</small>
+                        <input type="number" class="form-control form-control-sm transport_cost text-center" name="items[${rowCount}][transport_cost]" value="${product.transport_cost || 0}" step="any">
                     </td>
                     <td class="align-middle text-center">
-                        <div class="form-control-plaintext local_unit_cost h6 mb-0 text-primary text-center pr-2" style="font-size: 12px; font-weight: bold;">0.00</div>
-                        <small class="text-muted d-block mt-1">Local Unit Cost</small>
+                        <div class="form-control-plaintext form-control-sm local_unit_cost mb-0 text-primary text-center font-weight-bold pr-2">0.00</div>
                     </td>
                     <td class="align-middle text-center">
-                        <input type="number" class="form-control sale_price text-center" name="items[${rowCount}][sale_price]" value="${product.price || 0}" step="any" style="font-size: 12px;">
-                        <small class="text-muted d-block mt-1">Sale Price</small>
+                        <input type="number" class="form-control form-control-sm sale_price text-center" name="items[${rowCount}][sale_price]" value="${product.price || 0}" step="any">
                     </td>
                     <td class="align-middle text-center">
-                        <input type="number" class="form-control outlet_price text-center" name="items[${rowCount}][outlet_price]" value="${product.outlet_price || 0}" step="any" style="font-size: 12px;">
-                        <small class="text-muted d-block mt-1">Outlet Price</small>
+                        <input type="number" class="form-control form-control-sm outlet_price text-center" name="items[${rowCount}][outlet_price]" value="${product.outlet_price || 0}" step="any">
                     </td>
                     <td class="align-middle text-center">
-                        <button type="button" class="btn btn-danger btn-sm remove_row"><i class="fas fa-trash"></i></button>
+                        <button type="button" class="btn btn-outline-danger btn-sm remove_row" style="padding: 2px 7px;"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>
             `;
             $('#product_table tbody').append(html);
-            $('.select2').select2();
+            $('.select2').select2({
+                width: '100%'
+            });
             let newRow = $('#product_table tbody tr').last();
             calculateLocalUnitCost(newRow);
             calculateRowTotal(newRow);
@@ -451,49 +457,44 @@
                         <div class="bg-light rounded d-flex align-items-center justify-content-center text-muted small" style="width: 40px; height: 40px;"><i class="fas fa-box"></i></div>
                     </td>
                     <td class="align-middle product_select_col">
-                        <select class="form-control product_select select2" name="items[${rowCount}][product_id]" required>
+                        <select class="form-control form-control-sm product_select select2" name="items[${rowCount}][product_id]" required>
                             <option value="">Select Product...</option>
                             ${products.map(p => `<option value="${p.id}">${p.name}</option>`).join('')}
                         </select>
-                        <div class="product-info mt-2" style="font-size: 13px; color: #666;"></div>
+                        <div class="product-info mt-2" style="font-size: 12px; line-height: 1.4; color: #666;"></div>
                         <div class="variant-container"></div>
                         <input type="hidden" class="variant_info_hidden" name="items[${rowCount}][variant_info]">
                     </td>
                     <td class="align-middle text-center">
-                        <input type="number" class="form-control unit_cost text-center" name="items[${rowCount}][unit_cost]" step="any" required placeholder="0.00" style="font-size: 12px;">
-                        <small class="text-muted d-block mt-1">Sys: <span class="unit_cost_system">${systemIcon}0.00</span></small>
+                        <input type="number" class="form-control form-control-sm unit_cost text-center" name="items[${rowCount}][unit_cost]" step="any" required placeholder="0.00">
+                        <small class="text-muted d-block mt-1">Sys: <span class="unit_cost_system text-primary" style="font-weight: 600;">${systemIcon}0.00</span></small>
                     </td>
                     <td class="align-middle text-center">
-                       <input type="number" class="form-control qty text-center" name="items[${rowCount}][qty]" value="1" min="1" required style="font-weight: bold; font-size: 12px;">
+                       <input type="number" class="form-control form-control-sm qty text-center" name="items[${rowCount}][qty]" value="1" min="1" required style="font-weight: bold;">
                     </td>
                     <td class="align-middle text-right">
-                        <input type="text" class="form-control-plaintext subtotal h6 mb-0 text-dark text-right pr-2" readonly value="0.00" style="font-size: 12px;">
+                        <input type="text" class="form-control-plaintext form-control-sm subtotal mb-0 text-dark text-right font-weight-bold pr-2" readonly value="0.00">
                     </td>
                     <td class="align-middle text-center">
-                        <input type="number" class="form-control raw_material_cost text-center" name="items[${rowCount}][raw_material_cost]" placeholder="0.00" step="any" value="0" style="font-size: 12px;">
-                        <small class="text-muted d-block mt-1">Raw Cost</small>
+                        <input type="number" class="form-control form-control-sm raw_material_cost text-center" name="items[${rowCount}][raw_material_cost]" placeholder="0.00" step="any" value="0">
                     </td>
                     <td class="align-middle text-center">
-                        <input type="number" class="form-control tax_cost text-center" name="items[${rowCount}][tax_cost]" placeholder="0.00" step="any" value="0" style="font-size: 12px;">
-                        <small class="text-muted d-block mt-1">Tax</small>
+                        <input type="number" class="form-control form-control-sm tax_cost text-center" name="items[${rowCount}][tax_cost]" placeholder="0.00" step="any" value="0">
                     </td>
                     <td class="align-middle text-center">
-                        <input type="number" class="form-control transport_cost text-center" name="items[${rowCount}][transport_cost]" placeholder="0.00" step="any" value="0" style="font-size: 12px;">
-                        <small class="text-muted d-block mt-1">Transport</small>
+                        <input type="number" class="form-control form-control-sm transport_cost text-center" name="items[${rowCount}][transport_cost]" placeholder="0.00" step="any" value="0">
                     </td>
                     <td class="align-middle text-center">
-                        <div class="form-control-plaintext local_unit_cost h6 mb-0 text-primary text-center pr-2" style="font-size: 12px; font-weight: bold;">0.00</div>
-                        <small class="text-muted d-block mt-1">Local Unit Cost</small>
+                        <div class="form-control-plaintext form-control-sm local_unit_cost mb-0 text-primary text-center font-weight-bold pr-2">0.00</div>
                     </td>
                     <td class="align-middle text-center">
-                        <small class="text-muted d-block mt-1">Sale Price</small>
+                        <input type="number" class="form-control form-control-sm sale_price text-center" name="items[${rowCount}][sale_price]" placeholder="0.00" step="any">
                     </td>
                     <td class="align-middle text-center">
-                        <input type="number" class="form-control outlet_price text-center" name="items[${rowCount}][outlet_price]" placeholder="0.00" step="any" style="font-size: 12px;">
-                        <small class="text-muted d-block mt-1">Outlet Price</small>
+                        <input type="number" class="form-control form-control-sm outlet_price text-center" name="items[${rowCount}][outlet_price]" placeholder="0.00" step="any">
                     </td>
                     <td class="align-middle text-center">
-                        <button type="button" class="btn btn-danger btn-sm remove_row"><i class="fas fa-trash"></i></button>
+                        <button type="button" class="btn btn-outline-danger btn-sm remove_row" style="padding: 2px 7px;"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>
             `;

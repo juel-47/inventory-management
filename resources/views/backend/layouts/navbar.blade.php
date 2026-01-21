@@ -267,18 +267,21 @@
             <i class="fas fa-bell" style="font-size: 20px;"></i>
             <span class="badge badge-danger" id="low-stock-count-badge" style="display: none; position: absolute; top: 5px; right: 5px; font-size: 12px; padding: 4px 7px; border-radius: 50%;">0</span>
         </a>
-        <div class="dropdown-menu dropdown-list dropdown-menu-right" style="width: 350px;">
-            <div class="dropdown-header" style="font-size: 14px; padding: 15px;">Notifications
+        <div class="dropdown-menu dropdown-list dropdown-menu-right" style="width: 350px; border-radius: 8px; border: none; box-shadow: 0 10px 40px 0 rgba(0,0,0,.1);">
+            <div class="dropdown-header" style="font-size: 15px; padding: 15px 20px; background: #fff; border-bottom: 1px solid #f9f9f9; color: #34395e; font-weight: 700;">
+                Notifications
                 <div class="float-right">
-                    <a href="javascript:void(0)" onclick="markAllAsRead()" style="text-transform: none; font-weight: normal; margin-right: 10px;">Mark all read</a>
-                    <a href="{{ route('admin.notifications.all') }}">View All</a>
+                    <a href="javascript:void(0)" onclick="markAllAsRead()" style="text-transform: none; font-weight: 600; font-size: 12px; color: #6777ef;">Mark all as read</a>
                 </div>
             </div>
             <div class="dropdown-list-content dropdown-list-icons" id="low-stock-list" style="overflow-y: auto; max-height: 400px;">
                 <!-- Dynamic Items will be injected here -->
-                <div class="dropdown-item dropdown-item-unread text-center py-4">
+                <div class="dropdown-item dropdown-item-unread text-center py-4 text-muted">
                     No new notifications
                 </div>
+            </div>
+            <div class="dropdown-footer text-center" style="padding: 10px 0; border-top: 1px solid #f9f9f9; background: #fff; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
+                <a href="{{ route('admin.notifications.all') }}" style="font-size: 13px; font-weight: 600; text-decoration: none; color: #6777ef;">View All Notifications <i class="fas fa-chevron-right ml-1"></i></a>
             </div>
         </div>
       </li>

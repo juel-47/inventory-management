@@ -9,437 +9,412 @@
         <div class="section-body">
             <div class="row">
                 <div class="col-12">
-                    <div class="card">
-                        <div class="card-header">
-                            <h4>Edit Order Place ({{ $booking->booking_no }})</h4>
-                            <div class="card-header-action">
-                                <a href="{{ route('admin.bookings.index') }}" class="btn btn-primary">Back</a>
+                    <form action="{{ route('admin.bookings.update', $targetBooking->id) }}" method="POST" id="booking_form">
+                        @csrf
+                        @method('PUT')
+                        
+                        <div class="card mb-4 shadow-sm border-0">
+                            <div class="card-header bg-primary text-white d-flex justify-content-between">
+                                <h4>Edit Order Place ({{ $targetBooking->booking_no }})</h4>
+                                <a href="{{ route('admin.bookings.index') }}" class="btn btn-light btn-sm text-primary font-weight-bold">
+                                    <i class="fas fa-arrow-left mr-1"></i> Back
+                                </a>
+                            </div>
+                            <div class="card-body bg-light-gray">
+                                <div class="row">
+                                    <div class="col-md-5">
+                                        <div class="form-group mb-0">
+                                            <label class="font-weight-bold">Select Vendor <span class="text-danger">*</span></label>
+                                            <select class="form-control select2" name="vendor_id" required>
+                                                <option value="">Choose a Vendor</option>
+                                                @foreach ($vendors as $vendor)
+                                                    <option {{ $targetBooking->vendor_id == $vendor->id ? 'selected' : '' }} value="{{ $vendor->id }}">{{ $vendor->shop_name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group mb-0">
+                                            <label class="font-weight-bold">Order Status</label>
+                                            <select class="form-control" name="status">
+                                                <option {{ $targetBooking->status == 'pending' ? 'selected' : '' }} value="pending">Pending</option>
+                                                <option {{ $targetBooking->status == 'complete' ? 'selected' : '' }} value="complete">Complete</option>
+                                                <option {{ $targetBooking->status == 'cancelled' ? 'selected' : '' }} value="cancelled">Cancelled</option>
+                                                <option {{ $targetBooking->status == 'missing' ? 'selected' : '' }} value="missing">Missing</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-group mb-0">
+                                            <label class="font-weight-bold text-muted">Booking No</label>
+                                            <div class="h5 mt-2 font-weight-bold text-primary">{{ $targetBooking->booking_no }}</div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div class="card-body">
-                            <form action="{{ route('admin.bookings.update', $booking->id) }}" method="POST">
-                                @csrf
-                                @method('PUT')
-                                    <div class="row mb-4">
-                                        <div class="col-12">
-                                            <div class="section-title mt-0">General Information</div>
-                                        </div>
-                                        <div class="form-group col-md-4">
-                                            <label>Vendor</label>
-                                            <select class="form-control select2" name="vendor_id">
-                                                <option value="">Select Vendor</option>
-                                                @foreach ($vendors as $vendor)
-                                                    <option {{ $booking->vendor_id == $vendor->id ? 'selected' : '' }} value="{{ $vendor->id }}">{{ $vendor->shop_name }}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                        <div class="form-group col-md-4">
-                                            <label>Product</label>
-                                            <select class="form-control select2" name="product_id" id="product_id">
-                                                <option value="">Select Product</option>
-                                                @foreach ($products as $product)
-                                                    <option {{ $booking->product_id == $product->id ? 'selected' : '' }} value="{{ $product->id }}">{{ $product->name }}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                        <div class="form-group col-md-4">
-                                            <label>Barcode</label>
-                                            <input type="text" class="form-control" name="barcode" id="barcode" value="{{ $booking->barcode }}">
-                                        </div>
-                                    </div>
 
-                                    <div class="row mb-4">
-                                        <div class="col-12">
-                                            <div class="section-title mt-0">Product Details (Read Only)</div>
-                                        </div>
-                                        <div class="form-group col-md-4">
-                                            <label>Product Name</label>
-                                            <input type="text" class="form-control bg-light" id="product_name" value="{{ $booking->product->name ?? '' }}" readonly>
-                                        </div>
-                                        <div class="form-group col-md-4">
-                                            <label>Product Number</label>
-                                            <input type="text" class="form-control bg-light" id="product_number" value="{{ $booking->product->product_number ?? '' }}" readonly>
-                                        </div>
-                                        <div class="form-group col-md-4">
-                                            <label>Category</label>
-                                            <input type="text" class="form-control bg-light" id="product_category" value="{{ $booking->product->category->name ?? '' }}" readonly>
-                                        </div>
-                                        <div class="form-group col-md-12">
-                                            <label>Product Image</label>
-                                            <div>
-                                                <img id="product_image" src="{{ $booking->product->thumb_image ? asset('storage/'.$booking->product->thumb_image) : '' }}" class="img-thumbnail" alt="Product Image" style="width: 120px; display: {{ $booking->product->thumb_image ? 'block' : 'none' }};">
+                        <!-- Section 1: Product Selection & Filters -->
+                        <div class="card mb-4 shadow-sm">
+                            <div class="card-header bg-whitesmoke">
+                                <h5><i class="fas fa-search mr-2 text-primary"></i> Add Products to Basket</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row align-items-end">
+                                    <div class="col-md-3">
+                                        <label class="small font-weight-bold">Category</label>
+                                        <select class="form-control select2" id="filter_category">
+                                            <option value="">All Categories</option>
+                                            @foreach ($categories as $category)
+                                                <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="small font-weight-bold">Sub Category</label>
+                                        <select class="form-control select2" id="filter_sub_category">
+                                            <option value="">Select Sub Category</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="small font-weight-bold">Child Category</label>
+                                        <select class="form-control select2" id="filter_child_category">
+                                            <option value="">Select Child Category</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <button type="button" class="btn btn-outline-secondary btn-block" id="reset_filters">
+                                            <i class="fas fa-undo"></i> Reset Filters
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-4 align-items-end p-3 bg-light rounded border mx-1">
+                                    <div class="col-md-9">
+                                        <label class="font-weight-bold text-primary">Find Product</label>
+                                        <select class="form-control select2" id="product_search">
+                                            <option value="">Search by Name or SKU...</option>
+                                            @foreach ($products as $product)
+                                                <option value="{{ $product->id }}">{{ $product->name }} - #{{ $product->product_number }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <button type="button" class="btn btn-success btn-block py-2 font-weight-bold" id="add_to_basket">
+                                            <i class="fas fa-plus-circle mr-1"></i> Add to Basket
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 2: Booking Basket -->
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-whitesmoke d-flex justify-content-between">
+                                <h5><i class="fas fa-shopping-basket mr-2 text-success"></i> Selected Products</h5>
+                                <span class="badge badge-primary px-3" id="item_count">0 Items</span>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0" id="basket_table">
+                                        <thead class="bg-light">
+                                            <tr>
+                                                <th width="80" class="text-center">IMG</th>
+                                                <th>Product Information</th>
+                                                <th width="150">Unit</th>
+                                                <th width="120" class="text-center">Order Qty</th>
+                                                <th width="320">Variant Breakdown</th>
+                                                <th width="60" class="text-center"><i class="fas fa-trash"></i></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="basket_body">
+                                            <tr id="empty_basket_row">
+                                                <td colspan="6" class="text-center py-5 text-muted">
+                                                    <i class="fas fa-box-open fa-3x mb-3 d-block opacity-25"></i>
+                                                    Basket is empty. Select products above to add them.
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 4: Custom Fields -->
+                        <div class="card mt-3 shadow-sm border">
+                            <div class="card-header bg-whitesmoke d-flex justify-content-between align-items-center">
+                                <h5 class="text-success mb-0"><i class="fas fa-plus-circle mr-2"></i> Custom Fields (Optional)</h5>
+                                <div class="card-header-action">
+                                    <button type="button" class="btn btn-sm btn-success" id="add-custom-field">
+                                        <i class="fas fa-plus"></i> Add Field
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body" id="custom-fields-container">
+                                @if($targetBooking->custom_fields)
+                                    @foreach($targetBooking->custom_fields as $index => $field)
+                                        <div class="row mb-2 align-items-center" id="custom-field-{{$index}}">
+                                            <div class="col-md-5">
+                                                <input type="text" name="custom_fields[{{$index}}][key]" class="form-control" value="{{ $field['key'] }}" placeholder="Field Name">
+                                            </div>
+                                            <div class="col-md-5">
+                                                <input type="text" name="custom_fields[{{$index}}][value]" class="form-control" value="{{ $field['value'] }}" placeholder="Value">
+                                            </div>
+                                            <div class="col-md-2">
+                                                <button type="button" class="btn btn-danger btn-block" onclick="$('#custom-field-{{$index}}').remove()"><i class="fas fa-trash"></i></button>
                                             </div>
                                         </div>
-                                    </div>
-                                    
-                                    <div class="row mb-4">
-                                        <div class="col-12">
-                                            <div class="section-title mt-0">Categorization (Optional Override)</div>
-                                        </div>
-                                        <div class="form-group col-md-4">
-                                            <label>Category</label>
-                                            <select class="form-control select2" name="category_id" id="category_id">
-                                                <option value="">Select Category</option>
-                                                @foreach ($categories as $category)
-                                                    <option {{ $booking->category_id == $category->id ? 'selected' : '' }} value="{{ $category->id }}">{{ $category->name }}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                        <div class="form-group col-md-4">
-                                            <label>Sub Category</label>
-                                            <select class="form-control select2" name="sub_category_id" id="sub_category_id">
-                                                <option value="">Select Sub Category</option>
-                                                @foreach ($subCategories as $subCategory)
-                                                    <option {{ $booking->sub_category_id == $subCategory->id ? 'selected' : '' }} value="{{ $subCategory->id }}">{{ $subCategory->name }}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                        <div class="form-group col-md-4">
-                                            <label>Child Category</label>
-                                            <select class="form-control select2" name="child_category_id" id="child_category_id">
-                                                <option value="">Select Child Category</option>
-                                                @foreach ($childCategories as $childCategory)
-                                                    <option {{ $booking->child_category_id == $childCategory->id ? 'selected' : '' }} value="{{ $childCategory->id }}">{{ $childCategory->name }}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                        
-                                    <div class="row mb-4 px-3">
-                                        <div class=" col-12">
-                                            <div class="section-title mt-0">Variant, Unit & Qty</div>
-                                        </div>
-                                        <div class="col-12" id="variant_container" style="display: none;">
-                                            <table class="table table-sm table-bordered">
-                                                <thead class="bg-light">
-                                                    <tr>
-                                                        <th width="60%">Variant</th>
-                                                        <th width="40%">Quantity</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody id="variant_table_body">
-                                                    <!-- Variants will be injected here -->
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                        <div class="form-group col-md-4">
-                                            <label class="font-weight-bold">Quantity</label>
-                                            <input type="number" class="form-control" name="qty" id="qty_input" value="{{ $booking->qty }}" required>
-                                        </div>
-                                        <div class="form-group col-md-4">
-                                            <label>Unit</label>
-                                            <select class="form-control" name="unit_id" id="unit_select">
-                                                <option value="">Select Unit</option>
-                                                @foreach ($units as $unit)
-                                                    <option {{ (isset($booking->unit_id) && $booking->unit_id == $unit->id) || (!isset($booking->unit_id) && $booking->product->unit_id == $unit->id) ? 'selected' : '' }} value="{{ $unit->id }}">{{ $unit->name }}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                        <div class="form-group col-md-4">
-                                            <label>Barcode</label>
-                                            <input type="text" class="form-control" name="barcode" id="barcode" value="{{ $booking->barcode }}">
+                                    @endforeach
+                                @endif
+                            </div>
+                        </div>
+
+                        <!-- Section 3: Notes & Action -->
+                        <div class="card mt-4 shadow-sm border-0 bg-whitesmoke">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <div class="form-group mb-0">
+                                            <label class="font-weight-bold">Internal Notes / Description</label>
+                                            <textarea name="description" class="form-control" rows="3" placeholder="Enter any specific instructions or notes for this order...">{{ $targetBooking->description }}</textarea>
                                         </div>
                                     </div>
-
-                                    {{-- <div class="row"> --}}
-                                        <div class="col-12">
-                                            <div class="form-group ">
-                                                <label>Notes</label>
-                                                <textarea name="description" class="form-control" rows="4">{{ $booking->description }}</textarea>
-                                            </div>
-                                        </div>
-                                    {{-- </div> --}}
-
-                                    {{-- <div class="row"> --}}
-                                        <div class="col-12">
-                                            <div class="card border">
-                                                <div class="card-header bg-whitesmoke">
-                                                    <h4>Custom Fields</h4>
-                                                    <div class="card-header-action">
-                                                        <button type="button" class="btn btn-sm btn-success" id="add-custom-field"><i class="fas fa-plus"></i> Add Field</button>
-                                                    </div>
-                                                </div>
-                                                <div class="card-body" id="custom-fields-container">
-                                                    @if($booking->custom_fields)
-                                                        @foreach($booking->custom_fields as $index => $field)
-                                                            <div class="row mb-2 align-items-center" id="custom-field-{{$index}}">
-                                                                <div class="col-md-5">
-                                                                    <input type="text" name="custom_fields[{{$index}}][key]" class="form-control" value="{{ $field['key'] }}" placeholder="Field Name">
-                                                                </div>
-                                                                <div class="col-md-5">
-                                                                    <input type="text" name="custom_fields[{{$index}}][value]" class="form-control" value="{{ $field['value'] }}" placeholder="Value">
-                                                                </div>
-                                                                <div class="col-md-2">
-                                                                    <button type="button" class="btn btn-danger btn-icon" onclick="$('#custom-field-{{$index}}').remove()"><i class="fas fa-trash"></i></button>
-                                                                </div>
-                                                            </div>
-                                                        @endforeach
-                                                    @endif
-                                                </div>
-                                            </div>
-                                        </div>
-                                    {{-- </div> --}}
-
-                                    {{-- <div class="row"> --}}
-                                        <div class="col-12">
-                                            <div class="form-group">
-                                                <label>Status</label>
-                                                <select class="form-control" name="status">
-                                                    <option {{ $booking->status == 'pending' ? 'selected' : '' }} value="pending">Pending</option>
-                                                    <option {{ $booking->status == 'complete' ? 'selected' : '' }} value="complete">Complete</option>
-                                                    <option {{ $booking->status == 'cancelled' ? 'selected' : '' }} value="cancelled">Cancelled</option>
-                                                    <option {{ $booking->status == 'missing' ? 'selected' : '' }} value="missing">Missing</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                    {{-- </div> --}}
-
-                                    <div class="row mt-4 px-3">
-                                        <div class="col-12 text-right">
-                                            <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-save"></i> Update Booking</button>
-                                        </div>
+                                    <div class="col-md-4 text-right d-flex flex-column justify-content-end">
+                                         <button type="submit" class="btn btn-primary btn-lg btn-block shadow-sm py-3">
+                                            <i class="fas fa-save mr-1"></i> Update Booking Order
+                                        </button>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </section>
+
+    <style>
+        .basket-product-name { font-weight: 700; font-size: 1rem; color: #34395e; margin-bottom: 0px; }
+        .basket-product-sku { font-size: 0.8rem; color: #98a6ad; }
+        .variant-input-group { display: flex; align-items: center; background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px; padding: 4px 8px; margin-bottom: 4px; }
+        .variant-label { flex-grow: 1; font-size: 0.75rem; font-weight: 600; color: #495057; }
+        .variant-qty { width: 70px !important; height: 28px !important; padding: 0 5px; font-size: 0.85rem; }
+        .bg-light-gray { background-color: #fbfbfb; }
+        .italic { font-style: italic; }
+        .tiny { font-size: 0.6rem; }
+    </style>
 @endsection
 
 @push('scripts')
     <script>
         const products = @json($products);
-        let currentVendorRate = {{ $booking->vendor->currency_rate > 0 ? $booking->vendor->currency_rate : 1 }};
-        let currentVendorIcon = "{{ $booking->vendor->currency_icon }}";
+        const units = @json($units);
+        let rowCount = 0;
 
         $(document).ready(function() {
-            
-            // Product Variant Population (Initial & Change)
-            function populateVariants(product, savedVariantsMap = {}) {
-                if(product.unit_id) {
-                     $('#unit_select').val(product.unit_id);
-                }
-                
-                let hasVariants = false;
-                let tableHtml = '';
-                
-                if(product.variants && product.variants.length > 0) {
-                     $('#variant_container').show();
-                     
-                      product.variants.forEach(v => {
-                           let colorName = v.color ? v.color.name : '';
-                           let sizeName = v.size ? v.size.name : '';
-                           let name = (colorName + ' ' + sizeName).trim() || 'Default';
-                           
-                           // Backward compatibility check for old "Color: Name - Size: Name" format
-                           let parts = [];
-                           if(v.color) parts.push(`Color: ${v.color.name}`);
-                           if(v.size) parts.push(`Size: ${v.size.name}`);
-                           let oldName = parts.join(' - ');
-
-                            if(name) {
-                                hasVariants = true;
-                                
-                                let inputValue = '';
-                                // Check map for this variant name (New Format first, then Old Format)
-                                if(savedVariantsMap && (savedVariantsMap[name] !== undefined)) {
-                                    inputValue = savedVariantsMap[name];
-                                } else if(savedVariantsMap && (savedVariantsMap[oldName] !== undefined)) {
-                                    inputValue = savedVariantsMap[oldName];
-                                }
-                                
-                                let safeName = name.replace(/"/g, '&quot;');
-                               
-                               tableHtml += `
-                                 <tr>
-                                     <td class="align-middle">${name}</td>
-                                     <td>
-                                         <input type="number" class="form-control form-control-sm variant-qty" 
-                                                name="variant_quantities[${safeName}]" 
-                                                min="0" placeholder="0" value="${inputValue}">
-                                     </td>
-                                 </tr>
-                               `;
-                           }
-                      });
-                }
-                
-                if(hasVariants) {
-                     $('#variant_table_body').html(tableHtml);
-                     updateTotalQty(); 
-                } else {
-                     $('#variant_container').hide();
-                     $('#variant_table_body').empty();
-                }
-            }
-            
-            function updateTotalQty() {
-                let total = 0;
-                $('.variant-qty').each(function() {
-                    let val = parseInt($(this).val()) || 0;
-                    total += val;
-                });
-                
-                // Only update if total table qty is greater than current manual input
-                // Or if manual input is empty
-                let currentQty = parseInt($('#qty_input').val()) || 0;
-                
-                if(total > currentQty) {
-                    $('#qty_input').val(total);
-                }
-                
-                // Never readonly, user can add more "Unassigned" qty
-                $('#qty_input').prop('readonly', false);
-                $('#qty_input').attr('min', total); // Enforce min
-            }
-            
-            // Listen for variant quantity changes
-            $(document).on('keyup change', '.variant-qty', function() {
-                updateTotalQty();
-            });
-
-            // Initial Load
-            let initialProductId = $('#product_id').val();
-            if(initialProductId) {
-                let product = products.find(p => p.id == initialProductId);
+            // Pre-populate basket with existing items
+            const orderGroup = @json($orderGroup);
+            orderGroup.forEach(item => {
+                let product = products.find(p => p.id == item.product_id);
                 if(product) {
-                    // Prepare Saved Variant Data map
-                    let savedVariantsMap = {};
-                    let rawVariantInfo = @json($booking->variant_info);
-                    
-                    if(rawVariantInfo) {
-                        // Check if it's the old single-variant format (key 'variant' exists)
-                        if(rawVariantInfo['variant']) {
-                            savedVariantsMap[rawVariantInfo['variant']] = {{ $booking->qty }};
-                        } else {
-                            // New Aggregated Format (Key = name, Value = qty)
-                            savedVariantsMap = rawVariantInfo;
-                        }
-                    }
-                    populateVariants(product, savedVariantsMap);
+                    addProductRow(product, item);
                 }
+            });
+
+            // Filtering Logic
+            $('#filter_category').on('change', function() {
+                let catId = $(this).val();
+                $('#filter_sub_category', '#filter_child_category').html('<option value="">Wait...</option>');
+                
+                $.get("{{ route('admin.bookings.get-subcategories') }}", { id: catId }, function(data) {
+                    let html = '<option value="">Select Sub Category</option>';
+                    data.forEach(sc => html += `<option value="${sc.id}">${sc.name}</option>`);
+                    $('#filter_sub_category').html(html);
+                    filterProducts();
+                });
+            });
+
+            $('#filter_sub_category').on('change', function() {
+                let subId = $(this).val();
+                $.get("{{ route('admin.bookings.get-childcategories') }}", { id: subId }, function(data) {
+                    let html = '<option value="">Select Child Category</option>';
+                    data.forEach(cc => html += `<option value="${cc.id}">${cc.name}</option>`);
+                    $('#filter_child_category').html(html);
+                    filterProducts();
+                });
+            });
+
+            $('#filter_child_category').on('change', filterProducts);
+
+            function filterProducts() {
+                let catId = $('#filter_category').val();
+                let subId = $('#filter_sub_category').val();
+                let childId = $('#filter_child_category').val();
+
+                let filtered = products.filter(p => {
+                    return (!catId || p.category_id == catId) && 
+                           (!subId || p.sub_category_id == subId) &&
+                           (!childId || p.child_category_id == childId);
+                });
+
+                let html = '<option value="">Search by Name or SKU...</option>';
+                filtered.forEach(p => html += `<option value="${p.id}">${p.name} - #${p.product_number}</option>`);
+                $('#product_search').html(html);
             }
-            // Product Selection Change
-            $('#product_id').on('change', function() {
-                let productId = $(this).val();
+
+            $('#reset_filters').on('click', function() {
+                $('#filter_category, #filter_sub_category, #filter_child_category').val('').trigger('change');
+                filterProducts();
+            });
+
+            // Basket Logic
+            $('#add_to_basket').on('click', function() {
+                let productId = $('#product_search').val();
+                if(!productId) {
+                    toastr.warning('Please select a product first.');
+                    return;
+                }
+
+                if($(`input[value="${productId}"][name*="product_id"]`).length > 0) {
+                    toastr.error('Product already in basket.');
+                    return;
+                }
+
                 let product = products.find(p => p.id == productId);
+                addProductRow(product);
+                toastr.success(`${product.name} added to basket.`);
+            });
+
+            function addProductRow(product, existingItem = null) {
+                $('#empty_basket_row').hide();
                 
-                if (product) {
-                    $('#product_name').val(product.name);
-                    $('#product_number').val(product.product_number); 
-                    $('#product_category').val(product.category ? product.category.name : '');
-                    
-                    if (product.thumb_image) {
-                        $('#product_image').attr('src', "{{ asset('storage') }}/" + product.thumb_image).show();
-                    } else {
-                        $('#product_image').hide();
-                    }
+                let imageHtml = product.thumb_image 
+                    ? `<img src="{{ asset('storage') }}/${product.thumb_image}" class="rounded border shadow-sm" style="width: 50px; height: 50px; object-fit: cover;">`
+                    : `<div class="bg-light rounded border d-flex align-items-center justify-content-center text-muted tiny" style="width: 50px; height: 50px;">NO IMG</div>`;
 
-                    // Auto-select Category
-                    if(product.category_id) {
-                         $('#category_id').val(product.category_id).trigger('change');
-                         
-                         setTimeout(function(){
-                              if(product.sub_category_id) {
-                                  $('#sub_category_id').val(product.sub_category_id).trigger('change');
-                                  
-                                  setTimeout(function(){
-                                      if(product.child_category_id) {
-                                          $('#child_category_id').val(product.child_category_id);
-                                      }
-                                  }, 800);
-                              }
-                         }, 800);
-                    }
-                    
-                    if(product.unit_id) {
-                         $('#unit_select').val(product.unit_id);
-                    }
+                let variantHtml = '<div class="row">';
+                let hasVariants = false;
+                
+                let savedVariants = existingItem ? existingItem.variant_info : null;
 
-                    populateVariants(product);
+                if(product.variants && product.variants.length > 0) {
+                    product.variants.forEach(v => {
+                        let colorName = v.color ? v.color.name : '';
+                        let sizeName = v.size ? v.size.name : '';
+                        let name = (colorName + ' ' + sizeName).trim() || 'Default';
+                        if(name) {
+                            hasVariants = true;
+                            let safeName = name.replace(/"/g, '&quot;');
+                            let qtyValue = (savedVariants && savedVariants[name]) ? savedVariants[name] : 0;
 
+                            variantHtml += `
+                                <div class="col-12">
+                                    <div class="variant-input-group">
+                                        <span class="variant-label" title="${name}">${name}</span>
+                                        <input type="number" class="form-control form-control-sm variant-qty" 
+                                               name="items[${rowCount}][variant_quantities][${safeName}]" 
+                                               data-row="${rowCount}" value="${qtyValue}" min="0">
+                                    </div>
+                                </div>`;
+                        }
+                    });
+                }
+                variantHtml += '</div>';
+
+                if(!hasVariants) variantHtml = '<span class="text-muted italic small ml-2">No variants available for this item</span>';
+
+                let rowQty = existingItem ? existingItem.qty : 1;
+                let rowUnitId = existingItem ? (existingItem.unit_id || product.unit_id) : product.unit_id;
+
+                let rowHtml = `
+                    <tr id="row_${rowCount}" class="basket-row">
+                        <td class="text-center align-middle">${imageHtml}</td>
+                        <td class="align-middle">
+                            <input type="hidden" name="items[${rowCount}][product_id]" value="${product.id}">
+                            <p class="basket-product-name">${product.name}</p>
+                            <span class="basket-product-sku">#${product.product_number || 'UNKNOWN'}</span>
+                        </td>
+                        <td class="align-middle">
+                            <select class="form-control" name="items[${rowCount}][unit_id]">
+                                <option value="">Select Unit</option>
+                                ${units.map(u => `<option value="${u.id}" ${rowUnitId == u.id ? 'selected' : ''}>${u.name}</option>`).join('')}
+                            </select>
+                        </td>
+                        <td class="align-middle text-center">
+                            <input type="number" class="form-control main-qty font-weight-bold" name="items[${rowCount}][qty]" 
+                                   id="qty_${rowCount}" value="${rowQty}" min="1" required style="text-align:center;">
+                        </td>
+                        <td class="align-middle">
+                            ${variantHtml}
+                        </td>
+                        <td class="text-center align-middle">
+                            <button type="button" class="btn btn-outline-danger btn-sm remove-row border-0" data-id="${rowCount}">
+                                <i class="fas fa-times-circle fa-lg"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+
+                $('#basket_body').append(rowHtml);
+                rowCount++;
+                updateBasketStats();
+            }
+
+            $(document).on('click', '.remove-row', function() {
+                let id = $(this).data('id');
+                $(`#row_${id}`).remove();
+                if($('.basket-row').length === 0) {
+                    $('#empty_basket_row').show();
+                }
+                updateBasketStats();
+            });
+
+            $(document).on('input', '.variant-qty', function() {
+                let rowId = $(this).data('row');
+                let row = $(`#row_${rowId}`);
+                let total = 0;
+                
+                row.find('.variant-qty').each(function() {
+                    total += parseInt($(this).val()) || 0;
+                });
+
+                if(total > 0) {
+                   row.find('.main-qty').val(total).attr('min', total);
                 } else {
-                     $('#product_name').val('');
-                     $('#product_number').val('');
-                     $('#product_category').val('');
-                     $('#product_image').hide();
-                     populateVariants(null);
+                    row.find('.main-qty').attr('min', 1);
                 }
             });
 
+            function updateBasketStats() {
+                let count = $('.basket-row').length;
+                $('#item_count').text(`${count} Item${count !== 1 ? 's' : ''}`);
+            }
 
-            // Trigger initial calculation
-            $('select[name="vendor_id"]').trigger('change');
-            
-            // Category Change - Load Subcategories
-            $('#category_id').on('change', function() {
-                let categoryId = $(this).val();
-                $('#sub_category_id').html('<option value="">Select Sub Category (Optional)</option>');
-                $('#child_category_id').html('<option value="">Select Child Category (Optional)</option>');
-                
-                if(categoryId) {
-                    $.ajax({
-                        url: "{{ route('admin.bookings.get-subcategories') }}",
-                        method: 'GET',
-                        data: { id: categoryId },
-                        success: function(data) {
-                            let html = '<option value="">Select Sub Category (Optional)</option>';
-                            data.forEach(function(subCategory) {
-                                html += `<option value="${subCategory.id}">${subCategory.name}</option>`;
-                            });
-                            $('#sub_category_id').html(html);
-                        },
-                        error: function() {
-                            console.log('Error loading subcategories');
-                        }
-                    });
-                }
-            });
-            
-            // SubCategory Change - Load Child Categories
-            $('#sub_category_id').on('change', function() {
-                let subCategoryId = $(this).val();
-                $('#child_category_id').html('<option value="">Select Child Category (Optional)</option>');
-                
-                if(subCategoryId) {
-                    $.ajax({
-                        url: "{{ route('admin.bookings.get-childcategories') }}",
-                        method: 'GET',
-                        data: { id: subCategoryId },
-                        success: function(data) {
-                            let html = '<option value="">Select Child Category (Optional)</option>';
-                            data.forEach(function(childCategory) {
-                                html += `<option value="${childCategory.id}">${childCategory.name}</option>`;
-                            });
-                            $('#child_category_id').html(html);
-                        },
-                        error: function() {
-                            console.log('Error loading child categories');
-                        }
-                    });
-                }
-            });
-            
-            // Custom Fields
-            let fieldCount = {{ $booking->custom_fields ? count($booking->custom_fields) : 0 }};
-            $('#add-custom-field').on('click', function(){
+            // --- Custom Fields Logic ---
+            let fieldCount = {{ $targetBooking->custom_fields ? count($targetBooking->custom_fields) : 0 }};
+            $('#add-custom-field').on('click', function() {
                 let html = `
                     <div class="row mb-2" id="custom-field-${fieldCount}">
-                        <div class="col-5">
-                            <input type="text" name="custom_fields[${fieldCount}][key]" class="form-control" placeholder="Field Name">
+                        <div class="col-md-5">
+                            <input type="text" name="custom_fields[${fieldCount}][key]" class="form-control" placeholder="Field Name (e.g. Fabric)">
                         </div>
-                        <div class="col-5">
-                            <input type="text" name="custom_fields[${fieldCount}][value]" class="form-control" placeholder="Value">
+                        <div class="col-md-5">
+                            <input type="text" name="custom_fields[${fieldCount}][value]" class="form-control" placeholder="Value (e.g. Cotton)">
                         </div>
-                        <div class="col-2">
-                            <button type="button" class="btn btn-danger" onclick="$('#custom-field-${fieldCount}').remove()">X</button>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-danger btn-block" onclick="$('#custom-field-${fieldCount}').remove()">
+                                <i class="fas fa-trash"></i>
+                            </button>
                         </div>
-                    </div>
-                `;
+                    </div>`;
                 $('#custom-fields-container').append(html);
                 fieldCount++;
             });
 
-            // Prevent form submit on barcode scan Enter
-            $('#barcode').on('keypress', function(e) {
-                if (e.which == 13) {
+            $('#booking_form').on('submit', function(e) {
+                if($('.basket-row').length === 0) {
                     e.preventDefault();
-                    return false;
+                    toastr.error('Product basket must contain at least one item.', 'Basket Empty');
                 }
             });
         });

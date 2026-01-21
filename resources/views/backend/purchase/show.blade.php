@@ -59,6 +59,7 @@
                                 <table class="table table-striped table-hover table-md">
                                     <tr>
                                         <th data-width="40">#</th>
+                                        <th width="60">Image</th>
                                         <th>Item</th>
                                         <th class="text-center">Price</th>
                                         <th class="text-center">Vendor Price</th>
@@ -70,7 +71,14 @@
                                     <tr>
                                         <td>{{ $index + 1 }}</td>
                                         <td>
-                                            {{ $detail->product->name }} (SKU: {{ $detail->product->sku }})
+                                            @if($detail->product->thumb_image)
+                                                <img src="{{ asset('storage/'.$detail->product->thumb_image) }}" alt="" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
+                                            @else
+                                                <div class="bg-light rounded d-flex align-items-center justify-content-center text-muted small" style="width: 50px; height: 50px;">N/A</div>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            {{ $detail->product->name }}
                                             @if($detail->variant_info)
                                                 <div class="mt-1">
                                                     @foreach($detail->variant_info as $name => $qty)

@@ -34,7 +34,7 @@
                                                 <select class="form-control select2" id="import_request_select" data-placeholder="Import from Request...">
                                                     <option value=""></option>
                                                     @foreach($productRequests as $pr)
-                                                        <option value="{{ $pr->id }}">#{{ $pr->request_no }} - {{ $pr->user->name }} ({{ $pr->status }})</option>
+                                                        <option value="{{ $pr->id }}">#{{ $pr->request_no }} - {{ $pr->user->name }}</option>
                                                     @endforeach
                                                 </select>
                                             </div>

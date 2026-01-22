@@ -263,9 +263,12 @@
     <ul class="navbar-nav navbar-right">
       @can('Manage Notification')
       <li class="dropdown dropdown-list-toggle">
-        <a href="#" data-toggle="dropdown" class="nav-link notification-toggle nav-link-lg" id="low-stock-count-toggle">
-            <i class="fas fa-bell" style="font-size: 20px;"></i>
-            <span class="badge badge-danger" id="low-stock-count-badge" style="display: none; position: absolute; top: 5px; right: 5px; font-size: 12px; padding: 4px 7px; border-radius: 50%;">0</span>
+        <a href="#" data-toggle="dropdown" class="nav-link notification-toggle nav-link-lg" id="low-stock-count-toggle" style="position: relative; padding: 0 15px;">
+            <i class="fas fa-bell" style="font-size: 26px;"></i>
+            <span class="badge badge-danger" id="low-stock-count-badge" 
+                  style="display: none; position: absolute; top: 2px; right: 2px; font-size: 10px; font-weight: 800; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border: 2px solid #fff;">
+                0
+            </span>
         </a>
         <div class="dropdown-menu dropdown-list dropdown-menu-right" style="width: 350px; border-radius: 8px; border: none; box-shadow: 0 10px 40px 0 rgba(0,0,0,.1);">
             <div class="dropdown-header" style="font-size: 15px; padding: 15px 20px; background: #fff; border-bottom: 1px solid #f9f9f9; color: #34395e; font-weight: 700;">

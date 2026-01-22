@@ -146,14 +146,12 @@ class ProductRequestController extends Controller implements HasMiddleware
     {
         $productRequest = ProductRequest::with(['user', 'items.product', 'items.variant.color', 'items.variant.size'])->findOrFail($id);
         
-        // Authorization check
         /** @var \App\Models\User $user */
         $user = Auth::user();
         if (!$user->can('Manage Product Requests') && $productRequest->user_id != Auth::id()) {
             abort(403, 'Unauthorized access to this product request.');
         }
 
-        // Fetch Current Stock for each item based on the REQUESTER'S Outlet ID (which is user_id)
         foreach($productRequest->items as $item) {
              $stock = InventoryStock::where('product_id', $item->product_id)
                 ->where('variant_id', $item->variant_id)
@@ -163,6 +161,45 @@ class ProductRequestController extends Controller implements HasMiddleware
         }
 
         return view('backend.product-request.show', compact('productRequest'));
+    }
+
+    /**
+     * View Request Invoice (HTML)
+     */
+    public function viewInvoice($id)
+    {
+        $productRequest = ProductRequest::with(['user', 'items.product.unit', 'items.variant.color', 'items.variant.size'])->findOrFail($id);
+        
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        if (!$user->can('Manage Product Requests') && $productRequest->user_id != Auth::id()) {
+            abort(403);
+        }
+
+        $settings = \App\Models\GeneralSetting::first();
+
+        return view('backend.product-request.invoice', compact('productRequest', 'settings'));
+    }
+
+    /**
+     * Generate Request PDF
+     */
+    public function printPdf($id)
+    {
+        $productRequest = ProductRequest::with(['user', 'items.product.unit', 'items.variant.color', 'items.variant.size'])->findOrFail($id);
+        
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        if (!$user->can('Manage Product Requests') && $productRequest->user_id != Auth::id()) {
+            abort(403);
+        }
+
+        $settings = \App\Models\GeneralSetting::first();
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('backend.product-request.print_pdf', compact('productRequest', 'settings'));
+        $filename = 'request-' . $productRequest->request_no . '.pdf';
+        
+        return $pdf->download($filename);
     }
 
     /**

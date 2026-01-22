@@ -32,6 +32,29 @@
                 padding: 40px;
             }
         }
+        @media print {
+            .no-print { display: none; }
+            .container { box-shadow: none; border: none; padding: 0; }
+        }
+        .action-bar {
+            text-align: right;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+        .btn {
+            text-decoration: none;
+            display: inline-block;
+            padding: 8px 15px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+        .btn-secondary { background: #6c757d; color: #fff; }
+        .btn-warning { background: #ffc107; color: #000; }
+        .btn-primary { background: #007bff; color: #fff; }
         .header {
             width: 100%;
             margin-bottom: 30px;
@@ -134,6 +157,13 @@
 </head>
 <body>
     <div class="container">
+        @if(!($is_pdf ?? false))
+        <div class="action-bar no-print">
+            <a href="{{ route('admin.issues.index') }}" class="btn btn-secondary">Back to List</a>
+            <a href="#" onclick="window.print(); return false;" class="btn btn-warning">Print</a>
+            <a href="{{ route('admin.issues.download-invoice', $issue->id) }}" class="btn btn-primary">Download PDF</a>
+        </div>
+        @endif
         <div class="header clearfix">
             <div class="invoice-title">
                 <h1>Issue Invoice</h1>
@@ -177,8 +207,9 @@
                 <thead>
                     <tr>
                         <th style="width: 5%;">#</th>
-                        <th style="width: 45%;">Product</th>
-                        <th style="width: 25%;">Variant</th>
+                        <th style="width: 10%; text-align: center;">Image</th>
+                        <th style="width: 40%;">Product</th>
+                        <th style="width: 20%;">Variant</th>
                         <th style="width: 25%; text-align: center;">Quantity</th>
                     </tr>
                 </thead>
@@ -186,27 +217,32 @@
                     @foreach($issue->items as $index => $item)
                         <tr>
                             <td>{{ $index + 1 }}</td>
+                            <td style="text-align: center;">
+                                @if($item->product && $item->product->thumb_image)
+                                    @php
+                                        $imagePath = 'storage/'.$item->product->thumb_image;
+                                        $fullPath = ($is_pdf ?? false) ? public_path($imagePath) : asset($imagePath);
+                                    @endphp
+                                    <img src="{{ $fullPath }}" alt="" width="40">
+                                @else
+                                    -
+                                @endif
+                            </td>
                             <td>
                                 <strong>{{ $item->product->name }}</strong>
                             </td>
                             <td>
                                 @if($item->variant)
                                     {{ $item->variant->name }} 
-                                    @if($item->variant->color)
-                                        (Color: {{ $item->variant->color->name }})
-                                    @endif
-                                    @if($item->variant->size)
-                                        (Size: {{ $item->variant->size->name }})
-                                    @endif
                                 @else
-                                    N/A
+                                    -
                                 @endif
                             </td>
                             <td style="text-align: center;">{{ $item->quantity }}</td>
                         </tr>
                     @endforeach
                     <tr class="total-row">
-                        <td colspan="3" style="text-align: right;">Total Quantity</td>
+                        <td colspan="4" style="text-align: right;">Total Quantity</td>
                         <td style="text-align: center;">{{ $issue->total_qty }}</td>
                     </tr>
                 </tbody>

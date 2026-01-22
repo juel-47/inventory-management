@@ -30,9 +30,9 @@ class IssueController extends Controller
             ->with(['variants.color', 'variants.size', 'variants.inventoryStocks', 'inventoryStocks'])
             ->get();
             
-        // Fetch requests that are pending or approved
+        // Fetch requests that are approved
         $productRequests = ProductRequest::with('user')
-            ->whereIn('status', ['pending', 'approved'])
+            ->where('status', 'approved')
             ->latest()
             ->get();
 
@@ -162,7 +162,7 @@ class IssueController extends Controller
          $settings = GeneralSetting::first();
          
          // Using app('dompdf.wrapper') helper to avoid facade alias issues
-         $pdf = app('dompdf.wrapper')->loadView('backend.pdf.issue-invoice', compact('issue', 'settings'));
+         $pdf = app('dompdf.wrapper')->loadView('backend.pdf.issue-invoice', array_merge(compact('issue', 'settings'), ['is_pdf' => true]));
          $fileName = 'issue_invoice_' . $issue->issue_no . '.pdf';
          $path = 'invoices/' . $fileName;
          
@@ -177,7 +177,7 @@ class IssueController extends Controller
         $settings = GeneralSetting::first();
         
         // Return HTML view for preview
-        return view('backend.pdf.issue-invoice', compact('issue', 'settings'));
+        return view('backend.pdf.issue-invoice', array_merge(compact('issue', 'settings'), ['is_pdf' => false]));
     }
 
     public function downloadInvoice($id)

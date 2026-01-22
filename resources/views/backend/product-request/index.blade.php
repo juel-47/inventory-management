@@ -26,6 +26,7 @@
                                             <th>Requester</th>
                                             <th>Outlet/Shop Name</th>
                                             <th>Total Qty</th>
+                                            <th>Items</th>
                                              <th>Local Total Price</th>
                                             <th>Status</th>
                                             <th>Date</th>
@@ -40,6 +41,7 @@
                                                 <td>{{ $request->user->name }}</td>
                                                 <td>{{ $request->user->outlet_name ?? 'N/A' }}</td>
                                                 <td>{{ $request->total_qty }}</td>
+                                                <td><span class="badge badge-info">{{ $request->items->count() }} Items</span></td>
                                                 <td>{!! formatConverted($request->total_amount) !!}</td>
                                                 <td>
                                                     @if($request->status == 'pending')
@@ -56,9 +58,11 @@
                                                 </td>
                                                 <td>{{ $request->created_at->format('d M, Y') }}</td>
                                                 <td>
-                                                    <a href="{{ route('admin.product-requests.show', $request->id) }}" class="btn btn-primary btn-sm"><i class="fas fa-eye"></i></a>
+                                                    <a href="{{ route('admin.product-requests.view-invoice', $request->id) }}" class="btn btn-warning btn-sm" title="View Invoice"><i class="fas fa-file-invoice"></i></a>
+                                                    <a href="{{ route('admin.product-requests.download-invoice', $request->id) }}" class="btn btn-info btn-sm" title="Download PDF"><i class="fas fa-download"></i></a>
+                                                    <a href="{{ route('admin.product-requests.show', $request->id) }}" class="btn btn-primary btn-sm" title="Control Panel"><i class="fas fa-eye"></i></a>
                                                     @if($request->status == 'pending' || Auth::user()->can('Manage Product Requests'))
-                                                        <a href="{{ route('admin.product-requests.destroy', $request->id) }}" class="btn btn-danger btn-sm delete-item"><i class="fas fa-trash"></i></a>
+                                                        <a href="{{ route('admin.product-requests.destroy', $request->id) }}" class="btn btn-danger btn-sm delete-item" title="Delete"><i class="fas fa-trash"></i></a>
                                                     @endif
                                                 </td>
                                             </tr>

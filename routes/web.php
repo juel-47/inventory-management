@@ -117,6 +117,8 @@ Route::group(['middleware' => ['auth', 'verified', 'check.permission'], 'prefix'
 
 
     /** Product Request Routes */
+    Route::get('product-requests/{id}/view-invoice', [ProductRequestController::class, 'viewInvoice'])->name('product-requests.view-invoice');
+    Route::get('product-requests/{id}/invoice', [ProductRequestController::class, 'printPdf'])->name('product-requests.download-invoice');
     Route::put('product-requests/update-status/{id}', [ProductRequestController::class, 'updateStatus'])->name('product-requests.update-status');
     Route::resource('product-requests', ProductRequestController::class);
 

@@ -24,7 +24,8 @@
                         <div class="card-header">
                             <h4><i class="fas fa-list mr-2"></i>Itemized List</h4>
                             <div class="card-header-action">
-                                <small class="text-muted">Date: {{ $productRequest->created_at->format('d M, Y h:i A') }}</small>
+                                <a href="{{ route('admin.product-requests.view-invoice', $productRequest->id) }}" class="btn btn-warning" target="_blank"><i class="fas fa-file-invoice mr-1"></i> View Invoice</a>
+                                <a href="{{ route('admin.product-requests.download-invoice', $productRequest->id) }}" class="btn btn-info ml-2"><i class="fas fa-download mr-1"></i> Download PDF</a>
                             </div>
                         </div>
                         <div class="card-body p-0">
@@ -35,6 +36,9 @@
                                             <th class="text-center" width="5%">#</th>
                                             <th class="text-center" width="10%">Image</th>
                                             <th>Product Details</th>
+                                            @can('Manage Product Requests')
+                                                <th class="text-center">Shelve No</th>
+                                            @endcan
                                             <th class="text-center">Current Stock</th>
                                             <th class="text-center" width="10%">Qty</th>
                                             <th class="text-right">Outlet Price</th>
@@ -43,56 +47,68 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach ($productRequest->items as $index => $item)
+                                        @forelse ($productRequest->items as $index => $item)
                                             <tr>
-                                                <td class="text-center">{{ $index + 1 }}</td>
+                                                <td class="text-center font-weight-bold">{{ $index + 1 }}</td>
                                                 <td class="text-center">
-                                                    @if($item->product->thumb_image)
-                                                        <img src="{{ asset('storage/'.$item->product->thumb_image) }}" alt="{{ $item->product->name }}" width="50" style="border-radius: 4px; object-fit: cover; border: 1px solid #eee;">
+                                                    @if($item->product && $item->product->thumb_image)
+                                                        <img src="{{ asset('storage/'.$item->product->thumb_image) }}" alt="{{ $item->product->name }}" width="45" class="rounded shadow-sm border">
                                                     @else
-                                                        <span class="badge badge-light">No Image</span>
+                                                        <div class="bg-light rounded d-flex align-items-center justify-content-center mx-auto" style="width: 45px; height: 45px;">
+                                                            <i class="fas fa-image text-muted"></i>
+                                                        </div>
                                                     @endif
                                                 </td>
                                                 <td class="align-middle">
-                                                    <a href="{{ route('admin.products.edit', $item->product_id) }}" class="font-weight-600 text-primary" style="text-decoration: none;">
-                                                        {{ $item->product->name }}
-                                                    </a>
-                                                    @if($item->variant)
-                                                        <div class="mt-1">
-                                                            <span class="badge badge-primary px-2 py-1" style="font-size: 10px; text-transform: uppercase;">
-                                                                {{ $item->variant->name }}
-                                                                @if($item->variant->color || $item->variant->size)
-                                                                    ({{ $item->variant->color->name ?? '' }}{{ $item->variant->color && $item->variant->size ? ' / ' : '' }}{{ $item->variant->size->name ?? '' }})
-                                                                @endif
-                                                            </span>
-                                                        </div>
+                                                    @if($item->product)
+                                                        <div class="font-weight-600 text-dark">{{ $item->product->name }}</div>
+                                                        @if($item->variant)
+                                                            <div class="mt-1">
+                                                                <span class="badge badge-primary py-0 px-2" style="font-size: 10px;">
+                                                                    {{ $item->variant->name }}
+                                                                    @if($item->variant->color || $item->variant->size)
+                                                                        ({{ $item->variant->color->name ?? '' }}{{ $item->variant->color && $item->variant->size ? ' / ' : '' }}{{ $item->variant->size->name ?? '' }})
+                                                                    @endif
+                                                                </span>
+                                                            </div>
+                                                        @endif
                                                     @else
-                                                        <div class="small text-muted mt-1 italic">Standard Edition</div>
+                                                        <span class="text-danger">Product #{{ $item->product_id }} (Deleted)</span>
                                                     @endif
                                                 </td>
+                                                @can('Manage Product Requests')
+                                                    <td class="text-center align-middle">
+                                                        <span class="badge badge-light border">{{ $item->product ? ($item->product->self_number ?? '-') : '-' }}</span>
+                                                    </td>
+                                                @endcan
                                                 <td class="text-center align-middle">
                                                     <span class="badge badge-info px-3">{{ $item->current_stock ?? 0 }}</span>
                                                 </td>
                                                 <td class="text-center align-middle">
-                                                    <span class="badge badge-light px-3">{{ $item->qty }}</span>
+                                                    <span class="font-weight-bold h6 mb-0">{{ $item->qty }}</span>
                                                 </td>
-                                                <td class="text-right align-middle font-weight-bold text-muted">
-                                                    {!! formatConverted($item->unit_price) !!}
+                                                <td class="text-right align-middle">
+                                                    <div class="font-weight-bold">{!! formatConverted($item->unit_price) !!}</div>
                                                 </td>
-                                                <td class="text-right align-middle font-weight-bold text-muted">
-                                                    {!! formatConverted($item->product->price) !!}
+                                                <td class="text-right align-middle">
+                                                    <div class="font-weight-bold">{!! formatConverted($item->product ? $item->product->price : 0) !!}</div>
                                                 </td>
-                                                <td class="text-right align-middle font-weight-bold text-dark">
-                                                    {!! formatConverted($item->subtotal) !!}
+                                                <td class="text-right align-middle">
+                                                    <div class="font-weight-bold text-primary">{!! formatConverted($item->subtotal) !!}</div>
                                                 </td>
                                             </tr>
-                                        @endforeach
+                                        @empty
+                                            <tr>
+                                                <td colspan="8" class="text-center py-5">
+                                                    <i class="fas fa-box-open fa-3x text-muted mb-3 d-block"></i>
+                                                    <div class="h5 text-muted">No items found in this request.</div>
+                                                </td>
+                                            </tr>
+                                        @endforelse
                                     </tbody>
                                     <tfoot class="bg-whitesmoke">
                                         <tr>
-                                    <tfoot class="bg-whitesmoke">
-                                        <tr>
-                                            <td colspan="7" class="text-right font-weight-bold text-muted text-uppercase small" style="vertical-align: middle;">Total Request Amount</td>
+                                            <td colspan="{{ Auth::user()->can('Manage Product Requests') ? '8' : '7' }}" class="text-right font-weight-bold text-muted text-uppercase small" style="vertical-align: middle;">Total Request Amount</td>
                                             <td class="text-right font-weight-bold h6 text-primary mb-0" style="vertical-align: middle;">
                                                 {!! formatConverted($productRequest->total_amount) !!}
                                             </td>

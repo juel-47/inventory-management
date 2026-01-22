@@ -214,6 +214,13 @@ class ReportController extends Controller implements HasMiddleware
     {
         $notifications = [];
         $lastReadAt = session('notifications_read_at');
+        
+        // Expire "Mark as Read" after 10 minutes
+        if ($lastReadAt && $lastReadAt->diffInMinutes(now()) >= 10) {
+            session()->forget('notifications_read_at');
+            $lastReadAt = null;
+        }
+
         $unreadCount = 0;
         
         // 1. Fetch Low Stock Products (Threshold 100)

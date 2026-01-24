@@ -56,9 +56,9 @@
                                 <div class="row align-items-center">
                                     <div class="col-12 col-md-3 mb-3 mb-md-0">
                                         <select name="sort" id="sort" class="form-control select2">
+                                            <option value="latest" {{ request('sort') == 'latest' || !request('sort') ? 'selected' : '' }}>Latest Products</option>
                                             <option value="a-z" {{ request('sort') == 'a-z' ? 'selected' : '' }}>A-Z way (Alphabetical)</option>
                                             <option value="z-a" {{ request('sort') == 'z-a' ? 'selected' : '' }}>Z-A way (Reverse)</option>
-                                            <option value="latest" {{ request('sort') == 'latest' ? 'selected' : '' }}>Latest Products</option>
                                         </select>
                                     </div>
                                     <div class="col-12 col-md-3 mb-3 mb-md-0">
@@ -316,7 +316,7 @@
                 $('#sub_category').html('<option value="">Sub Category</option>').trigger('change');
                 $('#child_category').html('<option value="">Child Category</option>').trigger('change');
                 $('#alphabet-dropdown').val('').trigger('change');
-                $('#sort').val('a-z').trigger('change');
+                $('#sort').val('latest').trigger('change');
                 
                 fetchProducts();
             });

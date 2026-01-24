@@ -43,13 +43,13 @@ class ProductController extends Controller implements HasMiddleware
         $query = Product::with(['category', 'variants.color', 'variants.size', 'inventoryStocks']);
 
         // Handle Sorting
-        $sort = $request->sort ?? 'a-z';
+        $sort = $request->sort ?? 'latest';
         if ($sort == 'z-a') {
             $query->orderBy('name', 'desc');
-        } elseif ($sort == 'latest') {
-            $query->latest();
-        } else {
+        } elseif ($sort == 'a-z') {
             $query->orderBy('name', 'asc');
+        } else {
+            $query->latest();
         }
 
         if ($request->has('search') && $request->search != '') {

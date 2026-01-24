@@ -25,7 +25,7 @@ class VendorUpdateRequest extends FormRequest
         return [
             'shop_name' => 'required|string|max:255',
             'phone' => 'required|string|max:50',
-            'email' => 'required|email|max:255|unique:vendors,email,'.$id,
+            'email' => 'required|email:filter|max:255|unique:vendors,email,' . $id,
             'address' => 'required|string|max:500',
             'country' => 'required|string|max:255',
             'currency_name' => 'required|string|max:20',

@@ -40,7 +40,17 @@ class ProductController extends Controller implements HasMiddleware
      */
     public function index(Request $request)
     {
-        $query = Product::with(['category', 'variants.color', 'variants.size', 'inventoryStocks'])->latest();
+        $query = Product::with(['category', 'variants.color', 'variants.size', 'inventoryStocks']);
+
+        // Handle Sorting
+        $sort = $request->sort ?? 'a-z';
+        if ($sort == 'z-a') {
+            $query->orderBy('name', 'desc');
+        } elseif ($sort == 'latest') {
+            $query->latest();
+        } else {
+            $query->orderBy('name', 'asc');
+        }
 
         if ($request->has('search') && $request->search != '') {
             $search = $request->search;
@@ -55,13 +65,30 @@ class ProductController extends Controller implements HasMiddleware
             });
         }
 
-        $products = $query->paginate(20)->withQueryString();
+        if ($request->has('category') && $request->category != '') {
+            $query->where('category_id', $request->category);
+        }
+
+        if ($request->has('sub_category') && $request->sub_category != '') {
+            $query->where('sub_category_id', $request->sub_category);
+        }
+
+        if ($request->has('child_category') && $request->child_category != '') {
+            $query->where('child_category_id', $request->child_category);
+        }
+
+        if ($request->has('alphabet') && $request->alphabet != '') {
+            $query->where('name', 'like', $request->alphabet . '%');
+        }
+
+        $products = $query->paginate(2)->withQueryString();
+        $categories = Category::where('status', 1)->get();
 
         if ($request->ajax()) {
             return view('backend.product.product_grid', compact('products'))->render();
         }
 
-        return view('backend.product.index', compact('products'));
+        return view('backend.product.index', compact('products', 'categories'));
     }
 
     /**

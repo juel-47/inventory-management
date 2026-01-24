@@ -81,7 +81,7 @@ class ProductController extends Controller implements HasMiddleware
             $query->where('name', 'like', $request->alphabet . '%');
         }
 
-        $products = $query->paginate(2)->withQueryString();
+        $products = $query->paginate(20)->withQueryString();
         $categories = Category::where('status', 1)->get();
 
         if ($request->ajax()) {

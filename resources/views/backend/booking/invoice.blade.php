@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8">
     <title>Booking Invoice #{{ $targetBooking->booking_no }}</title>
@@ -12,30 +13,34 @@
             margin: 0;
             padding: 0;
         }
+
         .container {
             width: 100%;
             margin: 0 auto;
             padding: 20px;
         }
-        
+
         /* Web View Styling */
         @media screen {
             body {
                 background-color: #f0f0f0;
                 padding: 40px 0;
             }
+
             .container {
                 max-width: 800px;
                 background: #fff;
-                box-shadow: 0 0 15px rgba(0,0,0,0.1);
+                box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
                 border-radius: 4px;
                 padding: 40px;
             }
+
             .no-print {
                 margin-bottom: 20px;
                 display: flex;
                 justify-content: flex-end;
             }
+
             .btn {
                 display: inline-block;
                 padding: 8px 16px;
@@ -47,15 +52,37 @@
                 cursor: pointer;
                 border: none;
             }
-            .btn-print { background: #ffc107; color: #000; }
-            .btn-download { background: #007bff; color: #fff; }
-            .btn-back { background: #6c757d; color: #fff; }
+
+            .btn-print {
+                background: #ffc107;
+                color: #000;
+            }
+
+            .btn-download {
+                background: #007bff;
+                color: #fff;
+            }
+
+            .btn-back {
+                background: #6c757d;
+                color: #fff;
+            }
         }
 
         @media print {
-            .no-print { display: none; }
-            body { background: #fff; }
-            .container { width: 100%; padding: 0; box-shadow: none; }
+            .no-print {
+                display: none;
+            }
+
+            body {
+                background: #fff;
+            }
+
+            .container {
+                width: 100%;
+                padding: 0;
+                box-shadow: none;
+            }
         }
 
         .header {
@@ -64,46 +91,56 @@
             border-bottom: 2px solid #eee;
             padding-bottom: 20px;
         }
+
         .company-info {
             text-align: right;
             float: right;
             width: 60%;
         }
+
         .invoice-title {
             float: left;
             width: 40%;
         }
+
         .invoice-title h1 {
             margin: 0;
             color: #333;
             font-size: 28px;
             text-transform: uppercase;
         }
+
         .clearfix:after {
             content: "";
             display: table;
             clear: both;
         }
+
         .details-box {
             margin-bottom: 30px;
         }
+
         .box-left {
             float: left;
             width: 48%;
         }
+
         .box-right {
             float: right;
             width: 48%;
             text-align: right;
         }
+
         .table-responsive {
             width: 100%;
             margin-bottom: 30px;
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
         }
+
         th {
             background-color: #f8f9fa;
             color: #333;
@@ -114,15 +151,18 @@
             text-transform: uppercase;
             font-size: 12px;
         }
+
         td {
             padding: 12px;
             border-bottom: 1px solid #eee;
         }
+
         .total-row td {
             font-weight: bold;
             background-color: #f8f9fa;
             border-top: 2px solid #ddd;
         }
+
         .variant-tag {
             display: inline-block;
             padding: 2px 6px;
@@ -132,6 +172,7 @@
             margin-right: 5px;
             margin-top: 3px;
         }
+
         .footer {
             margin-top: 50px;
             text-align: center;
@@ -140,6 +181,7 @@
             border-top: 1px solid #eee;
             padding-top: 20px;
         }
+
         .badge {
             display: inline-block;
             padding: 4px 8px;
@@ -149,16 +191,28 @@
             text-transform: uppercase;
             color: #fff;
         }
-        .badge-warning { background-color: #ffc107; color: #000; }
-        .badge-success { background-color: #28a745; }
-        .badge-danger { background-color: #dc3545; }
+
+        .badge-warning {
+            background-color: #ffc107;
+            color: #000;
+        }
+
+        .badge-success {
+            background-color: #28a745;
+        }
+
+        .badge-danger {
+            background-color: #dc3545;
+        }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="no-print">
             <button onclick="window.print()" class="btn btn-print">Print Now</button>
-            <a href="{{ route('admin.bookings.download-pdf', $targetBooking->id) }}" class="btn btn-download">Download PDF</a>
+            <a href="{{ route('admin.bookings.download-pdf', $targetBooking->id) }}" class="btn btn-download">Download
+                PDF</a>
             <button onclick="window.close()" class="btn btn-back">Close</button>
         </div>
 
@@ -167,7 +221,8 @@
                 <h1>{{ $targetBooking->status == 'complete' ? 'ORDER PLACE' : 'ORDER PLACE' }}</h1>
                 <p><strong>Ref:</strong> #{{ $targetBooking->booking_no }}</p>
                 <div style="margin-top: 10px;">
-                    <span class="badge {{ $targetBooking->status == 'complete' ? 'badge-success' : ($targetBooking->status == 'pending' ? 'badge-warning' : 'badge-danger') }}">
+                    <span
+                        class="badge {{ $targetBooking->status == 'complete' ? 'badge-success' : ($targetBooking->status == 'pending' ? 'badge-warning' : 'badge-danger') }}">
                         {{ ucfirst($targetBooking->status) }}
                     </span>
                 </div>
@@ -204,56 +259,69 @@
                 <thead>
                     <tr>
                         <th style="width: 5%;">#</th>
-                        <th style="width: 55%;">Product Details</th>
+                        <th style="width: 10%; text-align: center;">Image</th>
+                        <th style="width: 45%;">Product Details</th>
                         <th style="width: 20%; text-align: center;">Qty</th>
                         <th style="width: 20%; text-align: center;">Unit</th>
                     </tr>
                 </thead>
                 <tbody>
                     @php $totalQty = 0; @endphp
-                    @foreach($orderGroup as $index => $item)
+                    @foreach ($orderGroup as $index => $item)
                         @php $totalQty += $item->qty; @endphp
                         <tr>
                             <td>{{ $index + 1 }}</td>
+                            <td style="text-align: center;">
+                                @if ($item->product && $item->product->thumb_image)
+                                    <img src="{{ asset('storage/' . $item->product->thumb_image) }}"
+                                        style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd;">
+                                @else
+                                    <div
+                                        style="width: 50px; height: 50px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; color: #ccc; font-size: 10px;">
+                                        N/A</div>
+                                @endif
+                            </td>
                             <td>
                                 <strong>{{ $item->product->name }}</strong>
-                                @if($item->variant_info)
+                                @if ($item->variant_info)
                                     <div style="margin-top: 5px;">
-                                        @foreach($item->variant_info as $name => $qty)
+                                        @foreach ($item->variant_info as $name => $qty)
                                             <span class="variant-tag">{{ $name }}: {{ $qty }}</span>
                                         @endforeach
                                     </div>
                                 @endif
                             </td>
-                            <td style="text-align: center;">{{ (float)$item->qty }}</td>
+                            <td style="text-align: center;">{{ (float) $item->qty }}</td>
                             <td style="text-align: center;">{{ $item->unit->name ?? 'N/A' }}</td>
                         </tr>
                     @endforeach
                     <tr class="total-row">
-                        <td colspan="2" style="text-align: right;">GRAND TOTAL QUANTITY</td>
-                        <td style="text-align: center;">{{ (float)$totalQty }}</td>
+                        <td colspan="3" style="text-align: right;">GRAND TOTAL QUANTITY</td>
+                        <td style="text-align: center;">{{ (float) $totalQty }}</td>
                         <td></td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
-        @if($targetBooking->description)
-        <div style="margin-bottom: 30px; background: #f8f9fa; padding: 15px; border-left: 4px solid #ddd;">
-            <strong>Note/Description:</strong><br>
-            {{ $targetBooking->description }}
-        </div>
+        @if ($targetBooking->description)
+            <div style="margin-bottom: 30px; background: #f8f9fa; padding: 15px; border-left: 4px solid #ddd;">
+                <strong>Note/Description:</strong><br>
+                {{ $targetBooking->description }}
+            </div>
         @endif
 
-        @if($targetBooking->custom_fields && count($targetBooking->custom_fields) > 0)
+        @if ($targetBooking->custom_fields && count($targetBooking->custom_fields) > 0)
             <div style="margin-top: 20px;">
                 <strong>Additional Details:</strong>
                 <table style="width: 100%; margin-top: 5px;">
-                    @foreach($targetBooking->custom_fields as $field)
-                        @if(!empty($field['key']) || !empty($field['value']))
+                    @foreach ($targetBooking->custom_fields as $field)
+                        @if (!empty($field['key']) || !empty($field['value']))
                             <tr>
-                                <td width="30%" style="color: #666; border: none; padding: 4px 0;">{{ $field['key'] ?? 'N/A' }}:</td>
-                                <td style="border: none; padding: 4px 0;"><strong>{{ $field['value'] ?? 'N/A' }}</strong></td>
+                                <td width="30%" style="color: #666; border: none; padding: 4px 0;">
+                                    {{ $field['key'] ?? 'N/A' }}:</td>
+                                <td style="border: none; padding: 4px 0;">
+                                    <strong>{{ $field['value'] ?? 'N/A' }}</strong></td>
                             </tr>
                         @endif
                     @endforeach
@@ -262,8 +330,10 @@
         @endif
 
         <div class="footer">
-            <p>Generated by {{ $settings->site_name ?? 'Inventory Management System' }} on {{ date('d M, Y h:i A') }}</p>
+            <p>Generated by {{ $settings->site_name ?? 'Inventory Management System' }} on {{ date('d M, Y h:i A') }}
+            </p>
         </div>
     </div>
 </body>
+
 </html>

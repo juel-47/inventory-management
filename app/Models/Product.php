@@ -88,4 +88,14 @@ class Product extends Model
     {
         return $this->inventoryStocks->sum('quantity');
     }
+
+    public function bookings()
+    {
+        return $this->hasMany(Booking::class);
+    }
+
+    public function productRequestItems()
+    {
+        return $this->hasMany(ProductRequestItem::class);
+    }
 }

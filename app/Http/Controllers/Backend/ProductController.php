@@ -46,12 +46,12 @@ class ProductController extends Controller implements HasMiddleware
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('product_number', 'like', "%{$search}%")
-                  ->orWhere('self_number', 'like', "%{$search}%")
-                  ->orWhere('barcode', 'like', "%{$search}%")
-                  ->orWhereHas('category', function ($subQ) use ($search) {
-                      $subQ->where('name', 'like', "%{$search}%");
-                  });
+                    ->orWhere('product_number', 'like', "%{$search}%")
+                    ->orWhere('self_number', 'like', "%{$search}%")
+                    ->orWhere('barcode', 'like', "%{$search}%")
+                    ->orWhereHas('category', function ($subQ) use ($search) {
+                        $subQ->where('name', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -103,25 +103,25 @@ class ProductController extends Controller implements HasMiddleware
         $product->barcode = $request->barcode;
         $product->status = $request->status;
         $product->self_number = $request->self_number;
-        $product->raw_material_cost=$request->raw_material_cost;
-        $product->transport_cost=$request->transport_cost;
-        $product->tax=$request->tax;
+        $product->raw_material_cost = $request->raw_material_cost;
+        $product->transport_cost = $request->transport_cost;
+        $product->tax = $request->tax;
         $product->save();
 
         // Handle Variants
         if ($request->has('variants')) {
             foreach ($request->variants as $variant) {
-                if(!empty($variant['color_id']) || !empty($variant['size_id'])) {
+                if (!empty($variant['color_id']) || !empty($variant['size_id'])) {
                     $productVariant = new ProductVariant();
                     $productVariant->product_id = $product->id;
                     $productVariant->color_id = $variant['color_id'] ?? null;
                     $productVariant->size_id = $variant['size_id'] ?? null;
-                    
+
                     // Generate name for backward compatibility
                     $colorName = $productVariant->color_id ? Color::find($productVariant->color_id)->name : '';
                     $sizeName = $productVariant->size_id ? Size::find($productVariant->size_id)->name : '';
                     $productVariant->name = trim($colorName . ' ' . $sizeName);
-                    
+
                     // variant qty omitted from create/edit forms; keep DB default
                     $productVariant->save();
                 }
@@ -166,7 +166,7 @@ class ProductController extends Controller implements HasMiddleware
         $imagePath = $this->update_image($request, 'image', 'uploads/products', $product->thumb_image);
 
         if ($request->hasFile('image')) {
-             $product->thumb_image = $imagePath;
+            $product->thumb_image = $imagePath;
         }
 
         $product->name = $request->name;
@@ -185,28 +185,28 @@ class ProductController extends Controller implements HasMiddleware
         $product->barcode = $request->barcode;
         $product->status = $request->status;
         $product->self_number = $request->self_number;
-        $product->raw_material_cost=$request->raw_material_cost;
-        $product->transport_cost=$request->transport_cost;
-        $product->tax=$request->tax;
+        $product->raw_material_cost = $request->raw_material_cost;
+        $product->transport_cost = $request->transport_cost;
+        $product->tax = $request->tax;
         $product->save();
 
         ProductVariant::where('product_id', $product->id)->delete();
-         if ($request->has('variants')) {
+        if ($request->has('variants')) {
             foreach ($request->variants as $variant) {
-                 if(!empty($variant['color_id']) || !empty($variant['size_id'])) {
+                if (!empty($variant['color_id']) || !empty($variant['size_id'])) {
                     $productVariant = new ProductVariant();
                     $productVariant->product_id = $product->id;
                     $productVariant->color_id = $variant['color_id'] ?? null;
                     $productVariant->size_id = $variant['size_id'] ?? null;
-                    
+
                     // Generate name for backward compatibility
                     $colorName = $productVariant->color_id ? Color::find($productVariant->color_id)->name : '';
                     $sizeName = $productVariant->size_id ? Size::find($productVariant->size_id)->name : '';
                     $productVariant->name = trim($colorName . ' ' . $sizeName);
-                    
+
                     // variant qty omitted from create/edit forms; keep DB default
                     $productVariant->save();
-                 }
+                }
             }
         }
 
@@ -219,10 +219,15 @@ class ProductController extends Controller implements HasMiddleware
      */
     public function destroy(string $id)
     {
-         $product = Product::findOrFail($id);
-         $this->delete_image($product->thumb_image);
-         $product->delete(); // Cascade delete variants
-         return response(['status' => 'success', 'message' => 'Deleted Successfully!']);
+        $product = Product::findOrFail($id);
+
+        if ($product->purchaseDetails()->count() > 0 || $product->bookings()->count() > 0 || $product->productRequestItems()->count() > 0) {
+            return response(['status' => 'error', 'message' => 'Cannot delete product! It has related bookings, purchases, or requests.']);
+        }
+
+        $this->delete_image($product->thumb_image);
+        $product->delete(); // Cascade delete variants
+        return response(['status' => 'success', 'message' => 'Deleted Successfully!']);
     }
 
     public function changeStatus(Request $request)

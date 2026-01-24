@@ -11,7 +11,7 @@ use Intervention\Image\ImageManager;
 
 trait ImageUploadTrait
 {
-    
+
     // // /** handle slider image file */
 
     // public function sliderImage(Request $request, $inputName, $path)
@@ -176,7 +176,7 @@ trait ImageUploadTrait
 
 
 
-    
+
     // normal way handle image 
     public function upload_image(Request $request, $inputName, $path)
     {
@@ -184,9 +184,9 @@ trait ImageUploadTrait
             $image = $request->file($inputName);
             $ext = $image->getClientOriginalExtension();
             $imageName = 'media_' . uniqid() . '.' . $ext;
-            
+
             $image->storeAs($path, $imageName, 'public');
-            
+
             return $path . '/' . $imageName;
         }
         return null;
@@ -201,9 +201,9 @@ trait ImageUploadTrait
             foreach ($images as $image) {
                 $ext = $image->getClientOriginalExtension();
                 $imageName = 'media_' . uniqid() . '.' . $ext;
-                
+
                 $image->storeAs($path, $imageName, 'public');
-                
+
                 $imagepaths[] = $path . '/' . $imageName;
             }
             return $imagepaths;
@@ -218,20 +218,20 @@ trait ImageUploadTrait
             if ($oldPath && Storage::disk('public')->exists($oldPath)) {
                 Storage::disk('public')->delete($oldPath);
             }
-            
+
             $image = $request->file($inputName);
             $ext = $image->getClientOriginalExtension();
             $imageName = 'media_' . uniqid() . '.' . $ext;
-            
+
             $image->storeAs($path, $imageName, 'public');
-            
+
             return $path . '/' . $imageName;
         }
         return null;
     }
 
     /** handle delete file */
-    public function delete_image(string $path)
+    public function delete_image(?string $path)
     {
         if ($path && Storage::disk('public')->exists($path)) {
             Storage::disk('public')->delete($path);

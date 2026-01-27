@@ -190,14 +190,29 @@
             </div>
         @endif
 
+        @php
+            $vendorSubtotal = $purchase->details->sum(function($d) { 
+                return $d->unit_cost_vendor * $d->qty; 
+            });
+        @endphp
+
         <div class="summary-box">
-            <div style="font-size: 14px; border-bottom: 1px solid #eee; padding-bottom: 5px;">Grand Total</div>
+            <div style="font-size: 14px; border-bottom: 1px solid #eee; padding-bottom: 5px;">Grand Total (Local)</div>
             <div style="font-size: 24px; font-weight: bold; color: #007bff; margin-top: 5px;">
                 {{ $settings->currency_icon }}{{ number_format($purchase->total_amount, 2) }}
             </div>
             <div style="font-size: 12px; color: #666; margin-top: 5px;">
                 Total Qty: {{ (float) $totalQty }}
             </div>
+            
+            @if($purchase->vendor && $vendorSubtotal > 0)
+                <div style="border-top: 1px solid #eee; margin-top: 10px; padding-top: 10px;">
+                    <div style="font-size: 12px; color: #666;">Vendor Total</div>
+                    <div style="font-size: 18px; font-weight: bold; color: #28a745; margin-top: 3px;">
+                        {{ $purchase->vendor->currency_icon }}{{ number_format($vendorSubtotal, 2) }}
+                    </div>
+                </div>
+            @endif
         </div>
         <div class="clear"></div>
 

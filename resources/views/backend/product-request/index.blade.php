@@ -27,6 +27,7 @@
                                             <th>Outlet/Shop Name</th>
                                             <th>Total Qty</th>
                                             <th>Items</th>
+                                            <th>Required Days</th>
                                              <th>Local Total Price</th>
                                             <th>Status</th>
                                             <th>Date</th>
@@ -42,6 +43,19 @@
                                                 <td>{{ $request->user->outlet_name ?? 'N/A' }}</td>
                                                 <td>{{ $request->total_qty }}</td>
                                                 <td><span class="badge badge-info">{{ $request->items->count() }} Items</span></td>
+                                                <td>
+                                                    @if($request->required_days)
+                                                        @if($request->required_days <= 3)
+                                                            <span class="badge badge-danger">{{ $request->required_days }} days</span>
+                                                        @elseif($request->required_days <= 7)
+                                                            <span class="badge badge-warning">{{ $request->required_days }} days</span>
+                                                        @else
+                                                            <span class="badge badge-success">{{ $request->required_days }} days</span>
+                                                        @endif
+                                                    @else
+                                                        <span class="text-muted">N/A</span>
+                                                    @endif
+                                                </td>
                                                 <td>{!! formatConverted($request->total_amount) !!}</td>
                                                 <td>
                                                     @if($request->status == 'pending')
@@ -83,7 +97,7 @@
         $("#table-1").dataTable({
             "order": [[0, "desc"]],
             "columnDefs": [
-                { "sortable": false, "targets": [7, 8] }
+                { "sortable": false, "targets": [8, 9] }
             ]
         });
     </script>

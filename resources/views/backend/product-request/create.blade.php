@@ -80,6 +80,16 @@
                                                      <h4 class="mb-0 text-primary">{{ $settings->base_currency_icon }}<span id="grand-total-display">0.00</span></h4>
                                                 </div>
                                                 <hr>
+                                                <div class="form-group">
+                                                    <label class="font-weight-bold text-dark">Required Days <span class="text-muted">(Optional)</span></label>
+                                                    <input type="number" name="required_days" class="form-control" min="1" placeholder="e.g., 5">
+                                                    <small class="form-text text-muted">How many days until you need these products?</small>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="font-weight-bold text-dark">Note <span class="text-muted">(Optional)</span></label>
+                                                    <textarea name="note" class="form-control" rows="3" placeholder="Add any special instructions..."></textarea>
+                                                </div>
+                                                <hr>
                                                 <button type="submit" class="btn btn-success btn-lg btn-block shadow-sm" id="submit-btn" disabled>
                                                     <i class="fas fa-paper-plane mr-2"></i> Submit Request
                                                 </button>

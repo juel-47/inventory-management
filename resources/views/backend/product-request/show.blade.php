@@ -185,6 +185,21 @@
 
                                 <dt class="col-sm-5 text-muted font-weight-normal">Address:</dt>
                                 <dd class="col-sm-7 text-muted">{{ $productRequest->user->address ?? 'No address provided' }}</dd>
+                                
+                                <dt class="col-sm-5 text-muted font-weight-normal">Required Days:</dt>
+                                <dd class="col-sm-7">
+                                    @if($productRequest->required_days)
+                                        @if($productRequest->required_days <= 3)
+                                            <span class="badge badge-danger">{{ $productRequest->required_days }} days</span>
+                                        @elseif($productRequest->required_days <= 7)
+                                            <span class="badge badge-warning">{{ $productRequest->required_days }} days</span>
+                                        @else
+                                            <span class="badge badge-success">{{ $productRequest->required_days }} days</span>
+                                        @endif
+                                    @else
+                                        <span class="text-muted">Not specified</span>
+                                    @endif
+                                </dd>
                             </dl>
                         </div>
                     </div>

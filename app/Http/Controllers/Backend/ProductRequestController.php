@@ -82,6 +82,7 @@ class ProductRequestController extends Controller implements HasMiddleware
             'items.*.product_id' => 'required|exists:products,id',
             'items.*.variant_id' => 'nullable|exists:product_variants,id',
             'items.*.qty' => 'required|integer|min:1',
+            'required_days' => 'nullable|integer|min:1',
         ]);
 
         DB::beginTransaction();
@@ -97,6 +98,7 @@ class ProductRequestController extends Controller implements HasMiddleware
             }
 
             $productRequest->status = 'pending';
+            $productRequest->required_days = $request->required_days;
             $productRequest->note = $request->note;
             $productRequest->total_qty = 0; 
             $productRequest->save();

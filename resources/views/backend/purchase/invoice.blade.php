@@ -287,11 +287,26 @@
                         </tr>
                     @endforeach
                     <tr class="total-row">
-                        <td colspan="3" style="text-align: right;">GRAND TOTAL</td>
+                        <td colspan="3" style="text-align: right;">GRAND TOTAL (LOCAL)</td>
                         <td style="text-align: center;">{{ (float) $totalQty }}</td>
                         <td></td>
                         <td style="text-align: right;">{{ $settings->currency_icon }}{{ number_format($purchase->total_amount, 2) }}</td>
                     </tr>
+                    @if($purchase->vendor)
+                        @php
+                            $vendorSubtotal = $purchase->details->sum(function($d) { 
+                                return $d->unit_cost_vendor * $d->qty; 
+                            });
+                        @endphp
+                        @if($vendorSubtotal > 0)
+                            <tr style="background-color: #f0f9f4;">
+                                <td colspan="3" style="text-align: right; color: #28a745; font-weight: bold;">VENDOR TOTAL</td>
+                                <td style="text-align: center;"></td>
+                                <td></td>
+                                <td style="text-align: right; color: #28a745; font-weight: bold;">{{ $purchase->vendor->currency_icon }}{{ number_format($vendorSubtotal, 2) }}</td>
+                            </tr>
+                        @endif
+                    @endif
                 </tbody>
             </table>
         </div>

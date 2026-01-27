@@ -13,6 +13,7 @@ class ProductRequest extends Model
         'request_no',
         'user_id',
         'status',
+        'required_days',
         'total_qty',
         'total_amount',
         'note',

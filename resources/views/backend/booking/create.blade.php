@@ -24,7 +24,7 @@
                             </div>
                             <div class="card-body">
                                 <div class="row">
-                                    <div class="form-group col-md-6">
+                                    <div class="form-group col-md-4">
                                         <label class="font-weight-bold">Select Vendor <span class="text-danger">*</span></label>
                                         <select class="form-control select2" name="vendor_id" required>
                                             <option value="">-- Select Vendor --</option>
@@ -33,7 +33,16 @@
                                             @endforeach
                                         </select>
                                     </div>
-                                    <div class="form-group col-md-6">
+                                    <div class="form-group col-md-4">
+                                        <label>Shipping Method</label>
+                                        <select class="form-control" name="shipping_method">
+                                            <option value="">-- Select Shipping --</option>
+                                            <option value="Air">Air</option>
+                                            <option value="Train">Train</option>
+                                            <option value="Ship">Ship</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-md-4">
                                         <label>Order Status <span class="text-danger">*</span></label>
                                         <select class="form-control" name="status" required>
                                             <option value="pending" selected>Pending</option>
@@ -96,8 +105,11 @@
 
                         <!-- Section 3: Order Basket -->
                         <div class="card">
-                            <div class="card-header">
+                            <div class="card-header d-flex justify-content-between align-items-center">
                                 <h4>Order Basket</h4>
+                                <button type="button" class="btn btn-sm btn-danger shadow-sm" id="clear_basket_btn" style="display: none;">
+                                    <i class="fas fa-trash-alt mr-1"></i> Clear Basket
+                                </button>
                             </div>
                             <div class="card-body p-0">
                                 <div class="table-responsive">
@@ -365,6 +377,59 @@
                 $('#custom-fields-container').append(html);
                 fieldCount++;
             });
+
+            // --- Basket Logic: Auto-Load & Clear ---
+            function loadBasket() {
+                try {
+                    let basket = JSON.parse(localStorage.getItem('booking_basket')) || [];
+                    console.log('Loading basket:', basket); // Debugging
+
+                    if (basket.length > 0) {
+                        let loadedCount = 0;
+                        
+                        basket.forEach(id => {
+                            // Ensure ID comparison works (string vs int)
+                            let product = products.find(p => p.id == id);
+                            
+                            if (product) {
+                                // Prevent duplicates
+                                let alreadyAdded = false;
+                                $('input[name^="items"][name$="[product_id]"]').each(function() {
+                                    if($(this).val() == product.id) alreadyAdded = true;
+                                });
+
+                                if(!alreadyAdded) {
+                                    console.log('Adding product:', product.name);
+                                    addProductRow(product);
+                                    loadedCount++;
+                                }
+                            } else {
+                                console.warn('Product ID ' + id + ' not found in available products list.');
+                            }
+                        });
+
+                        if(loadedCount > 0) {
+                            toastr.success(`${loadedCount} items loaded from your basket.`);
+                            $('#clear_basket_btn').show();
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error loading basket:', e);
+                }
+            }
+
+            // Clear Basket Button Logic
+            $('#clear_basket_btn').on('click', function() {
+                localStorage.removeItem('booking_basket');
+                $('#basket_body').empty();
+                rowCount = 0;
+                $(this).fadeOut();
+                toastr.info('Basket cleared.');
+            });
+
+            // Execute Load
+            setTimeout(loadBasket, 500); // Small delay to ensure DOM is ready
+            // --- End Basket Logic ---
 
             $('#booking_form').on('submit', function(e) {
                 if($('.basket-row').length === 0) {

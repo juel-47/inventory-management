@@ -259,6 +259,7 @@ class ProductController extends Controller implements HasMiddleware
 
     public function changeStatus(Request $request)
     {
+        // dd($request->all());
         $product = Product::findOrFail($request->id);
         $product->status = $request->status == 'true' ? 1 : 0;
         $product->save();

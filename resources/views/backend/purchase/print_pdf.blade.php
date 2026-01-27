@@ -3,7 +3,7 @@
 
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Booking #{{ $targetBooking->booking_no }}</title>
+    <title>Purchase #{{ $purchase->invoice_no }}</title>
     <style>
         body {
             font-family: 'Helvetica', 'Arial', sans-serif;
@@ -52,18 +52,8 @@
             text-transform: uppercase;
         }
 
-        .badge-warning {
-            background-color: #ffc107;
-            color: #000;
-        }
-
         .badge-success {
             background-color: #28a745;
-            color: #fff;
-        }
-
-        .badge-danger {
-            background-color: #dc3545;
             color: #fff;
         }
 
@@ -130,25 +120,22 @@
         <div class="header">
             <h1>{{ $settings->site_name ?? 'Inventory Management System' }}</h1>
             <p>{{ $settings->contact_email ?? '' }} | {{ $settings->address ?? '' }}</p>
-            <div style="font-size: 18px; font-weight: bold; margin-top: 10px;">ORDER PLACE DETAILS</div>
+            <div style="font-size: 18px; font-weight: bold; margin-top: 10px;">ORDER RECEIVE DETAILS</div>
         </div>
 
         <div class="info-row">
             <div class="info-col">
                 <strong>Vendor Information:</strong><br>
-                {{ $targetBooking->vendor->shop_name }}<br>
-                {{ $targetBooking->vendor->address }}<br>
-                {{ $targetBooking->vendor->phone }}
+                {{ $purchase->vendor->shop_name }}<br>
+                {{ $purchase->vendor->address }}<br>
+                {{ $purchase->vendor->phone }}
             </div>
             <div class="info-col text-right">
-                <strong>Booking No:</strong> #{{ $targetBooking->booking_no }}<br>
-                <strong>Date:</strong> {{ $targetBooking->created_at->format('d M, Y h:i A') }}<br>
-                <strong>Shipping Method:</strong> {{ $targetBooking->shipping_method ?? 'N/A' }}<br>
+                <strong>Invoice No:</strong> #{{ $purchase->invoice_no }}<br>
+                <strong>Date:</strong> {{ \Carbon\Carbon::parse($purchase->date)->format('d M, Y') }}<br>
+                <strong>Shipping Method:</strong> {{ $purchase->shipping_method ?? 'N/A' }}<br>
                 <strong>Status:</strong>
-                <span
-                    class="badge {{ strtolower($targetBooking->status) == 'complete' ? 'badge-success' : (strtolower($targetBooking->status) == 'pending' ? 'badge-warning' : 'badge-danger') }}">
-                    {{ ucfirst($targetBooking->status) }}
-                </span>
+                <span class="badge badge-success">Received</span>
             </div>
             <div class="clear"></div>
         </div>
@@ -160,67 +147,56 @@
                     <th width="60" class="text-center">Image</th>
                     <th>Product Details</th>
                     <th width="80" class="text-center">Quantity</th>
-                    <th width="80" class="text-center">Unit</th>
+                    <th width="100" class="text-right">Unit Cost</th>
+                    <th width="100" class="text-right">Total</th>
                 </tr>
             </thead>
             <tbody>
                 @php $totalQty = 0; @endphp
-                @foreach ($orderGroup as $index => $item)
-                    @php $totalQty += $item->qty; @endphp
+                @foreach ($purchase->details as $index => $detail)
+                    @php $totalQty += $detail->qty; @endphp
                     <tr>
                         <td class="text-center">{{ $index + 1 }}</td>
                         <td class="text-center">
-                            @if ($item->product && $item->product->thumb_image)
-                                <img src="{{ public_path('storage/' . $item->product->thumb_image) }}"
+                            @if ($detail->product && $detail->product->thumb_image)
+                                <img src="{{ public_path('storage/' . $detail->product->thumb_image) }}"
                                     style="width: 40px; height: 40px; object-fit: cover;">
                             @else
                                 <span style="font-size: 8px; color: #ccc;">N/A</span>
                             @endif
                         </td>
                         <td>
-                            <div style="font-weight: bold;">{{ $item->product->name }}</div>
-                            @if ($item->variant_info)
-                                @foreach ($item->variant_info as $name => $qty)
+                            <div style="font-weight: bold;">{{ $detail->product->name }}</div>
+                            @if ($detail->variant_info)
+                                @foreach ($detail->variant_info as $name => $qty)
                                     <span class="variant-item">{{ $name }}: {{ $qty }}</span>
                                 @endforeach
                             @endif
                         </td>
-                        <td class="text-center">{{ (float) $item->qty }}</td>
-                        <td class="text-center">{{ $item->unit->name ?? 'N/A' }}</td>
+                        <td class="text-center">{{ (float) $detail->qty }}</td>
+                        <td class="text-right">{{ $settings->currency_icon }}{{ number_format($detail->unit_cost, 2) }}</td>
+                        <td class="text-right">{{ $settings->currency_icon }}{{ number_format($detail->total, 2) }}</td>
                     </tr>
                 @endforeach
             </tbody>
         </table>
 
-        @if ($targetBooking->description)
+        @if ($purchase->note)
             <div style="margin-top: 30px;">
-                <strong>Description / Note:</strong><br>
+                <strong>Note / Reference:</strong><br>
                 <div style="padding: 10px; background: #f9f9f9; border: 1px solid #eee; margin-top: 5px;">
-                    {{ $targetBooking->description }}
+                    {{ $purchase->note }}
                 </div>
-            </div>
-        @endif
-
-        @if ($targetBooking->custom_fields && count($targetBooking->custom_fields) > 0)
-            <div style="margin-top: 20px;">
-                <strong>Additional Details:</strong><br>
-                <table style="width: 100%; margin-top: 5px;">
-                    @foreach ($targetBooking->custom_fields as $field)
-                        @if (!empty($field['key']) || !empty($field['value']))
-                            <tr>
-                                <td width="30%" style="color: #666;">{{ $field['key'] ?? 'N/A' }}:</td>
-                                <td><strong>{{ $field['value'] ?? 'N/A' }}</strong></td>
-                            </tr>
-                        @endif
-                    @endforeach
-                </table>
             </div>
         @endif
 
         <div class="summary-box">
             <div style="font-size: 14px; border-bottom: 1px solid #eee; padding-bottom: 5px;">Grand Total</div>
             <div style="font-size: 24px; font-weight: bold; color: #007bff; margin-top: 5px;">
-                {{ (float) $totalQty }} <small style="font-size: 14px; color: #666;">(Total Qty)</small>
+                {{ $settings->currency_icon }}{{ number_format($purchase->total_amount, 2) }}
+            </div>
+            <div style="font-size: 12px; color: #666; margin-top: 5px;">
+                Total Qty: {{ (float) $totalQty }}
             </div>
         </div>
         <div class="clear"></div>

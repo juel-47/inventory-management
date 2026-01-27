@@ -89,6 +89,17 @@
 @endsection
 
 @push('scripts')
+    <!-- Floating Basket Widget -->
+    <div id="floating-basket" class="position-fixed shadow-lg rounded-pill bg-primary text-white px-4 py-3 d-flex align-items-center cursor-pointer" 
+         style="bottom: 30px; right: 30px; z-index: 9999; display: none; cursor: pointer; transition: all 0.3s ease;">
+        <i class="fas fa-shopping-basket mr-2 fa-lg"></i>
+        <span class="font-weight-bold ml-1 mr-2" style="font-size: 16px;">
+            <span id="basket-count">0</span> Items
+        </span>
+        <span class="border-left mx-2" style="height: 20px; border-color: rgba(255,255,255,0.4) !important;"></span>
+        <span class="font-weight-bold" style="font-size: 14px;">Place Order &rarr;</span>
+    </div>
+
     <style>
         /* Professional Pagination Styling - Enhanced for White Background */
         .custom-pagination .pagination {
@@ -145,10 +156,76 @@
             color: #fff;
             border-color: #6777ef;
         }
+        #floating-basket:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(103, 119, 239, 0.4) !important;
+        }
+        .add-to-basket.added {
+            background-color: #28a745;
+            border-color: #28a745;
+            color: #fff;
+        }
     </style>
     <script>
         $(document).ready(function() {
             let initialLoad = true;
+
+            // --- Basket Logic Start ---
+            let basket = JSON.parse(localStorage.getItem('booking_basket')) || [];
+
+            function updateBasketUI() {
+                // Update Badge Count
+                $('#basket-count').text(basket.length);
+
+                // Show/Hide Floating Widget
+                if (basket.length > 0) {
+                    $('#floating-basket').fadeIn();
+                } else {
+                    $('#floating-basket').fadeOut();
+                }
+
+                // Update Buttons State
+                $('.add-to-basket').each(function() {
+                    let id = $(this).data('id');
+                    if (basket.includes(id)) {
+                        $(this).addClass('added').html('<i class="fas fa-check mr-1"></i> Added');
+                    } else {
+                        $(this).removeClass('added').html('<i class="fas fa-shopping-basket mr-1"></i> Add to Basket');
+                    }
+                });
+            }
+
+            // Initial UI Update
+            updateBasketUI();
+
+            // Add to Basket Click
+            $('body').on('click', '.add-to-basket', function() {
+                let id = $(this).data('id');
+                
+                if (basket.includes(id)) {
+                    // Remove if already added
+                    basket = basket.filter(itemId => itemId !== id);
+                    toastr.info('Removed from basket');
+                } else {
+                    // Add to basket
+                    basket.push(id);
+                    toastr.success('Added to basket');
+                }
+                
+                localStorage.setItem('booking_basket', JSON.stringify(basket));
+                updateBasketUI();
+            });
+
+            // Go to Booking Page
+            $('#floating-basket').on('click', function() {
+                window.location.href = "{{ route('admin.bookings.create') }}";
+            });
+
+            // Re-apply UI state after AJAX load (Search/Pagination)
+            $(document).ajaxComplete(function() {
+                updateBasketUI();
+            });
+            // --- Basket Logic End ---
 
             // Prevent Enter key from submitting form
             $('#filter-form').on('submit', function(e) {
@@ -221,6 +298,7 @@
             $('body').on('change', '.change-status', function() {
                 let isChecked = $(this).is(':checked');
                 let id = $(this).data('id');
+                let $this = $(this); // Store reference
 
                 $.ajax({
                     url: "{{ route('admin.products.change-status') }}",
@@ -230,10 +308,15 @@
                         id: id
                     },
                     success: function(data) {
-                        toastr.success(data.message)
+                         toastr.success(data.message); 
                     },
                     error: function(xhr, status, error) {
-                        console.log(error);
+                        console.error("Status update error:", error);
+                        console.log("Response:", xhr.responseText);
+                        if(xhr.status !== 200) {
+                             $this.prop('checked', !isChecked);
+                             toastr.error('Failed to update status');
+                        }
                     }
                 })
             })

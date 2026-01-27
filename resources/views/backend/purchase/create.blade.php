@@ -17,23 +17,9 @@
                         <div class="card-header">
                             <h4>New Order Receive</h4>
                             <div class="card-header-action">
-                                <div class="dropdown">
-                                    <button class="btn btn-primary dropdown-toggle" type="button" id="bookingDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        <i class="fas fa-file-import"></i> Import from Order Place
-                                    </button>
-                                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="bookingDropdown" style="min-width: 320px; padding: 15px;">
-                                        <div class="form-group mb-0">
-                                            <label class="d-block">Select Pending Order Place</label>
-                                            <select class="form-control select2" id="booking_select" style="width: 100%;">
-                                                <option value="">-- Manual / None --</option>
-                                                @foreach ($bookings as $booking)
-                                                    <option value="{{ $booking->id }}">#{{ $booking->booking_no }} | {{ $booking->vendor->shop_name }}</option>
-                                                @endforeach
-                                            </select>
-                                            <small class="text-muted mt-2 d-block">Selecting a booking will auto-import items and vendor.</small>
-                                        </div>
-                                    </div>
-                                </div>
+                                <button class="btn btn-primary" type="button" data-toggle="modal" data-target="#importModal">
+                                    <i class="fas fa-file-import"></i> Import from Order Place
+                                </button>
                             </div>
                         </div>
                         <div class="card-body">
@@ -43,7 +29,7 @@
                                 <!-- Section 1: General Information -->
                                 <div class="section-title mt-0">General Information</div>
                                 <div class="row mb-4">
-                                    <div class="form-group col-md-6">
+                                    <div class="form-group col-md-4">
                                         <label>Vendor <span class="text-danger">*</span></label>
                                         <select class="form-control select2" name="vendor_id" id="vendor_select" required>
                                             <option value="">Select Vendor</option>
@@ -53,7 +39,16 @@
                                         </select>
                                         <small class="text-muted mt-1 d-block">System Rate: <strong id="current_rate_display">1.00</strong></small>
                                     </div>
-                                    <div class="form-group col-md-6">
+                                    <div class="form-group col-md-4">
+                                        <label>Shipping Method</label>
+                                        <select class="form-control" name="shipping_method" id="shipping_method_select">
+                                            <option value="">-- Select Shipping --</option>
+                                            <option value="Air">Air</option>
+                                            <option value="Train">Train</option>
+                                            <option value="Ship">Ship</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-md-4">
                                         <label>Purchase Date <span class="text-danger">*</span></label>
                                         <input type="date" class="form-control" name="date" value="{{ date('Y-m-d') }}" required>
                                     </div>
@@ -158,6 +153,35 @@
             </div>
         </div>
     </section>
+
+    <!-- Import Modal -->
+    <div class="modal fade" id="importModal" tabindex="-1" role="dialog" aria-labelledby="importModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="importModalLabel">Import from Order Place</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Select Pending Order Place</label>
+                        <select class="form-control select2" id="booking_select" style="width: 100%;">
+                            <option value="">-- Manual / None --</option>
+                            @foreach ($bookings as $booking)
+                                <option value="{{ $booking->id }}">#{{ $booking->booking_no }} | {{ $booking->vendor->shop_name }}</option>
+                            @endforeach
+                        </select>
+                        <small class="text-muted mt-2 d-block">Selecting a booking will auto-import items, vendor, and shipping method.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('scripts')
@@ -176,6 +200,14 @@
 
         $(document).ready(function() {
             
+            // Initialize Select2 for booking select in modal
+            $('#importModal').on('shown.bs.modal', function () {
+                $('#booking_select').select2({
+                    dropdownParent: $('#importModal'),
+                    width: '100%'
+                });
+            });
+            
             // 1. Booking Selection Handler
             $('#booking_select').on('change', function() {
                 let bookingId = $(this).val();
@@ -193,12 +225,20 @@
                                 $('#vendor_select').val(bookings[0].vendor_id).trigger('change');
                             }
                             
+                            // Auto-fill shipping method if available
+                            if(bookings.length > 0 && bookings[0].shipping_method) {
+                                $('#shipping_method_select').val(bookings[0].shipping_method);
+                            }
+                            
                             // bookings is an array
                             bookings.forEach(booking => {
                                 addBookingRow(booking);
                             });
 
                             toastr.success(bookings.length + ' item(s) imported from Order Place.', 'Loaded');
+                            
+                            // Close modal after successful import
+                            $('#importModal').modal('hide');
                         }
                     });
                 } else {

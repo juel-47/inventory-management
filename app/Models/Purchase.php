@@ -16,6 +16,7 @@ class Purchase extends Model
         'total_amount',
         'note',
         'status',
+        'shipping_method',
         'booking_id',
         'material_cost',
         'transport_cost',

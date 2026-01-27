@@ -22,7 +22,7 @@
                             </div>
                             <div class="card-body bg-light-gray">
                                 <div class="row">
-                                    <div class="col-md-5">
+                                    <div class="col-md-3">
                                         <div class="form-group mb-0">
                                             <label class="font-weight-bold">Select Vendor <span class="text-danger">*</span></label>
                                             <select class="form-control select2" name="vendor_id" required>
@@ -33,7 +33,18 @@
                                             </select>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
+                                        <div class="form-group mb-0">
+                                            <label class="font-weight-bold">Shipping Method</label>
+                                            <select class="form-control" name="shipping_method">
+                                                <option value="">-- Select Shipping --</option>
+                                                <option {{ $targetBooking->shipping_method == 'Air' ? 'selected' : '' }} value="Air">Air</option>
+                                                <option {{ $targetBooking->shipping_method == 'Train' ? 'selected' : '' }} value="Train">Train</option>
+                                                <option {{ $targetBooking->shipping_method == 'Ship' ? 'selected' : '' }} value="Ship">Ship</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
                                         <div class="form-group mb-0">
                                             <label class="font-weight-bold">Order Status</label>
                                             <select class="form-control" name="status">

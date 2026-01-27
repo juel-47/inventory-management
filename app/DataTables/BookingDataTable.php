@@ -40,7 +40,7 @@ class BookingDataTable extends DataTable
                     'missing' => 'Missing'
                 ];
                 
-                $html = '<select class="form-control change-status" data-id="' . $query->id . '" data-booking-no="' . $query->booking_no . '" style="min-width: 100px;">';
+                $html = '<select class="form-control change-booking-status" data-id="' . $query->id . '" data-booking-no="' . $query->booking_no . '" style="min-width: 100px;">';
                 foreach($options as $key => $label) {
                     $selected = $status === $key ? 'selected' : '';
                     $html .= '<option value="'.$key.'" '.$selected.'>'.$label.'</option>';
@@ -62,11 +62,12 @@ class BookingDataTable extends DataTable
                 'bookings.booking_no',
                 'bookings.vendor_id',
                 'bookings.status',
+                'bookings.shipping_method',
                 'vendors.shop_name as vendor_shop_name',
                 DB::raw('count(bookings.product_id) as product_count'),
                 DB::raw('sum(bookings.qty) as total_qty')
             )
-            ->groupBy('bookings.booking_no', 'bookings.vendor_id', 'bookings.status', 'vendors.shop_name');
+            ->groupBy('bookings.booking_no', 'bookings.vendor_id', 'bookings.status', 'bookings.shipping_method', 'vendors.shop_name');
     }
 
     public function html(): HtmlBuilder
@@ -93,6 +94,7 @@ class BookingDataTable extends DataTable
             Column::make('vendor')->title('Vendor'),
             Column::computed('product_count')->title('Products'),
             Column::computed('total_qty')->title('Total Qty'),
+            Column::make('shipping_method')->title('Shipping'),
             Column::make('status'),
             Column::computed('action')
                 ->exportable(false)

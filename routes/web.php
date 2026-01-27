@@ -95,11 +95,17 @@ Route::group(['middleware' => ['auth', 'verified', 'check.permission'], 'prefix'
         Route::get('bookings/view-invoice/{id}', 'viewInvoice')->name('bookings.view-invoice');
         Route::get('bookings/download-pdf/{id}', 'downloadPdf')->name('bookings.download-pdf');
     });
+    // New route (Primary)
+    Route::put('bookings/status-update', [BookingController::class, 'changeStatus'])->name('bookings.status-update');
+    // Legacy route (Fallback to prevent RouteNotFoundException)
     Route::put('bookings/change-status', [BookingController::class, 'changeStatus'])->name('bookings.change-status');
+    
     Route::resource('bookings', BookingController::class);
 
     /** Purchase Routes */
     Route::get('purchases/get-booking-details', [PurchaseController::class, 'getBookingDetails'])->name('purchases.get-booking-details');
+    Route::get('purchases/{id}/invoice', [PurchaseController::class, 'viewInvoice'])->name('purchases.view-invoice');
+    Route::get('purchases/{id}/download-pdf', [PurchaseController::class, 'downloadPdf'])->name('purchases.download-pdf');
     Route::resource('purchases', PurchaseController::class);
 
     /** Report Routes */

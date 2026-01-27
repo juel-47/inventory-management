@@ -60,8 +60,16 @@ class PurchaseController extends Controller
         $bookings = Booking::with(['product', 'vendor', 'unit'])
                     ->where('booking_no', $booking->booking_no)
                     ->get();
+        
+        // Add shipping_method to the response (from the first booking in the group)
+        $response = $bookings->toArray();
+        if (count($response) > 0 && isset($response[0]['shipping_method'])) {
+            foreach ($response as &$item) {
+                $item['shipping_method'] = $response[0]['shipping_method'];
+            }
+        }
                     
-        return response()->json($bookings);
+        return response()->json($response);
     }
 
     /**
@@ -89,6 +97,7 @@ class PurchaseController extends Controller
             $purchase->user_id = Auth::id(); // Track Creator
             $purchase->date = $request->date;
             $purchase->note = $request->note;
+            $purchase->shipping_method = $request->shipping_method;
             $purchase->material_cost = $request->material_cost ?? 0;
             $purchase->transport_cost = $request->transport_cost ?? 0;
             $purchase->tax = $request->tax ?? 0;
@@ -362,6 +371,28 @@ class PurchaseController extends Controller
     {
         $purchase = Purchase::with(['vendor', 'user', 'details.product'])->findOrFail($id);
         return view('backend.purchase.show', compact('purchase'));
+    }
+
+    /**
+     * View invoice for purchase
+     */
+    public function viewInvoice(string $id)
+    {
+        $purchase = Purchase::with(['vendor', 'user', 'details.product'])->findOrFail($id);
+        $settings = \App\Models\GeneralSetting::first();
+        return view('backend.purchase.invoice', compact('purchase', 'settings'));
+    }
+
+    /**
+     * Download PDF for purchase
+     */
+    public function downloadPdf(string $id)
+    {
+        $purchase = Purchase::with(['vendor', 'user', 'details.product'])->findOrFail($id);
+        $settings = \App\Models\GeneralSetting::first();
+        
+        $pdf = \PDF::loadView('backend.purchase.print_pdf', compact('purchase', 'settings'));
+        return $pdf->download('purchase_' . $purchase->invoice_no . '.pdf');
     }
 
     /**

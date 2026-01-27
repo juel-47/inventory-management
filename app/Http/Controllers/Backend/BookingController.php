@@ -107,6 +107,7 @@ class BookingController extends Controller
 
             $booking->description = $request->description;
             $booking->custom_fields = $request->custom_fields;
+            $booking->shipping_method = $request->shipping_method;
             $booking->status = $request->status ?? 'pending';
             
             $booking->unit_price = 0;
@@ -129,6 +130,14 @@ class BookingController extends Controller
 
         Toastr::success('Order(s) Placed Successfully!');
         return redirect()->route('admin.bookings.index');
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(string $id)
+    {
+        return $this->viewInvoice($id);
     }
 
     public function viewInvoice(string $id)
@@ -222,6 +231,7 @@ class BookingController extends Controller
 
                 $booking->description = $request->description;
                 $booking->custom_fields = $request->custom_fields;
+                $booking->shipping_method = $request->shipping_method;
                 $booking->status = $request->status ?? 'pending';
                 
                 $booking->unit_price = 0;
@@ -259,8 +269,12 @@ class BookingController extends Controller
 
     public function changeStatus(Request $request)
     {
-        $bookingNo = $request->booking_no;
-        Booking::where('booking_no', $bookingNo)->update(['status' => $request->status]);
+        // Find one item to get the booking_no
+        $booking = Booking::findOrFail($request->id);
+        
+        // Update status for all items in this booking group
+        Booking::where('booking_no', $booking->booking_no)->update(['status' => $request->status]);
+        
         return response(['status' => 'success', 'message' => 'Status Updated Successfully!']);
     }
 }

@@ -9,12 +9,13 @@
                         style="max-height: 100%; max-width: 100%; object-fit: contain;">
                 
                 <!-- Checkbox / Status Badge -->
-                <div class="position-absolute" style="top: 10px; right: 10px; z-index: 10;">
+                <div class="position-absolute d-flex flex-column align-items-end" style="top: 10px; right: 10px; z-index: 10;">
                     @if(Auth::user()->can('Manage Products'))
                         <label class="custom-switch m-0">
                             <input type="checkbox" name="custom-switch-checkbox" data-id="{{ $product->id }}" class="custom-switch-input change-status" {{ $product->status ? 'checked' : '' }}>
                             <span class="custom-switch-indicator shadow-sm"></span>
                         </label>
+                        <span class="status-message badge badge-success shadow-sm mt-1" style="display: none; font-size: 10px; opacity: 0.9;">Saved</span>
                     @else
                         <span class="badge {{ $product->status ? 'badge-success' : 'badge-danger' }} shadow-sm px-2 py-1">{{ $product->status ? 'Active' : 'Inactive' }}</span>
                     @endif
@@ -80,6 +81,11 @@
                             <span class="font-weight-bold text-success" style="font-size: 16px;">{{ formatConverted($product->price) }}</span>
                         </div>
                     @endif
+                    
+                    <!-- Add to Basket Button -->
+                    <button type="button" class="btn btn-outline-info btn-sm btn-block mt-3 add-to-basket" data-id="{{ $product->id }}">
+                        <i class="fas fa-shopping-basket mr-1"></i> Add to Basket
+                    </button>
                 </div>
                 
                 @can('Manage Products')

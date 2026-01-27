@@ -226,14 +226,14 @@
             });
 
             // Status Change for grouped bookings
-            $('body').on('change', '.change-status', function() {
+            $('body').on('change', '.change-booking-status', function() {
                 let status = $(this).val();
                 let id = $(this).data('id');
                 let bookingNo = $(this).data('booking-no');
 
                 $.ajax({
-                    method: 'GET',
-                    url: "{{ route('admin.bookings.change-status') }}",
+                    method: 'PUT', // Changed to PUT to match route definition
+                    url: "{{ route('admin.bookings.status-update') }}", // Updated to new route
                     data: {
                         status: status,
                         id: id,

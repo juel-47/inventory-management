@@ -28,6 +28,7 @@
                                             <th>Date</th>
                                             <th>Invoice No</th>
                                             <th>Vendor</th>
+                                            <th>Shipping</th>
                                             <th>Created By</th>
                                             <th>local currency Total</th>
                                             <th>Vendor Total price</th>
@@ -41,6 +42,7 @@
                                                 <td>{{ $purchase->date }}</td>
                                                 <td>{{ $purchase->invoice_no }}</td>
                                                 <td>{{ $purchase->vendor->shop_name ?? 'N/A' }}</td>
+                                                <td>{{ $purchase->shipping_method ?? 'N/A' }}</td>
                                                 <td>{{ $purchase->user->name ?? 'System' }}</td>
                                                 <td>{{ formatConverted($purchase->total_amount) }}</td>
                                                 <td>
@@ -61,8 +63,8 @@
                                                     @endif
                                                 </td>
                                                 <td>
-                                                    <a href="{{ route('admin.purchases.show', $purchase->id) }}" class="btn btn-info btn-sm"><i class="fas fa-eye"></i> View</a>
-                                                    
+                                                    <a href="{{ route('admin.purchases.view-invoice', $purchase->id) }}" target="_blank" class="btn btn-warning btn-sm" title="View Invoice"><i class="fas fa-file-invoice"></i></a>
+                                                    <a href="{{ route('admin.purchases.download-pdf', $purchase->id) }}" class="btn btn-secondary btn-sm ml-1" title="Download PDF"><i class="fas fa-download"></i></a>
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -82,7 +84,7 @@
         $("#table-1").dataTable({
             "order": [[0, "desc"]],
             "columnDefs": [
-                { "sortable": false, "targets": [7] }
+                { "sortable": false, "targets": [8] }
             ],
             "order": [[0, "desc"]]
         });

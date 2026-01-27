@@ -35,13 +35,13 @@
     {{ $dataTable->scripts(attributes: ['type' => 'module']) }}
 
     <script>
-        $(document).ready(function() {
-            $('body').on('change', '.change-status', function() {
+        // $(document).ready(function() {
+             $('body').on('change', '.change-booking-status', function() {
                 let status = $(this).val();
                 let id = $(this).data('id');
 
                 $.ajax({
-                    url: "{{ route('admin.bookings.change-status') }}",
+                    url: "{{ route('admin.bookings.status-update') }}",
                     method: 'PUT',
                     data: {
                         status: status,

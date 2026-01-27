@@ -29,7 +29,8 @@ class Booking extends Model
         'variant_info',
         'barcode',
         'custom_fields',
-        'status'
+        'status',
+        'shipping_method'
     ];
 
     protected $casts = [

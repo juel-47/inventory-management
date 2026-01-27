@@ -82,10 +82,12 @@
                         </div>
                     @endif
                     
+                    @can('Manage Order Place')
                     <!-- Add to Basket Button -->
                     <button type="button" class="btn btn-outline-info btn-sm btn-block mt-3 add-to-basket" data-id="{{ $product->id }}">
                         <i class="fas fa-shopping-basket mr-1"></i> Add to Basket
                     </button>
+                    @endcan
                 </div>
                 
                 @can('Manage Products')

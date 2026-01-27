@@ -90,6 +90,7 @@
 
 @push('scripts')
     <!-- Floating Basket Widget -->
+    @can('Manage Order Place')
     <div id="floating-basket" class="position-fixed shadow-lg rounded-pill bg-primary text-white px-4 py-3 d-flex align-items-center cursor-pointer" 
          style="bottom: 30px; right: 30px; z-index: 9999; display: none; cursor: pointer; transition: all 0.3s ease;">
         <i class="fas fa-shopping-basket mr-2 fa-lg"></i>
@@ -99,6 +100,7 @@
         <span class="border-left mx-2" style="height: 20px; border-color: rgba(255,255,255,0.4) !important;"></span>
         <span class="font-weight-bold" style="font-size: 14px;">Place Order &rarr;</span>
     </div>
+    @endcan
 
     <style>
         /* Professional Pagination Styling - Enhanced for White Background */

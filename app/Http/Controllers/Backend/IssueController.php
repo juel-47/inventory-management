@@ -15,6 +15,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class IssueController extends Controller
 {
@@ -161,8 +162,7 @@ class IssueController extends Controller
          $issue->load(['items.product', 'items.variant.color', 'items.variant.size', 'outlet', 'productRequest']);
          $settings = GeneralSetting::first();
          
-         // Using app('dompdf.wrapper') helper to avoid facade alias issues
-         $pdf = app('dompdf.wrapper')->loadView('backend.pdf.issue-invoice', array_merge(compact('issue', 'settings'), ['is_pdf' => true]));
+         $pdf = Pdf::loadView('backend.pdf.issue-invoice', array_merge(compact('issue', 'settings'), ['is_pdf' => true]));
          $fileName = 'issue_invoice_' . $issue->issue_no . '.pdf';
          $path = 'invoices/' . $fileName;
          
@@ -182,19 +182,12 @@ class IssueController extends Controller
 
     public function downloadInvoice($id)
     {
-        $issue = Issue::findOrFail($id);
+        $issue = Issue::with(['items.product', 'items.variant.color', 'items.variant.size', 'outlet', 'productRequest'])->findOrFail($id);
+        $settings = GeneralSetting::first();
         
-        if (!$issue->invoice_path || !Storage::disk('public')->exists($issue->invoice_path)) {
-            // Try to regenerate if missing
-             try {
-                $this->generateInvoice($issue);
-                // Reload to get new path
-                $issue->refresh();
-            } catch (\Exception $e) {
-                return back()->with('error', 'Invoice not found and could not be generated.');
-            }
-        }
+        $pdf = Pdf::loadView('backend.pdf.issue-invoice', array_merge(compact('issue', 'settings'), ['is_pdf' => true]));
+        $fileName = 'issue_invoice_' . $issue->issue_no . '.pdf';
         
-        return Storage::disk('public')->download($issue->invoice_path);
+        return $pdf->download($fileName);
     }
 }

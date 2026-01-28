@@ -72,7 +72,7 @@
                                                 </td>
                                                 <td>{{ $request->created_at->format('d M, Y') }}</td>
                                                 <td>
-                                                    <a href="{{ route('admin.product-requests.view-invoice', $request->id) }}" class="btn btn-warning btn-sm" title="View Invoice"><i class="fas fa-file-invoice"></i></a>
+                                                    <a href="{{ route('admin.product-requests.view-invoice', $request->id) }}" class="btn btn-warning btn-sm" title="View Invoice" target="_blank"><i class="fas fa-file-invoice"></i></a>
                                                     <a href="{{ route('admin.product-requests.download-invoice', $request->id) }}" class="btn btn-info btn-sm" title="Download PDF"><i class="fas fa-download"></i></a>
                                                     <a href="{{ route('admin.product-requests.show', $request->id) }}" class="btn btn-primary btn-sm" title="Control Panel"><i class="fas fa-eye"></i></a>
                                                     @if($request->status == 'pending' || Auth::user()->can('Manage Product Requests'))

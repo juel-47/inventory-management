@@ -1,272 +1,373 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Issue Invoice</title>
+    <title>Issue Invoice - {{ $issue->issue_no }}</title>
     <style>
+        @page {
+            margin: 0.5cm 1cm;
+        }
         body {
             font-family: 'Helvetica', 'Arial', sans-serif;
             color: #333;
-            font-size: 14px;
-            line-height: 1.6;
+            font-size: 13px;
+            line-height: 1.5;
             margin: 0;
             padding: 0;
+            background-color: #ffffff;
         }
         .container {
-            width: 100%;
-            margin: 0 auto;
-            padding: 20px;
+            padding: 0.5cm;
         }
         
-        /* Web View Styling - Looks like paper */
+        /* Web View Mockup */
         @media screen {
             body {
-                background-color: #f0f0f0;
+                background-color: #f4f7f6;
                 padding: 40px 0;
             }
             .container {
-                max-width: 800px;
+                max-width: 850px;
+                margin: 0 auto;
                 background: #fff;
-                box-shadow: 0 0 15px rgba(0,0,0,0.1);
-                border-radius: 4px;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+                border-radius: 8px;
                 padding: 40px;
+                min-height: 29.7cm;
             }
         }
-        @media print {
-            .no-print { display: none; }
-            .container { box-shadow: none; border: none; padding: 0; }
-        }
-        .action-bar {
-            text-align: right;
-            margin-bottom: 20px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #ddd;
-        }
-        .btn {
-            text-decoration: none;
-            display: inline-block;
-            padding: 8px 15px;
-            border-radius: 4px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-left: 5px;
-        }
-        .btn-secondary { background: #6c757d; color: #fff; }
-        .btn-warning { background: #ffc107; color: #000; }
-        .btn-primary { background: #007bff; color: #fff; }
-        .header {
+
+        .header-table {
             width: 100%;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 20px;
-        }
-        .company-info {
-            text-align: right;
-            float: right;
-            width: 60%;
+            border-bottom: 2px solid #2c3e50;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
         }
         .invoice-title {
-            float: left;
-            width: 40%;
-        }
-        .invoice-title h1 {
-            margin: 0;
-            color: #333;
+            color: #2c3e50;
             font-size: 28px;
+            font-weight: bold;
             text-transform: uppercase;
+            margin: 0;
+            letter-spacing: 1px;
         }
-        .clearfix:after {
-            content: "";
-            display: table;
-            clear: both;
+        .ref-no {
+            font-size: 13px;
+            color: #7f8c8d;
+            margin-top: 3px;
         }
-        .details-box {
-            margin-bottom: 30px;
+        .company-name {
+            font-size: 20px;
+            color: #2c3e50;
+            font-weight: bold;
+            margin: 0;
         }
-        .box-left {
-            float: left;
-            width: 48%;
+        .company-details {
+            font-size: 11px;
+            color: #7f8c8d;
+            line-height: 1.4;
         }
-        .box-right {
-            float: right;
-            width: 48%;
-            text-align: right;
-        }
-        .table-responsive {
+
+        .info-table {
             width: 100%;
             margin-bottom: 30px;
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th {
-            background-color: #f8f9fa;
-            color: #333;
-            padding: 12px;
-            text-align: left;
-            border-bottom: 2px solid #ddd;
+        .info-box-title {
+            font-size: 12px;
             font-weight: bold;
+            color: #2c3e50;
             text-transform: uppercase;
+            border-bottom: 1px solid #ecf0f1;
+            padding-bottom: 4px;
+            margin-bottom: 8px;
+        }
+        .info-content {
             font-size: 12px;
+            color: #2c3e50;
         }
-        td {
-            padding: 12px;
-            border-bottom: 1px solid #eee;
+        .info-label {
+            color: #7f8c8d;
+            width: 90px;
+            display: inline-block;
         }
-        .total-row td {
-            font-weight: bold;
-            background-color: #f8f9fa;
-            border-top: 2px solid #ddd;
-        }
-        .footer {
-            margin-top: 50px;
-            text-align: center;
-            color: #777;
-            font-size: 12px;
-            border-top: 1px solid #eee;
-            padding-top: 20px;
-        }
-        .signature-section {
-            margin-top: 60px;
-        }
-        .signature-box {
-            float: left;
-            width: 30%;
-            border-top: 1px solid #333;
-            text-align: center;
-            padding-top: 10px;
-        }
-        .signature-box.right {
-            float: right;
-        }
+
         .badge {
             display: inline-block;
-            padding: 4px 8px;
+            padding: 4px 10px;
             font-size: 10px;
-            font-weight: 700;
+            font-weight: bold;
             text-transform: uppercase;
             color: #fff;
-            background-color: #6c757d;
-            border-radius: 4px;
+            background-color: #27ae60;
+            border-radius: 15px;
+            margin-top: 8px;
         }
-        .badge-success { background-color: #28a745; }
-        .badge-info { background-color: #17a2b8; }
+
+        table.items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        table.items-table th {
+            background-color: #f8f9fa;
+            color: #2c3e50;
+            padding: 10px 12px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            border-bottom: 2px solid #dee2e6;
+        }
+        table.items-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #ecf0f1;
+            vertical-align: middle;
+        }
+        .product-name {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 12px;
+        }
+        .variant-info {
+            font-size: 10px;
+            color: #7f8c8d;
+            margin-top: 2px;
+        }
+
+        .total-section {
+            background-color: #f8f9fa;
+        }
+        .total-label {
+            text-align: right;
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 12px;
+            padding: 12px !important;
+        }
+        .total-value {
+            text-align: center;
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 14px;
+            border-top: 2px solid #2c3e50;
+            padding: 12px !important;
+        }
+
+        .notes-section {
+            margin-top: 15px;
+            padding: 12px;
+            background-color: #fdfaf0;
+            border-left: 3px solid #f1c40f;
+            border-radius: 3px;
+        }
+        .notes-title {
+            font-weight: bold;
+            color: #856404;
+            margin-bottom: 4px;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+
+        .signature-table {
+            width: 100%;
+            margin-top: 60px;
+        }
+        .signature-line {
+            border-top: 1px solid #bdc3c7;
+            width: 180px;
+            margin: 0 auto 5px;
+        }
+        .signature-text {
+            font-size: 11px;
+            color: #7f8c8d;
+            text-align: center;
+        }
+
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            color: #bdc3c7;
+            font-size: 10px;
+            border-top: 1px solid #ecf0f1;
+            padding-top: 10px;
+        }
+        
+        .action-bar {
+            display: none;
+        }
+        @media screen {
+            .action-bar {
+                max-width: 850px;
+                margin: 0 auto 20px;
+                text-align: right;
+                display: block;
+                padding: 0 40px;
+            }
+            .btn {
+                padding: 8px 16px;
+                border-radius: 4px;
+                text-decoration: none;
+                font-weight: bold;
+                font-size: 13px;
+                margin-left: 10px;
+                display: inline-block;
+            }
+            .btn-secondary { background: #95a5a6; color: #fff; }
+            .btn-info { background: #3498db; color: #fff; }
+            .btn-primary { background: #2c3e50; color: #fff; }
+        }
     </style>
 </head>
 <body>
+    @if(!($is_pdf ?? false))
+    <div class="action-bar">
+        <a href="{{ route('admin.issues.index') }}" class="btn btn-secondary">Back to List</a>
+        <a href="#" onclick="window.print(); return false;" class="btn btn-info">Print Now</a>
+        <a href="{{ route('admin.issues.download-invoice', $issue->id) }}" class="btn btn-primary">Download PDF</a>
+    </div>
+    @endif
+
     <div class="container">
-        @if(!($is_pdf ?? false))
-        <div class="action-bar no-print">
-            <a href="{{ route('admin.issues.index') }}" class="btn btn-secondary">Back to List</a>
-            <a href="#" onclick="window.print(); return false;" class="btn btn-warning">Print</a>
-            <a href="{{ route('admin.issues.download-invoice', $issue->id) }}" class="btn btn-primary">Download PDF</a>
-        </div>
-        @endif
-        <div class="header clearfix">
-            <div class="invoice-title">
-                <h1>Issue Invoice</h1>
-                <p><strong>Ref:</strong> {{ $issue->issue_no }}</p>
-                <div style="margin-top: 10px;">
-                    <span class="badge badge-success">Completed</span>
-                </div>
-            </div>
-            <div class="company-info">
-                <h3>{{ $settings->site_name ?? config('app.name') }}</h3>
-                <p>
-                    {{ $settings->contact_email ?? '' }}<br>
-                    {!! nl2br(e($settings->address ?? '')) !!}
-                </p>
-            </div>
-        </div>
+        <table style="width: 100%; border-bottom: 2px solid #2c3e50; padding-bottom: 15px; margin-bottom: 25px;">
+            <tr>
+                <td style="width: 50%; vertical-align: top;">
+                    <h1 class="invoice-title">Issue Invoice</h1>
+                    <div class="ref-no">Ref: {{ $issue->issue_no }}</div>
+                    <div class="badge">Completed</div>
+                </td>
+                <td style="width: 50%; text-align: right; vertical-align: top;">
+                    <div class="company-name">{{ $settings->site_name ?? config('app.name') }}</div>
+                    <div class="company-details">
+                        {{ $settings->contact_email ?? '' }}<br>
+                        {!! nl2br(e($settings->address ?? '')) !!}
+                    </div>
+                </td>
+            </tr>
+        </table>
 
-        <div class="details-box clearfix">
-            <div class="box-left">
-                <h4>Issued To:</h4>
-                <p>
-                    <strong>{{ $issue->outlet->outlet_name ?? $issue->outlet->name ?? 'N/A' }}</strong><br>
-                    User: {{ $issue->outlet->name ?? '' }}<br>
-                    Phone: {{ $issue->outlet->phone ?? 'N/A' }}<br>
-                    Email: {{ $issue->outlet->email ?? 'N/A' }}<br>
-                    Address: {{ $issue->outlet->address ?? 'N/A' }}
-                </p>
-            </div>
-            <div class="box-right">
-                <h4>Issue Details:</h4>
-                <p>
-                    <strong>Date:</strong> {{ $issue->created_at->format('d M, Y h:i A') }}<br>
-                    <strong>Request Ref:</strong> {{ $issue->productRequest->request_no ?? 'N/A' }}<br>
-                    <strong>Issued By:</strong> {{ Auth::user()->name }}
-                </p>
-            </div>
-        </div>
+        <table class="info-table">
+            <tr>
+                <td style="width: 50%; vertical-align: top; padding-right: 20px;">
+                    <div class="info-box-title">Issued To</div>
+                    <div class="info-content">
+                        <strong>{{ $issue->outlet->outlet_name ?? $issue->outlet->name ?? 'N/A' }}</strong>
+                        <table style="width: 100%; margin-top: 5px; border: none;">
+                            <tr>
+                                <td style="width: 60px; padding: 2px 0; border: none; color: #7f8c8d;">User:</td>
+                                <td style="padding: 2px 0; border: none; font-weight: bold;">{{ $issue->outlet->name ?? '' }}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 2px 0; border: none; color: #7f8c8d;">Phone:</td>
+                                <td style="padding: 2px 0; border: none; font-weight: bold;">{{ $issue->outlet->phone ?? 'N/A' }}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 2px 0; border: none; color: #7f8c8d;">Email:</td>
+                                <td style="padding: 2px 0; border: none; font-weight: bold;">{{ $issue->outlet->email ?? 'N/A' }}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 2px 0; border: none; color: #7f8c8d; vertical-align: top;">Address:</td>
+                                <td style="padding: 2px 0; border: none; font-weight: bold;">{{ $issue->outlet->address ?? 'N/A' }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </td>
+                <td style="width: 50%; vertical-align: top;">
+                    <div class="info-box-title" style="text-align: right;">Issue Details</div>
+                    <div class="info-content">
+                        <table style="width: auto; margin-left: auto; border: none; border-collapse: collapse;">
+                            <tr>
+                                <td style="padding: 2px 0; border: none; color: #7f8c8d; text-align: right; white-space: nowrap;">Date:</td>
+                                <td style="padding: 2px 0 2px 10px; border: none; text-align: left; white-space: nowrap; font-weight: bold;">{{ $issue->created_at->format('d M, Y h:i A') }}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 2px 0; border: none; color: #7f8c8d; text-align: right; white-space: nowrap;">Request Ref:</td>
+                                <td style="padding: 2px 0 2px 10px; border: none; text-align: left; white-space: nowrap; font-weight: bold;">{{ $issue->productRequest->request_no ?? 'N/A' }}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 2px 0; border: none; color: #7f8c8d; text-align: right; white-space: nowrap;">Issued By:</td>
+                                <td style="padding: 2px 0 2px 10px; border: none; text-align: left; white-space: nowrap; font-weight: bold;">{{ Auth::user()->name }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </td>
+            </tr>
+        </table>
 
-        <div class="table-responsive">
-            <table>
-                <thead>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width: 8%; text-align: center;">SL</th>
+                    <th style="width: 12%; text-align: center;">Image</th>
+                    <th style="width: 50%;">Product Description</th>
+                    <th style="width: 30%; text-align: center;">Qty</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($issue->items as $index => $item)
                     <tr>
-                        <th style="width: 5%;">#</th>
-                        <th style="width: 10%; text-align: center;">Image</th>
-                        <th style="width: 40%;">Product</th>
-                        <th style="width: 20%;">Variant</th>
-                        <th style="width: 25%; text-align: center;">Quantity</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($issue->items as $index => $item)
-                        <tr>
-                            <td>{{ $index + 1 }}</td>
-                            <td style="text-align: center;">
-                                @if($item->product && $item->product->thumb_image)
-                                    @php
-                                        $imagePath = 'storage/'.$item->product->thumb_image;
-                                        $fullPath = ($is_pdf ?? false) ? public_path($imagePath) : asset($imagePath);
-                                    @endphp
-                                    <img src="{{ $fullPath }}" alt="" width="40">
-                                @else
-                                    -
-                                @endif
-                            </td>
-                            <td>
-                                <strong>{{ $item->product->name }}</strong>
-                            </td>
-                            <td>
+                        <td style="text-align: center; color: #7f8c8d;">{{ str_pad($index + 1, 2, '0', STR_PAD_LEFT) }}</td>
+                        <td style="text-align: center;">
+                            @if($item->product && $item->product->thumb_image)
+                                @php
+                                    $imagePath = 'storage/'.$item->product->thumb_image;
+                                    $fullPath = ($is_pdf ?? false) ? public_path($imagePath) : asset($imagePath);
+                                @endphp
+                                <img src="{{ $fullPath }}" alt="" width="40" style="border-radius: 3px; border: 1px solid #ecf0f1;">
+                            @else
+                                <div style="color: #bdc3c7; font-size: 9px;">No Image</div>
+                            @endif
+                        </td>
+                        <td>
+                            <div class="product-name">{{ $item->product->name }}</div>
+                            <div class="variant-info">
                                 @if($item->variant)
-                                    {{ $item->variant->name }} 
+                                    Variant: {{ $item->variant->name }}
                                 @else
-                                    -
+                                    Standard
                                 @endif
-                            </td>
-                            <td style="text-align: center;">{{ $item->quantity }}</td>
-                        </tr>
-                    @endforeach
-                    <tr class="total-row">
-                        <td colspan="4" style="text-align: right;">Total Quantity</td>
-                        <td style="text-align: center;">{{ $issue->total_qty }}</td>
+                                @if($item->product->sku)
+                                    | SKU: {{ $item->product->sku }}
+                                @endif
+                            </div>
+                        </td>
+                        <td style="text-align: center; font-weight: bold; color: #2c3e50;">{{ $item->quantity }}</td>
                     </tr>
-                </tbody>
-            </table>
-        </div>
+                @endforeach
+                <tr class="total-section">
+                    <td colspan="3" class="total-label">Total Quantity Combined</td>
+                    <td class="total-value">{{ $issue->total_qty }}</td>
+                </tr>
+            </tbody>
+        </table>
 
         @if($issue->note)
-        <div style="margin-bottom: 40px; background: #f8f9fa; padding: 15px; border-left: 4px solid #ddd;">
-            <strong>Note:</strong> {{ $issue->note }}
+        <div class="notes-section">
+            <div class="notes-title">Admin Note / Instructions</div>
+            <div style="font-size: 12px; color: #2c3e50;">{{ $issue->note }}</div>
         </div>
         @endif
 
-        <div class="signature-section clearfix">
-            <div class="signature-box">
-                Authorized Signature
-            </div>
-            <div class="signature-box right">
-                Receiver Signature
-            </div>
-        </div>
+        <table class="signature-table">
+            <tr>
+                <td style="width: 33%; vertical-align: bottom;">
+                    <div class="signature-line"></div>
+                    <div class="signature-text">Issued By</div>
+                </td>
+                <td style="width: 33%; vertical-align: bottom;">
+                    <div class="signature-line"></div>
+                    <div class="signature-text">Authorized Signature</div>
+                </td>
+                <td style="width: 33%; vertical-align: bottom;">
+                    <div class="signature-line"></div>
+                    <div class="signature-text">Receiver Signature</div>
+                </td>
+            </tr>
+        </table>
 
         <div class="footer">
-            <p>Thank you for your business!</p>
-            <p><small>Generated on: {{ now()->format('d M, Y h:i A') }}</small></p>
+            This is a computer generated document and does not require a physical signature.
+            <br>
+            Printed on: {{ now()->format('d M, Y h:i A') }}
         </div>
     </div>
 </body>

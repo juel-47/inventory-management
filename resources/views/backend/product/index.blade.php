@@ -89,80 +89,69 @@
 @endsection
 
 @push('scripts')
-    <!-- Floating Basket Widget -->
-    @can('Manage Order Place')
-    <div id="floating-basket" class="position-fixed shadow-lg rounded-pill bg-primary text-white px-4 py-3 d-flex align-items-center cursor-pointer" 
-         style="bottom: 30px; right: 30px; z-index: 9999; display: none; cursor: pointer; transition: all 0.3s ease;">
-        <i class="fas fa-shopping-basket mr-2 fa-lg"></i>
-        <span class="font-weight-bold ml-1 mr-2" style="font-size: 16px;">
-            <span id="basket-count">0</span> Items
-        </span>
-        <span class="border-left mx-2" style="height: 20px; border-color: rgba(255,255,255,0.4) !important;"></span>
-        <span class="font-weight-bold" style="font-size: 14px;">Place Order &rarr;</span>
+    <!-- Floating Baskets Container -->
+    <div class="position-fixed d-flex align-items-center" style="bottom: 30px; right: 30px; z-index: 9999; gap: 20px;">
+        <!-- Floating Basket Widget (Product Request) -->
+        @can('Create Product Requests')
+        <div id="floating-request-basket" style="display: none;">
+            <div class="d-flex flex-column align-items-center">
+                <div class="cursor-pointer bg-success text-white shadow-lg rounded-circle d-flex align-items-center justify-content-center position-relative mb-2 basket-fab" 
+                     id="go-to-request" title="Product Request" style="width: 55px; height: 55px; transition: all 0.3s ease;">
+                    <i class="fas fa-file-import fa-lg"></i>
+                    <span id="request-basket-count" class="badge badge-warning position-absolute" style="top: -5px; right: -5px; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 11px; border: 2px solid #fff; color: #000;">0</span>
+                </div>
+                <button class="btn btn-sm btn-light shadow-sm rounded-circle d-flex align-items-center justify-content-center" 
+                        id="clear-request-basket" title="Clear Request Basket" style="width: 25px; height: 25px; padding: 0; opacity: 0.8;">
+                    <i class="fas fa-times text-danger" style="font-size: 10px;"></i>
+                </button>
+            </div>
+        </div>
+        @endcan
+
+        <!-- Floating Basket Widget (Booking) -->
+        @can('Manage Order Place')
+        <div id="floating-basket" style="display: none;">
+            <div class="d-flex flex-column align-items-center">
+                <div class="cursor-pointer bg-primary text-white shadow-lg rounded-circle d-flex align-items-center justify-content-center position-relative mb-2 basket-fab" 
+                     id="go-to-booking" title="Place Order" style="width: 55px; height: 55px; transition: all 0.3s ease;">
+                    <i class="fas fa-shopping-basket fa-lg"></i>
+                    <span id="basket-count" class="badge badge-danger position-absolute" style="top: -5px; right: -5px; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 11px; border: 2px solid #fff;">0</span>
+                </div>
+                <button class="btn btn-sm btn-light shadow-sm rounded-circle d-flex align-items-center justify-content-center" 
+                        id="clear-booking-basket" title="Clear Booking Basket" style="width: 25px; height: 25px; padding: 0; opacity: 0.8;">
+                    <i class="fas fa-trash-alt text-danger" style="font-size: 10px;"></i>
+                </button>
+            </div>
+        </div>
+        @endcan
     </div>
-    @endcan
 
     <style>
-        /* Professional Pagination Styling - Enhanced for White Background */
-        .custom-pagination .pagination {
-            margin-bottom: 0;
-            gap: 6px;
+        .hover-white { transition: color 0.2s ease; }
+        .hover-white:hover { color: #fff !important; }
+        .cursor-pointer { cursor: pointer; }
+        
+        /* Animation Styles */
+        @keyframes shake-basket {
+            0% { transform: scale(1) rotate(0); }
+            20% { transform: scale(1.2) rotate(-10deg); }
+            40% { transform: scale(1.2) rotate(10deg); }
+            60% { transform: scale(1.2) rotate(-10deg); }
+            80% { transform: scale(1.2) rotate(10deg); }
+            100% { transform: scale(1) rotate(0); }
         }
-        .custom-pagination .page-item .page-link {
-            border: 1px solid #dfe3e8;
-            color: #454f5b;
-            padding: 10px 18px;
-            border-radius: 6px !important;
-            font-weight: 600;
-            font-size: 14px;
-            transition: all 0.2s ease-in-out;
-            background-color: #fff;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05); /* Subtle border shadow */
+        .animate-shake {
+            animation: shake-basket 0.5s ease-in-out;
         }
-        .custom-pagination .page-item.active .page-link {
-            background-color: #6777ef;
-            border-color: #6777ef;
-            color: #fff;
-            box-shadow: 0 4px 12px rgba(103, 119, 239, 0.25);
+
+        .basket-fab:hover {
+            transform: scale(1.1);
+            filter: brightness(1.1);
         }
-        .custom-pagination .page-item .page-link:hover {
-            background-color: #f4f6f8;
-            color: #6777ef;
-            border-color: #6777ef;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+        .basket-fab {
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2) !important;
         }
-        .custom-pagination .page-item.disabled .page-link {
-            background-color: #f9fafb;
-            border-color: #e1e4e8;
-            color: #919eab;
-            box-shadow: none;
-        }
-        .custom-pagination .page-item:first-child .page-link,
-        .custom-pagination .page-item:last-child .page-link {
-            background-color: #f4f6f8;
-            font-weight: bold;
-        }
-        .alphabet-filter .alphabet-btn {
-            width: 35px;
-            height: 35px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 5px;
-            padding: 0;
-            font-weight: 600;
-        }
-        .alphabet-filter .alphabet-btn.active {
-            background-color: #6777ef;
-            color: #fff;
-            border-color: #6777ef;
-        }
-        #floating-basket:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(103, 119, 239, 0.4) !important;
-        }
-        .add-to-basket.added {
+        .add-to-basket.added, .add-to-request-basket.added {
             background-color: #28a745;
             border-color: #28a745;
             color: #fff;
@@ -173,26 +162,45 @@
             let initialLoad = true;
 
             // --- Basket Logic Start ---
-            let basket = JSON.parse(localStorage.getItem('booking_basket')) || [];
+            let booking_basket = JSON.parse(localStorage.getItem('booking_basket')) || [];
+            let request_basket = JSON.parse(localStorage.getItem('request_basket')) || [];
 
             function updateBasketUI() {
-                // Update Badge Count
-                $('#basket-count').text(basket.length);
-
-                // Show/Hide Floating Widget
-                if (basket.length > 0) {
+                // Update Booking Basket
+                $('#basket-count').text(booking_basket.length);
+                if (booking_basket.length > 0) {
                     $('#floating-basket').fadeIn();
                 } else {
-                    $('#floating-basket').fadeOut();
+                    $(`#floating-basket`).fadeOut();
                 }
 
-                // Update Buttons State
+                // Update Request Basket
+                if ($('#request-basket-count').length) {
+                    $('#request-basket-count').text(request_basket.length);
+                    if (request_basket.length > 0) {
+                        $('#floating-request-basket').fadeIn();
+                    } else {
+                        $('#floating-request-basket').fadeOut();
+                    }
+                }
+
+                // Update Booking Buttons
                 $('.add-to-basket').each(function() {
                     let id = $(this).data('id');
-                    if (basket.includes(id)) {
-                        $(this).addClass('added').html('<i class="fas fa-check mr-1"></i> Added');
+                    if (booking_basket.includes(id)) {
+                        $(this).addClass('added').html('<i class="fas fa-check mr-1"></i> Added to Basket');
                     } else {
                         $(this).removeClass('added').html('<i class="fas fa-shopping-basket mr-1"></i> Add to Basket');
+                    }
+                });
+
+                // Update Request Buttons
+                $('.add-to-request-basket').each(function() {
+                    let id = $(this).data('id');
+                    if (request_basket.includes(id)) {
+                        $(this).addClass('added').html('<i class="fas fa-check mr-1"></i> Added to Request');
+                    } else {
+                        $(this).removeClass('added').html('<i class="fas fa-file-import mr-1"></i> Add to Request Basket');
                     }
                 });
             }
@@ -200,30 +208,97 @@
             // Initial UI Update
             updateBasketUI();
 
-            // Add to Basket Click
+            // Clear Request Basket
+            $('#clear-request-basket').on('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                Swal.fire({
+                    title: 'Clear Request Basket?',
+                    text: "You are about to remove all items from the request basket.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, clear it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        request_basket = [];
+                        localStorage.setItem('request_basket', JSON.stringify(request_basket));
+                        updateBasketUI();
+                        toastr.info('Request basket cleared');
+                    }
+                });
+            });
+
+            // Clear Booking Basket
+            $('#clear-booking-basket').on('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                Swal.fire({
+                    title: 'Clear Booking Basket?',
+                    text: "You are about to remove all items from the booking basket.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#6777ef',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, clear it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        booking_basket = [];
+                        localStorage.setItem('booking_basket', JSON.stringify(booking_basket));
+                        updateBasketUI();
+                        toastr.info('Booking basket cleared');
+                    }
+                });
+            });
+
+            // Add to Booking Basket Click
             $('body').on('click', '.add-to-basket', function() {
                 let id = $(this).data('id');
-                
-                if (basket.includes(id)) {
-                    // Remove if already added
-                    basket = basket.filter(itemId => itemId !== id);
+                if (booking_basket.includes(id)) {
+                    booking_basket = booking_basket.filter(itemId => itemId !== id);
                     toastr.info('Removed from basket');
                 } else {
-                    // Add to basket
-                    basket.push(id);
+                    booking_basket.push(id);
                     toastr.success('Added to basket');
+                    // Trigger Shake
+                    $('#go-to-booking').addClass('animate-shake');
+                    setTimeout(() => $('#go-to-booking').removeClass('animate-shake'), 500);
                 }
-                
-                localStorage.setItem('booking_basket', JSON.stringify(basket));
+                localStorage.setItem('booking_basket', JSON.stringify(booking_basket));
                 updateBasketUI();
             });
 
-            // Go to Booking Page
-            $('#floating-basket').on('click', function() {
+            // Add to Request Basket Click
+            $('body').on('click', '.add-to-request-basket', function() {
+                let id = $(this).data('id');
+                if (request_basket.includes(id)) {
+                    request_basket = request_basket.filter(itemId => itemId !== id);
+                    toastr.info('Removed from request basket');
+                } else {
+                    request_basket.push(id);
+                    toastr.success('Added to request basket');
+                    // Trigger Shake
+                    $('#go-to-request').addClass('animate-shake');
+                    setTimeout(() => $('#go-to-request').removeClass('animate-shake'), 500);
+                }
+                localStorage.setItem('request_basket', JSON.stringify(request_basket));
+                updateBasketUI();
+            });
+
+            // Navigation
+            $('#go-to-booking').on('click', function() {
                 window.location.href = "{{ route('admin.bookings.create') }}";
             });
 
-            // Re-apply UI state after AJAX load (Search/Pagination)
+            $('#go-to-request').on('click', function() {
+                let ids = request_basket.join(',');
+                window.location.href = "{{ route('admin.product-requests.create') }}?ids=" + ids;
+            });
+
+            // Re-apply UI state after AJAX load
             $(document).ajaxComplete(function() {
                 updateBasketUI();
             });

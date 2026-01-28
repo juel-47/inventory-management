@@ -44,7 +44,7 @@ class ProductRequestController extends Controller implements HasMiddleware
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
         // Only users with 'Create Product Requests' permission can create
         /** @var \App\Models\User $user */
@@ -58,12 +58,17 @@ class ProductRequestController extends Controller implements HasMiddleware
             ->select('id', 'name', 'sku', 'qty', 'price', 'outlet_price', 'thumb_image')
             ->get();
         
+        $selectedIds = [];
+        if ($request->has('ids')) {
+            $selectedIds = explode(',', $request->ids);
+        }
+
         $users = [];
         if ($user->can('Manage Product Requests')) {
             $users = \App\Models\User::where('status', 1)->orderBy('name', 'asc')->get();
         }
 
-        return view('backend.product-request.create', compact('products', 'users'));
+        return view('backend.product-request.create', compact('products', 'users', 'selectedIds'));
     }
 
     /**

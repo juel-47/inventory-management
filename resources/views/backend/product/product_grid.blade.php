@@ -88,6 +88,13 @@
                         <i class="fas fa-shopping-basket mr-1"></i> Add to Basket
                     </button>
                     @endcan
+
+                    @can('Create Product Requests')
+                    <!-- Add to Request Basket Button -->
+                    <button type="button" class="btn btn-outline-primary btn-sm btn-block mt-2 add-to-request-basket" data-id="{{ $product->id }}">
+                        <i class="fas fa-file-import mr-1"></i> Add to Request Basket
+                    </button>
+                    @endcan
                 </div>
                 
                 @can('Manage Products')

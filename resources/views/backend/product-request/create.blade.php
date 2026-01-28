@@ -21,9 +21,14 @@
                                         <div class="card border shadow-sm">
                                             <div class="card-header bg-light d-flex justify-content-between align-items-center">
                                                 <h4 class="mb-0 text-primary"><i class="fas fa-shopping-basket mr-2"></i>Select Products</h4>
-                                                <button type="button" class="btn btn-primary btn-sm rounded-pill" id="add-item">
-                                                    <i class="fas fa-plus mr-1"></i> Add Product
-                                                </button>
+                                                <div>
+                                                    <button type="button" class="btn btn-outline-danger btn-sm rounded-pill mr-2" id="clear-all-items">
+                                                        <i class="fas fa-trash-alt mr-1"></i> Clear All
+                                                    </button>
+                                                    <button type="button" class="btn btn-primary btn-sm rounded-pill" id="add-item">
+                                                        <i class="fas fa-plus mr-1"></i> Add Product
+                                                    </button>
+                                                </div>
                                             </div>
                                             <div class="card-body p-0">
                                                 <div class="table-responsive">
@@ -113,7 +118,39 @@
             const currencyIcon = "{{ $settings->base_currency_icon }}";
             const products = @json($products);
 
-            function addProductRow() {
+            // Start with pre-selected rows or one empty row
+            const selectedIds = @json($selectedIds ?? []);
+            
+            if (selectedIds && selectedIds.length > 0) {
+                selectedIds.forEach(id => {
+                    addProductRow(id);
+                });
+            } else {
+                addProductRow();
+            }
+
+            $('#add-item').on('click', function() { addProductRow(); });
+
+            $('#clear-all-items').on('click', function() {
+                Swal.fire({
+                    title: 'Clear all items?',
+                    text: 'Are you sure you want to remove all products from this request?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, clear all!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $('#items-container').empty();
+                        addProductRow();
+                        updateGlobalSummary();
+                        toastr.info('All items removed');
+                    }
+                });
+            });
+
+            function addProductRow(productId = null) {
                 let options = '<option value=""></option>';
                 products.forEach(p => {
                     options += `<option value="${p.id}">${p.name}</option>`;
@@ -163,14 +200,26 @@
                 
                 $('#items-container').append(html);
                 const newRow = $(`#row-${rowCounter}`);
-                newRow.find('.select2').select2({ width: '100%', dropdownAutoWidth: true });
+                const selector = newRow.find('.product-selector');
+                
+                selector.select2({ width: '100%', dropdownAutoWidth: true });
+                
+                if (productId) {
+                    selector.val(productId);
+                    // Triggering change after a tiny timeout to ensure select2 is completely ready
+                    setTimeout(() => {
+                        selector.trigger('change');
+                    }, 50);
+                }
+
                 rowCounter++;
                 updateGlobalSummary();
             }
 
-            // Start with one row
-            addProductRow();
-            $('#add-item').on('click', function() { addProductRow(); });
+            // Clear basket on form submit
+            $('form').on('submit', function() {
+                localStorage.removeItem('request_basket');
+            });
 
             $(document).on('click', '.remove-row', function() {
                 const id = $(this).data('id');
@@ -193,8 +242,11 @@
                 variantList.empty();
                 
                 if (product) {
-                    let outletPrice = parseFloat(product.outlet_price) > 0 ? parseFloat(product.outlet_price) : parseFloat(product.price);
-                    let sellPrice = parseFloat(product.price);
+                    let oPrice = parseFloat(product.outlet_price);
+                    let sPrice = parseFloat(product.price);
+                    
+                    let outletPrice = (isNaN(oPrice) || oPrice <= 0) ? (isNaN(sPrice) ? 0 : sPrice) : oPrice;
+                    let sellPrice = isNaN(sPrice) ? 0 : sPrice;
 
                     row.find('.outlet-price-display').text(outletPrice.toFixed(2));
                     row.find('.sell-price-display').text(sellPrice.toFixed(2));
@@ -210,7 +262,10 @@
 
                     if (product.variants && product.variants.length > 0) {
                         product.variants.forEach(v => {
-                            const stock = v.inventory_stocks.find(s => s.outlet_id == 1)?.quantity || 0;
+                            const stocks = v.inventory_stocks || v.inventory_stock || [];
+                            const stockObj = Array.isArray(stocks) ? stocks.find(s => s.outlet_id == 1) : null;
+                            const stock = stockObj ? (stockObj.quantity || 0) : 0;
+                            
                             variantList.append(`
                                 <div class="variant-item bg-white p-2 border rounded text-center shadow-sm" style="min-width: 100px;">
                                     <div class="small font-weight-bold text-dark mb-1">${v.name}</div>
@@ -224,9 +279,12 @@
                                 </div>
                             `);
                         });
-                        variantArea.fadeIn();
+                        variantArea.show();
                     } else {
-                        const stock = product.inventory_stocks.find(s => s.outlet_id == 1)?.quantity || 0;
+                        const stocks = product.inventory_stocks || product.inventory_stock || [];
+                        const stockObj = Array.isArray(stocks) ? stocks.find(s => s.outlet_id == 1) : null;
+                        const stock = stockObj ? (stockObj.quantity || 0) : 0;
+
                         variantList.append(`
                             <div class="variant-item bg-white p-2 border rounded text-center shadow-sm" style="min-width: 120px;">
                                 <div class="small font-weight-bold text-dark mb-1">Standard</div>
@@ -239,10 +297,12 @@
                                        min="0" max="${stock}" value="0">
                             </div>
                         `);
-                        variantArea.fadeIn();
+                        variantArea.show();
                     }
                 } else {
-                    variantArea.fadeOut();
+                    row.find('.outlet-price-display').text('0.00');
+                    row.find('.sell-price-display').text('0.00');
+                    variantArea.hide();
                 }
                 calculateRowTotals(row);
             });

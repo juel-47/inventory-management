@@ -24,7 +24,7 @@
                             </div>
                             <div class="card-body">
                                 <div class="row">
-                                    <div class="form-group col-md-4">
+                                    <div class="form-group col-md-6">
                                         <label class="font-weight-bold">Select Vendor <span class="text-danger">*</span></label>
                                         <select class="form-control select2" name="vendor_id" required>
                                             <option value="">-- Select Vendor --</option>
@@ -33,22 +33,13 @@
                                             @endforeach
                                         </select>
                                     </div>
-                                    <div class="form-group col-md-4">
+                                    <div class="form-group col-md-6">
                                         <label>Shipping Method</label>
                                         <select class="form-control" name="shipping_method">
                                             <option value="">-- Select Shipping --</option>
                                             <option value="Air">Air</option>
-                                            <option value="Train">Train</option>
                                             <option value="Ship">Ship</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group col-md-4">
-                                        <label>Order Status <span class="text-danger">*</span></label>
-                                        <select class="form-control" name="status" required>
-                                            <option value="pending" selected>Pending</option>
-                                            <option value="complete">Complete</option>
-                                            <option value="cancelled">Cancelled</option>
-                                            <option value="missing">Missing</option>
+                                            <option value="Normal">Normal</option>
                                         </select>
                                     </div>
                                 </div>

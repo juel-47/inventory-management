@@ -137,6 +137,7 @@ class ProductRequestController extends Controller implements HasMiddleware
 
             DB::commit();
             toastr()->success('Product Request created successfully!');
+            session()->flash('clear_request_basket', true);
             return redirect()->route('admin.product-requests.index');
 
         } catch (\Exception $e) {

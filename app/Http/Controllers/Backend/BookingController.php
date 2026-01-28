@@ -67,7 +67,7 @@ class BookingController extends Controller
      */
     public function store(BookingStoreRequest $request)
     {
-        $booking_no = 'BK-' . strtoupper(Str::random(10));
+        $booking_no = 'DS-' . strtoupper(Str::random(10));
         $bookings_saved = [];
 
         foreach ($request->items as $item) {
@@ -129,6 +129,7 @@ class BookingController extends Controller
         }
 
         Toastr::success('Order(s) Placed Successfully!');
+        session()->flash('clear_booking_basket', true);
         return redirect()->route('admin.bookings.index');
     }
 

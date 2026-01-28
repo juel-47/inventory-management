@@ -38,9 +38,9 @@
                                             <label class="font-weight-bold">Shipping Method</label>
                                             <select class="form-control" name="shipping_method">
                                                 <option value="">-- Select Shipping --</option>
-                                                <option {{ $targetBooking->shipping_method == 'Air' ? 'selected' : '' }} value="Air">Air</option>
-                                                <option {{ $targetBooking->shipping_method == 'Train' ? 'selected' : '' }} value="Train">Train</option>
-                                                <option {{ $targetBooking->shipping_method == 'Ship' ? 'selected' : '' }} value="Ship">Ship</option>
+                                                <option value="Air" {{ $targetBooking->shipping_method == 'Air' ? 'selected' : '' }}>Air</option>
+                                                <option value="Ship" {{ $targetBooking->shipping_method == 'Ship' ? 'selected' : '' }}>Ship</option>
+                                                <option value="Normal" {{ $targetBooking->shipping_method == 'Normal' ? 'selected' : '' }}>Normal</option>
                                             </select>
                                         </div>
                                     </div>

@@ -40,7 +40,7 @@ return new class extends Migration
             
             $table->json('custom_fields')->nullable();
             
-            $table->boolean('status')->default(1);
+            $table->string('status')->default("pending");
             $table->timestamps();
         });
     }

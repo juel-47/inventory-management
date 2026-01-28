@@ -449,7 +449,6 @@
                     </td>
                     <td class="align-middle text-center">
                         <input type="number" class="form-control form-control-sm unit_cost text-center" name="items[${rowCount}][unit_cost]" step="any" value="${booking.unit_price}" required>
-                        <small class="text-muted d-block mt-1">Sys: <span class="unit_cost_system text-primary" style="font-weight: 600;">${systemIcon}0.00</span></small>
                     </td>
                     <td class="align-middle text-center">
                         <input type="number" class="form-control form-control-sm qty text-center" name="items[${rowCount}][qty]" value="${booking.qty}" min="1" required style="font-weight: bold;">
@@ -507,7 +506,6 @@
                     </td>
                     <td class="align-middle text-center">
                         <input type="number" class="form-control form-control-sm unit_cost text-center" name="items[${rowCount}][unit_cost]" step="any" required placeholder="0.00">
-                        <small class="text-muted d-block mt-1">Sys: <span class="unit_cost_system text-primary" style="font-weight: 600;">${systemIcon}0.00</span></small>
                     </td>
                     <td class="align-middle text-center">
                        <input type="number" class="form-control form-control-sm qty text-center" name="items[${rowCount}][qty]" value="1" min="1" required style="font-weight: bold;">

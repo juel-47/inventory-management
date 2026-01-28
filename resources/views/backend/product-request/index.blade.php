@@ -95,6 +95,12 @@
 @endsection
 
 @push('scripts')
+    @if(session()->has('clear_request_basket'))
+    <script>
+        localStorage.removeItem('request_basket');
+    </script>
+    @endif
+
     <script>
         $("#table-1").dataTable({
             "order": [[0, "desc"]],

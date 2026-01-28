@@ -34,8 +34,14 @@
 @push('scripts')
     {{ $dataTable->scripts(attributes: ['type' => 'module']) }}
 
+    @if(session()->has('clear_booking_basket'))
     <script>
-        // $(document).ready(function() {
+        localStorage.removeItem('booking_basket');
+    </script>
+    @endif
+
+    <script>
+         $(document).ready(function() {
              $('body').on('change', '.change-booking-status', function() {
                 let status = $(this).val();
                 let id = $(this).data('id');

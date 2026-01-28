@@ -218,10 +218,6 @@
                 updateGlobalSummary();
             }
 
-            // Clear basket on form submit
-            $('form').on('submit', function() {
-                localStorage.removeItem('request_basket');
-            });
 
             $(document).on('click', '.remove-row', function() {
                 const id = $(this).data('id');

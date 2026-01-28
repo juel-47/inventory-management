@@ -109,6 +109,10 @@ class PurchaseController extends Controller
                 $file = $request->file('invoice_attachment');
                 $filename = 'invoice_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
                 $path = $file->storeAs('attachments/purchases', $filename, 'public');
+                
+                // Ensure visibility is public (helps on some environments)
+                \Illuminate\Support\Facades\Storage::disk('public')->setVisibility($path, 'public');
+                
                 $purchase->invoice_attachment = $path;
             }
 
@@ -391,7 +395,7 @@ class PurchaseController extends Controller
         $purchase = Purchase::with(['vendor', 'user', 'details.product'])->findOrFail($id);
         $settings = \App\Models\GeneralSetting::first();
         
-        $pdf = \PDF::loadView('backend.purchase.print_pdf', compact('purchase', 'settings'));
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('backend.purchase.print_pdf', compact('purchase', 'settings'));
         return $pdf->download('purchase_' . $purchase->invoice_no . '.pdf');
     }
 

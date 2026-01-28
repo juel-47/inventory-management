@@ -27,7 +27,7 @@ class BookingStoreRequest extends FormRequest
             'items.*.product_id' => ['required', 'integer', 'exists:products,id'],
             'items.*.qty' => ['required', 'integer', 'min:1'],
             'items.*.unit_id' => ['nullable', 'integer', 'exists:units,id'],
-            'status' => ['required', 'in:pending,complete,cancelled,missing'],
+            'status' => ['nullable', 'in:pending,complete,cancelled,missing'],
             'description' => ['nullable', 'string'],
         ];
     }

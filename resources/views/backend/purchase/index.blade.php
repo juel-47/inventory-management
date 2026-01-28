@@ -65,6 +65,9 @@
                                                 <td>
                                                     <a href="{{ route('admin.purchases.view-invoice', $purchase->id) }}" target="_blank" class="btn btn-warning btn-sm" title="View Invoice"><i class="fas fa-file-invoice"></i></a>
                                                     <a href="{{ route('admin.purchases.download-pdf', $purchase->id) }}" class="btn btn-secondary btn-sm ml-1" title="Download PDF"><i class="fas fa-download"></i></a>
+                                                    @if($purchase->invoice_attachment)
+                                                        <a href="{{ asset('storage/' . $purchase->invoice_attachment) }}" class="btn btn-info btn-sm ml-1" title="Download Attachment"><i class="fas fa-paperclip"></i></a>
+                                                    @endif
                                                 </td>
                                             </tr>
                                         @endforeach

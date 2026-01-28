@@ -176,7 +176,9 @@
                                     </div>
                                 </div>
 
-                                <button type="submit" class="btn btn-primary">Create Product</button>
+                                <div class="text-right">
+                                    <button type="submit" class="btn btn-primary px-4">Create Product</button>
+                                </div>
                             </form>
                         </div>
                     </div>

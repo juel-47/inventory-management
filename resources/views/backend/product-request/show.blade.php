@@ -234,9 +234,11 @@
                                         <textarea name="admin_note" class="form-control" style="height: 80px;" placeholder="Internal tracking notes...">{{ $productRequest->admin_note }}</textarea>
                                     </div>
 
-                                    <button type="submit" class="btn btn-primary btn-block shadow-sm mb-3">
-                                        Update Request
-                                    </button>
+                                    <div class="text-right">
+                                        <button type="submit" class="btn btn-primary shadow-sm px-4">
+                                            Update Request
+                                        </button>
+                                    </div>
                                 </form>
 
                                 @if($productRequest->status == 'approved')

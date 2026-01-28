@@ -95,9 +95,11 @@
                                                     <textarea name="note" class="form-control" rows="3" placeholder="Add any special instructions..."></textarea>
                                                 </div>
                                                 <hr>
-                                                <button type="submit" class="btn btn-success btn-lg btn-block shadow-sm" id="submit-btn" disabled>
-                                                    <i class="fas fa-paper-plane mr-2"></i> Submit Request
-                                                </button>
+                                                <div class="text-right">
+                                                    <button type="submit" class="btn btn-success shadow-sm px-4" id="submit-btn" disabled>
+                                                        <i class="fas fa-paper-plane mr-2"></i> Submit Request
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

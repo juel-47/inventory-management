@@ -212,7 +212,9 @@
                                 </div>
                                 </div>
 
-                                <button type="submit" class="btn btn-primary">Update Product</button>
+                                <div class="text-right">
+                                    <button type="submit" class="btn btn-primary px-4">Update Product</button>
+                                </div>
                             </form>
                         </div>
                     </div>

@@ -38,7 +38,9 @@
                                         </select>
                                     </div>
                                 </div>
-                                <button type="submit" class="btn btn-primary mt-3">Create</button>
+                                <div class="text-right mt-3">
+                                    <button type="submit" class="btn btn-primary px-4">Create</button>
+                                </div>
                             </form>
                         </div>
                     </div>

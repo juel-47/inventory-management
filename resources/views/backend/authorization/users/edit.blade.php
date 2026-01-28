@@ -73,7 +73,9 @@
                                     </div>
 
                                 </div>
-                                <button type="submit" class="btn btn-primary mt-3">Update</button>
+                                <div class="text-right mt-3">
+                                    <button type="submit" class="btn btn-primary px-4">Update</button>
+                                </div>
                             </form>
                         </div>
                     </div>

@@ -13,7 +13,9 @@
                         <div class="card-header">
                             <h4>All Product Requests</h4>
                             <div class="card-header-action">
-                                <a href="{{ route('admin.product-requests.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Create New</a>
+                                @can('Create Product Requests')
+                                    <a href="{{ route('admin.product-requests.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Create New</a>
+                                @endcan
                             </div>
                         </div>
                         <div class="card-body">

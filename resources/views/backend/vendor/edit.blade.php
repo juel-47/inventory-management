@@ -94,7 +94,9 @@ Vendor
                                 </select>
                             </div>
 
-                            <button type="submit" class="btn btn-primary">Update</button>
+                            <div class="text-right">
+                                <button type="submit" class="btn btn-primary px-4">Update</button>
+                            </div>
                         </form>
                     </div>
                 </div>

@@ -91,9 +91,11 @@
                                             <span class="text-muted text-uppercase small" style="font-size: 11px; letter-spacing: 0.5px;">Total Quantity:</span>
                                             <span id="summary_total_qty" class="h5 mb-0 font-weight-bold text-primary">0</span>
                                         </div>
-                                        <button type="submit" class="btn btn-success btn-lg btn-block shadow-sm py-3 font-weight-bold" id="confirm_btn" disabled>
-                                            <i class="fas fa-check-circle mr-2"></i> Confirm Issue
-                                        </button>
+                                        <div class="text-right">
+                                            <button type="submit" class="btn btn-success btn-lg px-4 shadow-sm py-2 font-weight-bold" id="confirm_btn" disabled>
+                                                <i class="fas fa-check-circle mr-2"></i> Confirm Issue
+                                            </button>
+                                        </div>
                                         <p class="text-center text-muted small mt-3 mb-0">Confirming will deduct stock and generate a ledger entry.</p>
                                     </div>
                                 </div>

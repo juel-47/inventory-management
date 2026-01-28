@@ -29,11 +29,8 @@ class AppServiceProvider extends ServiceProvider
         }
 
         // \Illuminate\Support\Facades\Gate::before(function ($user, $ability) {
-        //     return $user->hasRole('Admin') || $user->hasPermissionTo('Admin') ? true : null;
+        //     return $user->hasRole('Admin') ? true : null;
         // });
-        \Illuminate\Support\Facades\Gate::before(function ($user, $ability) {
-            return $user->hasRole('Admin') ? true : null;
-        });
 
         Paginator::useBootstrapFour();
     }
